@@ -1,0 +1,312 @@
+openapi: 3.0.2
+info:
+  title: Miso Ask APIs Experiment APIs API
+  description: '
+
+    # Overview
+
+    Miso’s approach to personalization is to train machine learning Engines on three core data sets:
+
+
+    1. Your site’s log of historical and real-time interactions,
+
+    2. Your catalog of products and content, and
+
+    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
+
+    experiences that are personalized down to the individual level (n=1 personalization).
+
+
+    To see how Miso works and explore the power of its Engines, we recommend following
+
+    [this tutorial](https://docs.askmiso.com/) to get
+
+    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
+
+
+    1. Upload your data
+
+    2. Train your Engines
+
+    3. Build search and recommendation experiences with the output of your Engines.
+
+
+
+    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
+
+    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
+
+    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
+
+    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
+
+    and recommendations running on your live data.
+
+
+    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
+
+    experiences that leverage the output of Miso’s personalization Engines.
+
+
+
+    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
+
+
+    ### Data APIs
+
+    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
+
+    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
+
+    from Miso. Subcategories of Data APIs are:
+
+
+    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
+
+    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
+
+    Engines learn how to optimize your conversion funnels.
+
+    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
+
+    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
+
+    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
+
+    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
+
+    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
+
+    The `user_id` is how Miso links User records to your Interaction records.
+
+
+    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
+
+    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
+
+    Upload API, we recommend limiting your calls to around 10,000 records at a time.
+
+
+    ### Engine APIs
+
+    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
+
+    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
+
+    and the services are replicated to at least three separate instances for high availability.
+
+    The types of Engine APIs are:
+
+
+    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
+
+    autocompletion.
+
+    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
+
+    the products, categories, and product attributes that are likely to drive conversions.
+
+
+    # Authentication
+
+    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
+
+
+    There are three environments in Miso:
+
+    * **Playground**, a read-only tutorial environment with sample data.
+
+    * **Development**, for staging, QA, and experimentation.
+
+    * **Production**, where you run your live integration with Miso.
+
+
+    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
+
+    key and one secret key per environment.
+
+
+    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
+
+    '
+  version: 1.1.4
+servers:
+- url: https://api.askmiso.com
+tags:
+- name: Experiment APIs
+  description: "\nMiso's experiment APIs let you do the A/B testing of your current result with Miso.\n\n### Start an experiment in Dojo.\n\nLogin to the [dojo](https://dojo.askmiso.com) platform.\nCreate an experiment event for you.\n\n### Start running A/B testing in your environment.\n\n#### Implement A/B testing code.\n\nHere's an example in NodeJS. You can also use any programming language of you choice.\n```nodejs\nconst axios = require('axios');\n\nasync function get_user_experiment_info(api_key, experiment_id, user_id) {\n    data = {\"user_id\": user_id}\n    endpoint = `https://api.askmiso.com/v1/experiments/${experiment_id}/events?api_key=${api_key}`\n    return await axios.post(endpoint, data)\n}\n\nconst api_key = '<YOUR_SECRET_API_KEY>'\nconst experiment_id = \"<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>\"\nlet user_id = 'user_1234'  // use to evaluate a treatment for\n\nconst user_experiment_info = get_user_experiment_info(api_key, experiment_id, user_id)\nuser_experiment_info.then((response) => {\n    let variant = response.data['variant']\n    if (variant['name'] == \"treatment\") {\n        // insert code here to show \"treatment\" variant\n    } else if (variant['name'] == \"control\") {\n        // insert code here to show \"control\" variant\n    } else {\n        // unexpected variant name. raise error\n        throw new Error(`Unexpected variant name ${variant[\"name\"]}`)\n    }\n})\n```\n\nIf you implement A/B testing code in FrontEnd, like JavaScript, and are also worried about exploding the secret api_key. You can choose to use anonymous_id with the public_api_key for this API. Here's an example.\n\n```javascript\nconst apiKey = '<YOUR_PUBLIC_API_KEY>';\nconst experimentId = '<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>';\nconst anonymous_id = 'user_1234';  // use to evaluate a treatment for\n\nfunction getUserExperimentInfo(apiKey, experimentId, anonymous_id) {\n  const data = {\n    user_id: anonymous_id\n  };\n  const url = `https://api.askmiso.com/v1/experiments/${experimentId}/events?api_key=${apiKey}`;\n  const options = {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify(data),\n  };\n\n  return window.fetch(url, options)\n    .then((response) => response.json())\n    .then((data) => {\n      const variantName = data.variant.name;\n      if (variantName === `${this.treatmentName}`) {\n        // insert code here to show 'treatment' variant\n      } else if (variantName === `${this.controlName}`) {\n        // insert code here to show 'control' variant\n      } else {\n        // unexpected variant name, throw error\n        throw new Error(`Unexpected variant name: ${variantName}`);\n      }\n    })\n    .catch((error) => console.error(error));\n}\n\ngetUserExperimentInfo(apiKey, experimentId, anonymous_id);\n```\n"
+paths:
+  /v1/experiments/{experiment_id_or_slug}/events:
+    parameters:
+    - name: experiment_id_or_slug
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID or slug name of the experiment.
+    post:
+      tags:
+      - Experiment APIs
+      summary: Send Experiment Event
+      operationId: send_experiment_event_v1_experiments__experiment_id_or_slug__events_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExperimentRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendExperimentResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: api_key is invalid. Please check your api_key in Dojo.
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: Variant is not found. Please check your variant_name.
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              example:
+                message: Request schema error. See "data.errors" for details
+                data:
+                  errors:
+                  - loc:
+                    - body
+                    - 35
+                    msg: 'Expecting '','' delimiter: line 3 column 5 (char 35)'
+                    type: value_error.jsondecode
+      security:
+      - Secret API Key: []
+components:
+  schemas:
+    VariantObject:
+      title: VariantObject
+      required:
+      - id
+      - name
+      - slug
+      - status
+      type: object
+      properties:
+        id:
+          title: Id
+          type: string
+          description: The UUID of this variant.
+          example: 59769b89-5f1f-46d5-a4fa-a583ebd2f7fd
+        name:
+          title: Name
+          type: string
+          description: The name of this variant.
+          example: Treatment_Group
+        slug:
+          title: Slug
+          type: string
+          description: The slug name of this variant.
+          example: Treatment_Group
+        configuration:
+          title: Configuration
+          anyOf:
+          - type: object
+          - type: array
+            items: {}
+          - type: string
+          description: The configuration of this variant.
+          example:
+            model: A
+        status:
+          title: Status
+          enum:
+          - Draft
+          - Scheduled
+          - Active
+          - Completed
+          - Archived
+          type: string
+          description: The current status for this variant.
+          example: Active
+    SendExperimentResponse:
+      title: SendExperimentResponse
+      required:
+      - took
+      - in_experiment
+      - variant
+      type: object
+      properties:
+        took:
+          title: Took
+          type: integer
+          description: The amount of time (in milliseconds) Miso took to answer this request.
+          example: 50
+        in_experiment:
+          title: In Experiment
+          type: boolean
+          description: To show whether the experiment is active or not.
+        variant:
+          $ref: '#/components/schemas/VariantObject'
+    ExperimentRequest:
+      title: ExperimentRequest
+      type: object
+      properties:
+        user_id:
+          title: User Id
+          type: string
+          description: Identifies the signed-in user who performed the interaction.
+          example: '2179873'
+        anonymous_id:
+          title: Anonymous Id
+          type: string
+          description: A pseudo-unique substitute for the User Id
+          example: 403fb18e-98ff-434d-8585-726fabf5ed37
+        variant_name:
+          title: Variant Name
+          type: string
+          description: Set the variant_name if you want to assign a user to a specific variant. Most of the time, you don't need to pass this field. Instead, the system will automatically assign a variant for this user.
+          example: Treatment_Group
+        timestamp:
+          title: Timestamp
+          type: string
+          description: The time the user is assigned to the variant group. If not set, current time will be used.
+          format: date-time
+          example: '2022-01-23T12:34:56-08:00'
+  securitySchemes:
+    Secret API Key:
+      type: apiKey
+      description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
+      in: query
+      name: api_key
+    Publishable API Key:
+      type: apiKey
+      description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
+      in: query
+      name: api_key
+x-tagGroups:
+- name: Data APIs
+  tags:
+  - Interaction APIs
+  - Product / Content APIs
+  - User APIs
+- name: Engine APIs
+  tags:
+  - Search APIs
+  - Ask APIs
+  - Bulk API
+  - User Recommendations
+  - Product Recommendations
+- name: Experiment APIs
+  tags:
+  - Experiment APIs
+- name: Q&A APIs
+  tags:
+  - Q&A APIs

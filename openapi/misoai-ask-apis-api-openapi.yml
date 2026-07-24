@@ -1,0 +1,496 @@
+openapi: 3.0.2
+info:
+  title: Miso Ask APIs API
+  description: '
+
+    # Overview
+
+    Miso’s approach to personalization is to train machine learning Engines on three core data sets:
+
+
+    1. Your site’s log of historical and real-time interactions,
+
+    2. Your catalog of products and content, and
+
+    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
+
+    experiences that are personalized down to the individual level (n=1 personalization).
+
+
+    To see how Miso works and explore the power of its Engines, we recommend following
+
+    [this tutorial](https://docs.askmiso.com/) to get
+
+    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
+
+
+    1. Upload your data
+
+    2. Train your Engines
+
+    3. Build search and recommendation experiences with the output of your Engines.
+
+
+
+    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
+
+    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
+
+    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
+
+    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
+
+    and recommendations running on your live data.
+
+
+    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
+
+    experiences that leverage the output of Miso’s personalization Engines.
+
+
+
+    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
+
+
+    ### Data APIs
+
+    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
+
+    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
+
+    from Miso. Subcategories of Data APIs are:
+
+
+    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
+
+    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
+
+    Engines learn how to optimize your conversion funnels.
+
+    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
+
+    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
+
+    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
+
+    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
+
+    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
+
+    The `user_id` is how Miso links User records to your Interaction records.
+
+
+    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
+
+    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
+
+    Upload API, we recommend limiting your calls to around 10,000 records at a time.
+
+
+    ### Engine APIs
+
+    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
+
+    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
+
+    and the services are replicated to at least three separate instances for high availability.
+
+    The types of Engine APIs are:
+
+
+    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
+
+    autocompletion.
+
+    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
+
+    the products, categories, and product attributes that are likely to drive conversions.
+
+
+    # Authentication
+
+    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
+
+
+    There are three environments in Miso:
+
+    * **Playground**, a read-only tutorial environment with sample data.
+
+    * **Development**, for staging, QA, and experimentation.
+
+    * **Production**, where you run your live integration with Miso.
+
+
+    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
+
+    key and one secret key per environment.
+
+
+    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
+
+    '
+  version: 1.1.4
+servers:
+- url: https://api.askmiso.com
+tags:
+- name: Ask APIs
+  description: "\nMiso's new Ask API is the next generation of question answering APIs.\nIt is designed to provide accurate and concise answers to your questions\nbased on your existing product documents.\n\nAsk API offers a seamless and effective way to address complex queries in\na near-realtime fasion.\n\nMiso preprocesses your product documents, breaking them into segments.\nWhen a question is received, Miso finds the most related product and segments, then\nsummarize to a concise and informative answer based on the identified segments,\nincluding products related to the question.\n\nPossible use case includes: knowledge base, documentation search, customer support, and more.\n\nTo use the Ask API, you first submit a \"question\" you want to ask.\nQuestion can be any human-readable text. Then a question ID will returned,\nand the question will be processed in the background.\n\nAfter receving question ID, you can then use the question ID to get latest answer\nto the question as it is being compiled.\n\n----\n\nFor example:\n\nIf you want to know about the inner workings of nginx:\n\n```json\n{\n    \"question\":\"How nginx works internally?\"\n}\n```\n\nThe API would response with a question id.\n```json\n{\n    \"data\": {\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\"\n    },\n    \"message\": \"success\"\n}\n```\n\nThen you can send a GET request to `/v1/ask/questions/{question_id}/answer`\nto get the latest answer as it is being compiled and summerized.\nYou can use `answer_stage` and `finished` to check current answer status.\n\nHere's the response of answer API when data is fetched and being verified, before answer is summerized:\n```json\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"question\": \"How nginx works internally?\",\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\",\n        \"parent_question_id\": null,\n        \"answer_stage\": \"Verifying possible answers\",\n        \"finished\": false,\n        \"answer\": \"Verifying possible answers ...\",\n        \"sources\": [],\n        \"related_resources\": [],\n        \"followup_questions\": []\n    }\n}\n```\n\nHere's the response when answer is fullly summerized:\n\n```json\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"question\": \"How nginx works internally?\",\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\",\n        \"parent_question_id\": null,\n        \"answer_stage\": \"Generating summary\",\n        \"finished\": true,\n        \"answer\": \"# How does Nginx work internally?\\n\\n## Internal requests [1]\\n\\nNginx differentiates between external and internal requests. External requests...[omitted for simplicity]\",\n        \"sources\": [\n            {\n                \"title\": \"Internal requests\",\n                \"product_id\": \"9781788623551\",\n                \"child_title\": \"Internal requests\",\n                \"child_id\": \"203\",\n                \"snippet\": \"&lt;mark&gt;Internal requests\\nNginx differentiates external and internal requests.&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"5. Nginx Core Architecture\",\n                \"product_id\": \"9781484216569\",\n                \"child_title\": \"5. Nginx Core Architecture\",\n                \"child_id\": \"5\",\n                \"snippet\": \"Checks if the client can access of the requested the resource.\\n&lt;mark&gt;It is at this step that Nginx...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"2. Managing Nginx\",\n                \"product_id\": \"9781785289538\",\n                \"child_title\": \"2. Managing Nginx\",\n                \"child_id\": \"14\",\n                \"snippet\": \"&lt;mark&gt;The Nginx connection processing architecture\\nBefore you study...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"3. Nginx Core Directives\",\n                \"product_id\": \"9781484216569\",\n                \"child_title\": \"3. Nginx Core Directives\",\n                \"child_id\": \"3\",\n                \"snippet\": \"&lt;mark&gt;Understanding the Default Configuration\\nThe default configuration...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"4. Nginx Modules\",\n                \"product_id\": \"9781484216569\",\n                \"child_title\": \"4. Nginx Modules\",\n                \"child_id\": \"4\",\n                \"snippet\": \"&lt;mark&gt;Based on the context like HTTP, MAIL, and STREAM, it creates a ...[omitted]&lt;/mark&gt;\"\n            }\n        ],\n        \"related_resources\": [],\n        \"followup_questions\": [\n            \"What are the steps involved in processing a request and generating a response in Nginx?\",\n            \"How do Nginx modules contribute to the internal workings of Nginx?\"\n        ]\n    }\n}\n```\n\nRelated product IDs will be returned along with human-readable answer. Related text section in the product will also be quoted.\n\nIf a product has any children, they will also be matched, `child_id` and `child_title` will be included for sources belonging to the product's children.\n\nYou can use `fq` to limit the search scope, for example, to a specific product type or other condition.\n\nIf you only want to search for books (no articles of videos), you can use `fq=type:book` like this:\n```json\n{\n    \"question\":\"How nginx works internally?\"\n    \"fq\": \"type:book\"\n}\n```\n\nIf you want the answer to contain any other fields, set `source_fl` when submitting the question.\n\n"
+paths:
+  /v1/ask/questions:
+    post:
+      tags:
+      - Ask APIs
+      summary: Create a new question
+      description: "This API is used to submit questions to Miso.\n\nAfter a question is submitted, a `question_id` is returned.\nThen you can use `question_id` to check the latest status of it's answer\nas it is being compiled.\n    "
+      operationId: questions_v1_ask_questions_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - Secret API Key: []
+  /v1/ask/questions/{question_id}/answer:
+    get:
+      tags:
+      - Ask APIs
+      summary: Get latest answer of asked question
+      description: "This API is used to fetch the latest answer of previous submitted question from Miso\n\nA submitted question is put into a job with following stage:\n\n- Initialization\n- Parsing and fecthing related content\n- Relevance checking\n- Summarization\n\nThis API will tell you at what stage current question is in.\nIf answer is fetched and being summerized, it will also return the latest summarization result.\n\nBesides human readable answer, the products used to generate answer are also returned.\n    "
+      operationId: questions_answer_v1_ask_questions__question_id__answer_get
+      parameters:
+      - required: true
+        schema:
+          title: Question Id
+          type: string
+          format: uuid
+        name: question_id
+        in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PollAnswerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - Secret API Key: []
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    AnswerData:
+      title: AnswerData
+      required:
+      - question
+      - question_id
+      type: object
+      properties:
+        question:
+          title: Question
+          type: string
+          description: The question given by the user
+        question_id:
+          title: Question Id
+          type: string
+          description: The UUID of the question for which the latest answer is requested.
+          format: uuid
+        parent_question_id:
+          title: Parent Question Id
+          type: string
+          description: The UUID of the parent question if the current question is a follow-up to a previous question.
+          format: uuid
+        answer_stage:
+          title: Answer Stage
+          type: string
+          description: The status of the answer generating process.
+          default: ''
+        finished:
+          title: Finished
+          type: boolean
+          description: Whether the answer generating process is finished.
+          default: false
+        finish_reason:
+          title: Finish Reason
+          enum:
+          - not_finished
+          - success
+          - error
+          - forbidden
+          description: The reason why the answer generating process is finished.
+          default: not_finished
+        answer:
+          title: Answer
+          type: string
+          description: The latest answer for the given question.
+          default: ''
+        sources:
+          title: Sources
+          type: array
+          items:
+            type: object
+          description: A list of sources related to the answer.
+          default: []
+        related_resources:
+          title: Related Resources
+          type: array
+          items:
+            type: object
+          description: A list of related resources relevant to the question and answer.
+          default: []
+        followup_questions:
+          title: Followup Questions
+          type: array
+          items:
+            type: string
+          description: A list of suggested follow-up questions.
+        affiliation_products:
+          title: Affiliation Products
+          type: array
+          items:
+            type: object
+          description: A list of suggested affiliation products.
+        revision:
+          title: Revision
+          type: integer
+          description: The revision number of the answer response data. Updated answer data has larger revision number, used by the SDK to check data order.
+          default: 0
+    PollAnswerResponse:
+      title: PollAnswerResponse
+      required:
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: The status of the API response ('success' or other human readable api status).
+          default: success
+        data:
+          title: Data
+          allOf:
+          - $ref: '#/components/schemas/AnswerData'
+          description: The answer data containing the latest answer, sources, and related resources.
+    QuestionRequest:
+      title: QuestionRequest
+      required:
+      - question
+      type: object
+      properties:
+        user_id:
+          title: User Id
+          type: string
+          description: The user who made the query. For an anonymous visitor, use `anonymous_id` instead.
+        anonymous_id:
+          title: Anonymous Id
+          type: string
+          description: The anonymous visitor who made this query.
+        user_hash:
+          title: User Hash
+          type: string
+          description: 'The hash of `user_id` (or `anonymous_id`) encrypted by your Secret API Key.
+
+            `user_hash` is used to prevent unauthorized API access if you are making API calls with a Publishable API Key
+
+            '
+        user_type:
+          title: User Type
+          enum:
+          - anonymous
+          - registered
+          - subscriber
+          - free
+          - paid
+          description: The type of user who made the query, used for rate limiting.
+        fq:
+          title: Fq
+          type: string
+          description: '
+
+
+            Defines a query in Solr syntax that can be used to restrict the superset of
+
+            products to return, without influencing the overall ranking. `fq` can enable users to drill down to products
+
+            with specific features based on different product attributes
+
+
+            For example, the query below limits the search results to only show products whose size is either `M` or `S` and
+
+            brand is `Nike`:
+
+
+            ```
+
+            {"fq": "size:(\"M\" OR \"S\") AND brand:\"Nike\""}
+
+            ```
+
+
+            You can use `fq` to apply filters against your custom attributes as well. For example, the query below limits the
+
+            search results to only products whose `designer` attribute is `Calvin Klein`
+
+
+            ```
+
+            {"fq": "attributes.designer:\"Calvin Klein\""}
+
+            ```
+
+
+            `fq` can also limit search results by numerical range. For example, the following query limits the results to
+
+            products that have `rating >= 4`.
+
+
+            ```
+
+            {"fq": "rating:[4 TO *]"}
+
+            ```
+
+            '
+        question:
+          title: Question
+          type: string
+          description: The question for which an answer is requested.
+        parent_question_id:
+          title: Parent Question Id
+          type: string
+          description: The UUID of the parent question if the current question is a follow-up to a previous question.
+          format: uuid
+        yearly_decay:
+          title: Yearly Decay
+          type: number
+          description: The yearly decay rate for the answer score.
+        source_fl:
+          title: Source Fl
+          type: array
+          items:
+            type: string
+          description: "\nA list of fields to be returned for the `sources`. Any fields in uploaded product can be assigned, including fields in `custom_attributes`.\n\nIf specificed field does not exist, that field will not be included in the result.\nIf you use different schema for `custom_attributes` across different products, it is possible that not all returned sources has the some fields.\n\nFor example, if you include `published_at` and `custom_attributes` in `source_fl`:\n\n```json\n{\n    \"question\":\"Explain Python GIL\",\n    \"source_fl\":[\"published_at\", \"custom_attributes.rating\"]\n}\n```\n\nThe answer will contain `published_at` field for each source:\n\n```json\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"question\": \"Explain Python GIL\",\n        \"question_id\": \"57aeb083-b943-43b1-86ab-b6108788dd50\",\n        \"parent_question_id\": null,\n        \"answer_stage\": \"Generating summary\",\n        \"finished\": true,\n        \"answer\": \"# Explain Python GIL\\n\\n## Why do we need the GIL? [1]\\n\\nThe GIL is currently an essential part of the CPython...[omitted for simplicity]\",\n        \"sources\": [\n            {\n                \"published_at\": \"2022-05-20T00:00:00+00:00\",\n                \"custom_attributes\": {\n                    \"rating\": 4.7\n                },\n                \"product_id\": \"9781800207721\",\n                \"title\": \"Multiprocessing – When a Single CPU Core Is Not Enough\",\n                \"child_title\": \"Multiprocessing – When a Single CPU Core Is Not Enough\",\n                \"child_id\": \"16\",\n                \"snippet\": \"Remember the segmentation faults we saw in Chapter 11, ...[omitted]\"\n            },\n            {\n                \"published_at\": \"2015-02-26T00:00:00+00:00\",\n                \"custom_attributes\": {\n                    \"rating\": 4.3\n                },\n                \"product_id\": \"9780134034416\",\n                \"title\": \"5. Concurrency and Parallelism\",\n                \"child_title\": \"5. Concurrency and Parallelism\",\n                \"child_id\": \"12\",\n                \"snippet\": \"&lt;mark&gt;Click here to view code image\\n...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"published_at\": \"2020-04-30T00:00:00+00:00\",\n                \"custom_attributes\": {\n                    \"rating\": 3.5\n                },\n                \"product_id\": \"9781492055013\",\n                \"title\": \"1. Understanding Performant Python\",\n                \"child_title\": \"1. Understanding Performant Python\",\n                \"child_id\": \"2\",\n                \"snippet\": \"&lt;mark&gt;Although it still locks Python into running ...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"published_at\": \"2019-11-15T00:00:00+00:00\",\n                \"custom_attributes\": {\n                    \"rating\": 4.2\n                },\n                \"product_id\": \"9780134854717\",\n                \"title\": \"7. Concurrency and Parallelism\",\n                \"child_title\": \"7. Concurrency and Parallelism\",\n                \"child_id\": \"16\",\n                \"snippet\": \"&lt;mark&gt;Although Python supports multiple threads of execution...[omitted]&lt;/mark&gt;\"\n            }\n        ],\n        \"related_resources\": []\n    }\n}\n```\n\n"
+          default:
+          - title
+        related_resource_fl:
+          title: Related Resource Fl
+          type: array
+          items:
+            type: string
+          description: 'A list of fields to be returned for the `related_resources`. Example: `[''title'', ''url'']`.'
+          default:
+          - title
+        boost_fq:
+          title: Boost Fq
+          type: string
+          description: "\nDefines a query in Solr syntax that can be used to boost a subset of products to the top of the ranking.\nFor example, the query below will promote all the relevant products whose brand is `Nike` to the top of\nrecommendation list:\n\n```\n{\n    \"boost_fq\": \"brand:\\\"Nike\\\"\"\n}\n```\n\nFor a slightly more complex example, the query below will promote the Nike products which have also been tagged\nas `ON SALE` to the top of the ranking:\n```\n{\n   \"boost_fq\": \"brand:\\\"Nike\\\" AND tags:\\\"ON SALE\\\"\"\n}\n```\nIt is worth mentioning that, Miso will only boost products that are relevant,\nand will not boost a low performance product only because it matches the boosting query.\n"
+        cite_start:
+          title: Cite Start
+          type: string
+          description: 'The citation start marker. Example: `[` or `{`'
+        cite_end:
+          title: Cite End
+          type: string
+          description: 'The citation end marker. Example: `]` or `}`'
+    QuestionResponse:
+      title: QuestionResponse
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          allOf:
+          - $ref: '#/components/schemas/QuestionResponseData'
+          description: Question response data.
+        message:
+          title: Message
+          type: string
+          description: Human-readable message.
+          default: success
+    QuestionResponseData:
+      title: QuestionResponseData
+      required:
+      - question_id
+      type: object
+      properties:
+        question_id:
+          title: Question Id
+          type: string
+          description: The UUID for the submitted question.
+          format: uuid
+  securitySchemes:
+    Secret API Key:
+      type: apiKey
+      description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
+      in: query
+      name: api_key
+    Publishable API Key:
+      type: apiKey
+      description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
+      in: query
+      name: api_key
+x-tagGroups:
+- name: Data APIs
+  tags:
+  - Interaction APIs
+  - Product / Content APIs
+  - User APIs
+- name: Engine APIs
+  tags:
+  - Search APIs
+  - Ask APIs
+  - Bulk API
+  - User Recommendations
+  - Product Recommendations
+- name: Experiment APIs
+  tags:
+  - Experiment APIs
+- name: Q&A APIs
+  tags:
+  - Q&A APIs

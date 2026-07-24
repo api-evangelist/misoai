@@ -1,0 +1,309 @@
+openapi: 3.0.2
+info:
+  title: Miso Ask APIs Bulk API API
+  description: '
+
+    # Overview
+
+    Miso’s approach to personalization is to train machine learning Engines on three core data sets:
+
+
+    1. Your site’s log of historical and real-time interactions,
+
+    2. Your catalog of products and content, and
+
+    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
+
+    experiences that are personalized down to the individual level (n=1 personalization).
+
+
+    To see how Miso works and explore the power of its Engines, we recommend following
+
+    [this tutorial](https://docs.askmiso.com/) to get
+
+    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
+
+
+    1. Upload your data
+
+    2. Train your Engines
+
+    3. Build search and recommendation experiences with the output of your Engines.
+
+
+
+    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
+
+    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
+
+    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
+
+    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
+
+    and recommendations running on your live data.
+
+
+    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
+
+    experiences that leverage the output of Miso’s personalization Engines.
+
+
+
+    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
+
+
+    ### Data APIs
+
+    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
+
+    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
+
+    from Miso. Subcategories of Data APIs are:
+
+
+    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
+
+    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
+
+    Engines learn how to optimize your conversion funnels.
+
+    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
+
+    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
+
+    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
+
+    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
+
+    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
+
+    The `user_id` is how Miso links User records to your Interaction records.
+
+
+    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
+
+    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
+
+    Upload API, we recommend limiting your calls to around 10,000 records at a time.
+
+
+    ### Engine APIs
+
+    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
+
+    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
+
+    and the services are replicated to at least three separate instances for high availability.
+
+    The types of Engine APIs are:
+
+
+    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
+
+    autocompletion.
+
+    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
+
+    the products, categories, and product attributes that are likely to drive conversions.
+
+
+    # Authentication
+
+    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
+
+
+    There are three environments in Miso:
+
+    * **Playground**, a read-only tutorial environment with sample data.
+
+    * **Development**, for staging, QA, and experimentation.
+
+    * **Production**, where you run your live integration with Miso.
+
+
+    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
+
+    key and one secret key per environment.
+
+
+    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
+
+    '
+  version: 1.1.4
+servers:
+- url: https://api.askmiso.com
+tags:
+- name: Bulk API
+  description: "\nThe Bulk API provides an efficient interface for making multiple Search / Recommendations / Q&A requests in one API\ncall. These requests will be executed concurrently at the Miso side, and returned at once when all of them are finished.\nThis API is particularly useful when you need to invoke multiple Miso APIs to respond to a user request.\nUsing this API, you can batch multiple API calls into one, and significantly save the network round-trip times.\n\n### Request schema\nThe request schema for this API call is as follow:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {\n      \"api_name\": \"search/search\",\n      \"body\": { ... }\n    },\n    {\n      \"api_name\": \"recommendation/product_to_product\",\n      \"body\": { ... }\n    },\n    ...\n  ]\n}\n```\nEach request object should contain:\n* **api_name**: name of the API you want to access. The name should contain a slash `/`.\nFor example, search/search for search requests, search/autocomplete for autocomplete requests, etc.\n* **body**: the complete request body as if you are making the API request individually.\n\nAny errors in one of the requests will be returned, and will not prevent other requests from being\nexecuted.\n\n### Response Schema\nBulk API endpoint will return the API responses in the same order as they appear in the request.\nFor example, if the Bulk API request is like the following:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {... request 1 ...},\n    {... request 2 ...}\n  ]\n}\n``` \n\nThe response will be like:\n```\n{\n  \"data\": [\n    // response for request 1\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": { ... }\n    },\n    // response for request 2\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": { ... }\n    }\n  ]\n}\n```\n\nEach response object will contain the following fields:\n* **error**: whether there was an error with the request. You should check this field to determine whether to\nperform error handling.\n* **status_code**: status code of the request.\n* **body**: the response body of the request (as if the request was sent individually).\n\nLet's see a complete example with MovieLens data. The following requests will issue two requests in one API call that \nreturn the `Sci-Fi` movies directed by\n*Ridley Scott*, and *James Cameron* respectively in the first and second responses:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {\n      \"api_name\": \"search/search\",\n      \"body\": {\n        \"user_id\": \"test_user\",\n        \"q\": \"sci-fi\",\n        \"fq\": \"custom_attributes.director:\\\"Ridley Scott\\\"\"\n      }\n    },\n    {\n      \"api_name\": \"search/search\",\n      \"body\": {\n        \"user_id\": \"test_user\",\n        \"q\": \"sci-fi\",\n        \"fq\": \"custom_attributes.director:\\\"James Cameron\\\"\"\n      }\n    }\n  ]\n}\n```\nThe response will be like:\n```\n{\n  \"data\": [\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": {\n        \"data\": {\n          \"took\": 136,\n          \"miso_id\": \"19ab254c-5fb8-11ec-bd48-b20169940af9\",\n          \"products\": [\n            {\n              \"product_id\": \"blade-runner\",\n              \"title\": \"Blade Runner (1982)\"\n            }\n          ],\n          \"total\": 6,\n          \"start\": 0\n        }\n      }\n    },\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": {\n        \"data\": {\n          \"took\": 116,\n          \"miso_id\": \"19ab254c-5fb8-11ec-bd48-b20169940af9\",\n          \"products\": [\n            {\n              \"product_id\": \"avatar\",\n              \"title\": \"Avatar (2009)\"\n            }\n          ],\n          \"total\": 10,\n          \"start\": 0\n        }\n      }\n    }\n  ]\n}\n```\n"
+paths:
+  /v1/bulk:
+    post:
+      tags:
+      - Bulk API
+      summary: Bulk Request API
+      operationId: bulk_v1_bulk_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - Secret API Key: []
+components:
+  schemas:
+    BulkRequest:
+      title: BulkRequest
+      required:
+      - requests
+      type: object
+      properties:
+        requests:
+          title: Requests
+          maxItems: 100
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/EngineAPIRequest'
+          description: An array of request objects
+      description: Bulk API request
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    BulkIndividualResponse:
+      title: BulkIndividualResponse
+      required:
+      - error
+      - status_code
+      - body
+      type: object
+      properties:
+        error:
+          title: Error
+          type: boolean
+          description: Whether there is an error
+        status_code:
+          title: Status Code
+          type: integer
+          description: Status code of the response
+        body:
+          title: Body
+          allOf:
+          - $ref: '#/components/schemas/GeneralBody'
+          description: The response body
+      description: Individual response in a bulk API request
+    BulkResponse:
+      title: BulkResponse
+      required:
+      - data
+      - errors
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkIndividualResponse'
+          description: The bulk request results
+        errors:
+          title: Errors
+          type: boolean
+          description: Whether there is any errors in the responses
+      description: Bulk API response
+    GeneralBody:
+      title: GeneralBody
+      type: object
+      properties: {}
+      description: Allow any json body
+    EngineAPIRequest:
+      title: EngineAPIRequest
+      required:
+      - api_name
+      - body
+      type: object
+      properties:
+        api_name:
+          title: Api Name
+          type: string
+          description: '
+
+            The name of the API. An API name should contain one slash. For example: `search/search` or `recommendation/user_to_products`
+
+            '
+        body:
+          title: Body
+          type: object
+          description: '
+
+            The request body to the API.
+
+            '
+      description: Engine API request
+  securitySchemes:
+    Secret API Key:
+      type: apiKey
+      description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
+      in: query
+      name: api_key
+    Publishable API Key:
+      type: apiKey
+      description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
+      in: query
+      name: api_key
+x-tagGroups:
+- name: Data APIs
+  tags:
+  - Interaction APIs
+  - Product / Content APIs
+  - User APIs
+- name: Engine APIs
+  tags:
+  - Search APIs
+  - Ask APIs
+  - Bulk API
+  - User Recommendations
+  - Product Recommendations
+- name: Experiment APIs
+  tags:
+  - Experiment APIs
+- name: Q&A APIs
+  tags:
+  - Q&A APIs

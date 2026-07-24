@@ -1,0 +1,644 @@
+openapi: 3.0.2
+info:
+  title: Miso Ask APIs User APIs API
+  description: '
+
+    # Overview
+
+    Miso’s approach to personalization is to train machine learning Engines on three core data sets:
+
+
+    1. Your site’s log of historical and real-time interactions,
+
+    2. Your catalog of products and content, and
+
+    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
+
+    experiences that are personalized down to the individual level (n=1 personalization).
+
+
+    To see how Miso works and explore the power of its Engines, we recommend following
+
+    [this tutorial](https://docs.askmiso.com/) to get
+
+    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
+
+
+    1. Upload your data
+
+    2. Train your Engines
+
+    3. Build search and recommendation experiences with the output of your Engines.
+
+
+
+    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
+
+    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
+
+    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
+
+    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
+
+    and recommendations running on your live data.
+
+
+    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
+
+    experiences that leverage the output of Miso’s personalization Engines.
+
+
+
+    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
+
+
+    ### Data APIs
+
+    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
+
+    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
+
+    from Miso. Subcategories of Data APIs are:
+
+
+    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
+
+    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
+
+    Engines learn how to optimize your conversion funnels.
+
+    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
+
+    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
+
+    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
+
+    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
+
+    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
+
+    The `user_id` is how Miso links User records to your Interaction records.
+
+
+    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
+
+    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
+
+    Upload API, we recommend limiting your calls to around 10,000 records at a time.
+
+
+    ### Engine APIs
+
+    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
+
+    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
+
+    and the services are replicated to at least three separate instances for high availability.
+
+    The types of Engine APIs are:
+
+
+    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
+
+    autocompletion.
+
+    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
+
+    the products, categories, and product attributes that are likely to drive conversions.
+
+
+    # Authentication
+
+    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
+
+
+    There are three environments in Miso:
+
+    * **Playground**, a read-only tutorial environment with sample data.
+
+    * **Development**, for staging, QA, and experimentation.
+
+    * **Production**, where you run your live integration with Miso.
+
+
+    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
+
+    key and one secret key per environment.
+
+
+    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
+
+    '
+  version: 1.1.4
+servers:
+- url: https://api.askmiso.com
+tags:
+- name: User APIs
+  description: '
+
+    Miso’s User APIs let you upload, read, and delete User records that tell Miso about your site’s unique users and
+
+    visitors.
+
+
+    ### User records
+
+    User records specify relatively static attributes for a given user, such as their `age`, `gender`, `city`, etc. As a
+
+    rule of thumb, you should put information here that is not already captured in your
+
+    [Interaction records](#tag/Interaction-APIs). For example, *last_bought_product* is probably not needed here because
+
+    Miso already can tell that from the [Interaction records](#tag/Interaction-APIs).
+
+
+    Miso will discover the correlations between a user''s attributes and their behaviors on your site. For example, Miso
+
+    might determine that users of a certain age group tend to be interested in certain products or a certain price
+
+    range. These insights will be taken into account when predicting users'' interests, in particular for new users who
+
+    have not yet generated many interaction records.
+
+
+    We define a set of common user attributes for e-Commerce and content media sites. Some of them, such as `name` are
+
+    for display in the Dojo dashboard only. The rest are for model quality. Most attributes are optional and you don''t
+
+    need to specify them if you don''t collect such data. On the other hand, you can specify your custom user attributes
+
+    in the `custom_attributes` field. Miso will analyze custom user attributes to improve the model quality as well.
+
+
+    '
+paths:
+  /v1/users:
+    post:
+      tags:
+      - User APIs
+      summary: User Upload API
+      description: "Bulk API to insert User records. This API endpoint accepts POST requests with JSON data\ncontaining a list of User records wrapped in a dictionary.\n\n```\nPOST /v1/users\n```\n\n```json\n{\n  \"data\": [user_1, user_2, user_3]\n}\n```\n\nIf a record with the same `user_id` already exists in the dataset, the existing record will\nbe replaced (no partial update is allowed at this time). We recommend limiting your calls to\naround 100 records at a time to avoid memory issues or timeout risks.\n\n### Schema validation\n\nThis API validates the inserted records against the API schema. Any schema error will cause\nthe whole request to fail (`status_code=422`), and none of the records will be inserted. As\nlong as the request passes the schema validation, the API will return `status_code=200`, but\nyou should still check if there is any error occurring with individual records.\n\n```json\n{\n    \"errors\": true,\n    \"data\": [\n        \"data.0.user_id is invalid. The attribute was expected to be a `string`\"\n    ]\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `task_id` that can be used to retrieve.\n\n#### Example Successful Response\n\n```json\n{\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/users/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      operationId: user_write_api_v1_users_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserBulkIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                'message:': Request timeout.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              example:
+                errors: true
+                message: None of the records are inserted, because at least one of them contain schema errors. Please see `data` field for details.
+                data:
+                - data.0.user_id is invalid. The attribute expected to be of type 'string', but 'array' is given.
+                - data.0.created_at is invalid. The attribute should match 'date-time' format.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+  /v1/users/{user_id}:
+    parameters:
+    - name: user_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the user.
+    get:
+      tags:
+      - User APIs
+      summary: User Read API
+      description: "This API endpoint retrieves the details of a specific user using their `user_id`.\nTo fetch the user information, make a GET request to the following URL:\n\n**Notice**: Make sure the user_id is an urlencode string.\n\n```\nGET /v1/users/{user_id}\n```\n\nReplace `{user_id}` with the unique identifier of the user you wish to fetch.\n\n## Response Format\n\nThe API will return the user details in a JSON object if the given `user_id` is valid and\nexists in the system. The JSON object will include fields like `name`, `age`, `city`, `gender`\n, and other user information.\n\n### Example Response\n\nHere's an example of a successful API response for a user with the `user_id` \"user123\":\n\n```json\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"user_id\": \"user123\",\n        \"name\": \"johndoe\",\n        // ... other user details\n    }\n}\n```\n\nIf the provided `user_id` is invalid or does not exist in the system, the API will return an\nerror response with a `status_code=404`.\n\n### Example Error Response\n\n```json\n{\n    \"message\": \"not found\"\n}\n```"
+      operationId: user_read_api_v1_users__user_id__get
+      parameters:
+      - required: true
+        schema:
+          title: Userid
+          maxLength: 512
+          type: string
+        name: userId
+        in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReadOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.
+        '404':
+          description: User not Found
+          content:
+            application/json:
+              example:
+                message: not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+    delete:
+      tags:
+      - User APIs
+      summary: User Delete API
+      description: "This API endpoint allows you to delete a specific user from the system using their `user_id`.\n\n**Notice**: Make sure the user_id is an urlencode string.\n\nTo remove a user, make a DELETE request to:\n\n```\nDELETE /v1/users/{user_id}\n```\n\nReplace `{user_id}` with the unique identifier of the user you wish to delete.\n\n## Response Format\n\nThe API will return a JSON object with a `task_id` that can be used to retrieve.\n\n#### Example Error Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/users/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      operationId: user_delete_api_v1_users__user_id__delete
+      parameters:
+      - required: true
+        schema:
+          title: User Id
+          maxLength: 512
+          type: string
+        name: user_id
+        in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                'message:': Request timeout.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+  /v1/users/_delete:
+    post:
+      tags:
+      - User APIs
+      summary: User Bulk Delete API
+      description: "This API endpoint allows you to delete multiple users by providing their user_ids.\n\nTo delete multiple users, make a POST request to the following URL:\n\n```\nPOST /v1/users/_delete\n```\n\nThe request body should contain a JSON object with an array of user_ids:\n\n```json\n{\n  \"data\": {\n    \"user_ids\": [\n      \"product-1\",\n      \"product-2\",\n      // ... more product_ids to delete\n    ]\n  }\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `message` and an array of `data`\ncontaining a `task_id` that can be used to get the status of the bulk deletion process.\n\n#### Example Successful Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/users/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      operationId: user_bulk_delete_api_v1_users__delete_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserBulkDeleteIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                'message:': Request timeout.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+components:
+  schemas:
+    UserReadOut:
+      title: UserReadOut
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/UserRecord'
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    DeleteResponse:
+      title: DeleteResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+    UserBulkIn:
+      title: UserBulkIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRecord'
+    UserBulkDeleteIn:
+      title: UserBulkDeleteIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserIdList'
+    TaskId:
+      title: TaskId
+      required:
+      - task_id
+      type: object
+      properties:
+        task_id:
+          title: Task Id
+          type: string
+    UserRecord:
+      title: UserRecord
+      required:
+      - user_id
+      type: object
+      properties:
+        user_id:
+          title: User Id
+          maxLength: 512
+          minLength: 1
+          type: string
+          description: "\nUnique identifier for a user who has signed in. `user_id` can be in any format (e.g. users' email, internal user\nUUID or serial ID). The only restriction is that the first character must not be an underline `_`. Miso will use \nthis id to cross-reference your User records with your Interaction records.\n"
+          example: user_1234
+        created_at:
+          title: Created At
+          anyOf:
+          - type: string
+            format: date-time
+          - type: string
+            format: date
+          description: "\nThe date the user’s account was created as an ISO-8601 date or datetime string. \n"
+        updated_at:
+          title: Updated At
+          anyOf:
+          - type: string
+            format: date-time
+          - type: string
+            format: date
+          description: "\nThe date the user’s account was updated as an ISO-8601 date or datetime string. \n"
+        name:
+          title: Name
+          type: string
+          description: The user's full name.
+          example: John Doe
+        profile_image:
+          title: Profile Image
+          maxLength: 65536
+          minLength: 1
+          type: string
+          description: URL to the profile image of the user.
+          format: uri
+        age:
+          title: Age
+          type: integer
+          description: Age of the user. We will internally convert it to year of birth.
+          example: 33
+        gender:
+          title: Gender
+          type: string
+          description: The user's gender.
+          example: M
+        city:
+          title: City
+          type: string
+          description: City or zipcode the user is based in.
+          example: Mountain View
+        state:
+          title: State
+          type: string
+          description: State the user is based in.
+          example: California
+        country:
+          title: Country
+          type: string
+          description: Country the user is based in.
+          example: US
+        group_id:
+          title: Group Id
+          type: string
+          description: "\nGroup or Account ID from your CRM. This is useful in B2B scenarios. For example, you can use `group_id` to \nassociate a user with their company or account. We will use this information to infer the user's interests and \nfine-tune their personalization and search results. For example, users from the same group might have similar \ninterests on the site, and we can improve their user experience accordingly\n"
+          example: Northwind Corp
+        description:
+          title: Description
+          type: string
+          description: "\nText description of the user. This can be the user's own bio or the internal notes about the user. If available,\nMiso will analyze this description to better profile a user.  \n"
+          example: Engineer from Northwind Corp
+        custom_attributes:
+          title: Custom Attributes
+          type: object
+          additionalProperties:
+            anyOf:
+            - type: boolean
+            - type: integer
+            - type: number
+            - type: string
+            - type: array
+              items:
+                type: number
+            - type: array
+              items:
+                type: string
+            - type: array
+              items:
+                type: object
+                additionalProperties:
+                  anyOf:
+                  - type: string
+                  - type: number
+                  - type: integer
+                  - type: boolean
+          description: "\nDictionary of custom attributes about the user. As with the [Product API](#operation/content_write_api_v1_products_post\n), you can specify attributes specific to your business in a `{\"KEY\" : VALUE}` format, where `KEY` must be a string, and\n `VALUE` can be:\n* a `string` or `an array of strings`\n* a `number` or `an array of numbers`\n* an `array of objects`\n* a `bool`\n* `null` \n\n* Example:\n```\n{\n    \"custom_attributes\": {\n        \"acquisition_channel\": \"Facebook Campaign 2020\",\n        \"declared_interests\": [\"Drama\", \"Romance\"]\n    }\n}\n```\nThese custom attributes types must be consistent across all User records in your data set. \nRecords with inconsistent types will fail to be inserted.\n"
+          example:
+            acquisition_channel: Facebook Campaign 2020
+            declared_interests:
+            - Drama
+            - Romance
+      additionalProperties: false
+    UserIdList:
+      title: UserIdList
+      required:
+      - user_ids
+      type: object
+      properties:
+        user_ids:
+          title: User Ids
+          type: array
+          items:
+            type: string
+    CreateResponse:
+      title: CreateResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+  securitySchemes:
+    Secret API Key:
+      type: apiKey
+      description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
+      in: query
+      name: api_key
+    Publishable API Key:
+      type: apiKey
+      description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
+      in: query
+      name: api_key
+x-tagGroups:
+- name: Data APIs
+  tags:
+  - Interaction APIs
+  - Product / Content APIs
+  - User APIs
+- name: Engine APIs
+  tags:
+  - Search APIs
+  - Ask APIs
+  - Bulk API
+  - User Recommendations
+  - Product Recommendations
+- name: Experiment APIs
+  tags:
+  - Experiment APIs
+- name: Q&A APIs
+  tags:
+  - Q&A APIs

@@ -1,0 +1,998 @@
+openapi: 3.0.2
+info:
+  title: Miso Ask APIs Product / Content APIs API
+  description: '
+
+    # Overview
+
+    Miso’s approach to personalization is to train machine learning Engines on three core data sets:
+
+
+    1. Your site’s log of historical and real-time interactions,
+
+    2. Your catalog of products and content, and
+
+    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
+
+    experiences that are personalized down to the individual level (n=1 personalization).
+
+
+    To see how Miso works and explore the power of its Engines, we recommend following
+
+    [this tutorial](https://docs.askmiso.com/) to get
+
+    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
+
+
+    1. Upload your data
+
+    2. Train your Engines
+
+    3. Build search and recommendation experiences with the output of your Engines.
+
+
+
+    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
+
+    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
+
+    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
+
+    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
+
+    and recommendations running on your live data.
+
+
+    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
+
+    experiences that leverage the output of Miso’s personalization Engines.
+
+
+
+    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
+
+
+    ### Data APIs
+
+    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
+
+    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
+
+    from Miso. Subcategories of Data APIs are:
+
+
+    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
+
+    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
+
+    Engines learn how to optimize your conversion funnels.
+
+    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
+
+    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
+
+    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
+
+    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
+
+    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
+
+    The `user_id` is how Miso links User records to your Interaction records.
+
+
+    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
+
+    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
+
+    Upload API, we recommend limiting your calls to around 10,000 records at a time.
+
+
+    ### Engine APIs
+
+    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
+
+    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
+
+    and the services are replicated to at least three separate instances for high availability.
+
+    The types of Engine APIs are:
+
+
+    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
+
+    autocompletion.
+
+    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
+
+    the products, categories, and product attributes that are likely to drive conversions.
+
+
+    # Authentication
+
+    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
+
+
+    There are three environments in Miso:
+
+    * **Playground**, a read-only tutorial environment with sample data.
+
+    * **Development**, for staging, QA, and experimentation.
+
+    * **Production**, where you run your live integration with Miso.
+
+
+    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
+
+    key and one secret key per environment.
+
+
+    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
+
+    '
+  version: 1.1.4
+servers:
+- url: https://api.askmiso.com
+tags:
+- name: Product / Content APIs
+  description: '
+
+    Miso''s Product / Content APIs let you upload, read, and delete Product / Content records that represent your site''s
+
+    catalog.
+
+
+    ### Product / Content records
+
+    Miso analyzes your Product / Content records to provide personalized search and recommendations that connect users
+
+    with products or content on your site or application.
+
+
+    Much of Miso''s search and personalization capability relies on understanding your catalog in-depth and drawing
+
+    correlations between your catalog and your users'' consumption or purchasing behaviors. In other words, Miso
+
+    discovers that, with high correlation, users who are interested in certain product attributes would also be
+
+    interested in other products with similar or related attributes. (For simplicity, we will often overload the word
+
+    "products" to mean items for purchase if you are an eCommerce business, and content to consume if you are a content
+
+    marketplace.)
+
+
+    To fully optimize your search and recommendations, it is important to provide Miso with Product / Content records
+
+    that are complete and accurate. We define a set of common attributes that capture the basics of most eCommerce and
+
+    content media products, such as `title`, `description`, `categories`, `tags`, `material`, `authors`, etc.
+
+
+    If your products'' characteristics cannot be fully captured by these fields, we recommend that you specify
+
+    `custom_attributes`. For Miso, the more complete the product information is, the better its personalized search
+
+    and recommendations become.
+
+
+    '
+paths:
+  /v1/products:
+    post:
+      tags:
+      - Product / Content APIs
+      summary: Product / Content Upload API
+      description: "Bulk API to insert Product records. This API endpoint accepts POST requests with JSON data\ncontaining a list of Product / Content records wrapped in a dictionary:\n```\nPOST /v1/products\n\n{\"data\": [product_1, product_2, product_3]}\n```\n\nEach product is uniquely identified by its `product_id`. If a record with the same `product_id`\nalready exists in the dataset, the existing one will be **replaced** by the insertion (no\npartial update is allowed at this time). We recommend limiting your calls to around 100\nrecords at a time to avoid memory issues or timeout risks.\n\n### Schema validation\nThis API validates the inserted records against the API schema; any schema error will cause\nthe whole request to fail (`status_code=422`), and none of the records will be inserted. You\nshould check the `response.errors` field to see if there are any errors. For example,\nthe response below means there are no errors (`status_code=200`):\n\n```json\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nA common source of errors when uploading Product records is that the custom attributes' data\ntypes are not consistent with the data types of the existing records. In such cases,\nyou can check the individual error message in the `data` array. For example, if there is an\nerror regarding the second record you tried to insert, the response might look like:\n\n```json\n{\n  \"errors\": true, // there are errors. please check!\n  \"data\": [\n    \"data.0.custom_attributes.designer is invalid. Its data type is not consistent with other records\",\n    \"data.0.product_id is invalid. The attribute expected to be of type 'string', but 'array' is given.\",\n    \"data.0.created_at is invalid. The attribute should match 'date-time' format.\"\n  ]\n}\n```\n\n### Internationalization (I18N)\nMiso has the built-in support for majority of Western European languages, including `English`, `French`, `German`,\n`Spanish`, `Italian`, `Dutch`, `Russian`, and `Ukrainian`, as well as, major Asian languages, including `Mandarin`\n (both Simplified and Traditional), `Japanese`, and `Korean`.\n\nIn Dojo, you can choose the *Primary Language* for your product catalog (default is English).\nHowever, you can also have more than one language in your product catalog that is\nbeyond your primary languages using the `i18n_$LN` fields (replace `$LN` with the [two-letter language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of your choice),\nand let Miso apply the language-specific preprocessing for you, such as tokenization, stemming, elision\nremoval, folding, decompounding, and traditional to simplified Chinese conversion.\n\nFor example, you may have a product called \"Arizona, Green Tea with Ginseng & Honey\" in your catalog, and you also\nsell it in your Spanish, French, and Chinese sites, and want your customers to be able to search for this product\nin their native languages.\n\nIn this case, your product records will like the following sample record, where English is the primary language of\nthe record, and `i18n_es`, `i18n_fr`, `i18n_zh` fields contain product details in their corresponding languages.\n```javascript\n{\n    \"product_id\": \"arizona-ginseng-honey\",\n    // the primary language is English\n    \"title\": \"Arizona, Green Tea with Ginseng & Honey\",\n    // ... other product details in English\n    \"i18n_es\": {\n       \"title\": \"AriZona, Té verde con ginseng y miel\"\n        // ... other product details in Spanish\n    },\n    \"i18n_fr\": {\n       \"title\": \"AriZona - Thé Vert Aromatisé au Miel\"\n        // ... other product details in French\n    },\n    \"i18n_zh\": {\n       \"title\": \"美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶\"\n        // ... other product details in Chinese\n    }\n }\n```\nIn this way, your customer can find this product with any of the following search queries\nwithout additional configuration:\n* `arizona green tea`\n* `arizona te verde`\n* `arizona the vert`\n* `arizona 綠茶`\n\nThe similar concept applies to Autocomplete as well. You can specify a `language` parameter\nin the requests to Autocomplete API, and the autocomplete results for the specific language\nwill be returned."
+      operationId: content_write_api_v1_products_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductBulkIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                'message:': Request timeout.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              example:
+                errors: true
+                message: None of the records are inserted, because at least one of them contain schema errors. Please see `data` field for details.
+                data:
+                - data.0.product_id is invalid. The attribute expected to be of type 'string', but 'array' is given.
+                - data.0.created_at is invalid. The attribute should match 'date-time' format.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+  /v1/products/{product_id}:
+    get:
+      tags:
+      - Product / Content APIs
+      summary: Product / Content Read API
+      description: "This API endpoint retrieves the details of a specific product / content using its `product_id`.\nTo fetch the product / content information, make a GET request to the following URL:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nGET /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to fetch.\n\n## Response Format\n\nThe API will return the product / content details in a JSON object if the given `product_id`\nis valid and exists in the system. The JSON object will include fields like `title`,\n`description`, `price`, `images`, and any internationalization fields (`i18n_$LN`).\n\n### Example Response\n\nHere's an example of a successful API response for a product / content with the `product_id`\n\"arizona-ginseng-honey\":\n\n```json\n{\n  \"product_id\": \"arizona-ginseng-honey\",\n  \"title\": \"Arizona, Green Tea with Ginseng & Honey\",\n  \"description\": \"A refreshing and delicious blend of green tea with ginseng and honey.\",\n  \"price\": 1.99,\n  \"i18n_es\": {\n    \"title\": \"AriZona, Té verde con ginseng y miel\"\n    // ... other product details in Spanish\n  },\n  \"i18n_fr\": {\n    \"title\": \"AriZona - Thé Vert Aromatisé au Miel\"\n    // ... other product details in French\n  },\n  \"i18n_zh\": {\n    \"title\": \"美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶\"\n    // ... other product details in Chinese\n  }\n}\n```\n\nIf the provided `product_id` is invalid or does not exist in the system, the API will return\nan error response with a `status_code=404`.\n\n### Example Error Response\n```json\n{\n  \"message\": \"not found\"\n}\n```"
+      operationId: content_read_api_v1_products__product_id__get
+      parameters:
+      - required: true
+        schema:
+          title: Product Id
+          maxLength: 512
+          type: string
+        name: product_id
+        in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductReadOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '404':
+          description: Product not Found
+          content:
+            application/json:
+              example:
+                message: not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+    delete:
+      tags:
+      - Product / Content APIs
+      summary: Product / Content Delete API
+      description: "This API endpoint allows you to delete a specific product / content from the system using its\n`product_id`. To remove a product, make a DELETE request to:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nDELETE /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to delete.\n\n## Response Format\n\nThe API will return a JSON object indicating the success or failure of the deletion request.\nIf the deletion is successful, the `status_code` will be `200`, and the `message` field will\nconfirm the successful deletion.\n\n### Example Successful Deletion Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\":  [\n    {\n      \"task_id\": \"{task_id}\"\n    }\n  ]\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/products/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      operationId: content_delete_api_v1_products__product_id__delete
+      parameters:
+      - required: true
+        schema:
+          title: Product Id
+          maxLength: 512
+          type: string
+        name: product_id
+        in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                'message:': Request timeout.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+  /v1/products/_ids:
+    get:
+      tags:
+      - Product / Content APIs
+      summary: Product / Content ID List API
+      description: "This API endpoint allows you to fetch the unique identifiers (product_ids) of all products\nstored in the app. To get a list of product_ids, make a GET request to the following URL:\n\n```\nGET /v1/products/_ids\n```\n\n## Response Format\n\nThe API will return an array of product_ids in a JSON object. The `status_code` will be `200`\nif the request is successful. If any error occurs during the request, the `status_code` will\nnot be `200` and the `message` field will indicate the error.\n\n### Example Successful Response\n\n```json\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"ids\": [\n      \"product_1\",\n      \"product_2\",\n      \"product_3\",\n      // ... more product_ids\n    ]\n  }\n}\n```\n\n### Example Error Response\n\nIf the dataset cannot be found, the API will return a `404` error:\n\n```json\n{\n  \"status_code\": 404,\n  \"message\": \"not found\"\n}\n```\n\nIf another error occurs during the request, the API will return a `500` error\n\n```json\n{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}\n```"
+      operationId: content_read_ids_api_v1_products__ids_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+  /v1/products/_delete:
+    post:
+      tags:
+      - Product / Content APIs
+      summary: Product / Content Bulk Delete API
+      description: "This API endpoint allows you to delete multiple products by providing their product_ids.\n\nTo delete multiple products, make a POST request to the following URL:\n\n```\nPOST /v1/products/_delete\n```\n\nThe request body should contain a JSON object with an array of product_ids:\n\n```json\n{\n  \"data\": {\n    \"product_ids\": [\n      \"product-1\",\n      \"product-2\",\n      // ... more product_ids to delete\n    ]\n  }\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `message` and an array of `data`\ncontaining a `task_id` that can be used to get the status of the bulk deletion process.\n\n#### Example Successful Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/products/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      operationId: content_bulk_delete_api_v1_products__delete_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductBulkDeleteIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                'message:': Request timeout.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: invalid api key.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: Something went wrong. Please contact miso product team.
+      security:
+      - Secret API Key: []
+components:
+  schemas:
+    ProductListOut:
+      title: ProductListOut
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+        data:
+          $ref: '#/components/schemas/ProductIds'
+      additionalProperties: false
+    ProductRecord:
+      title: ProductRecord
+      required:
+      - product_id
+      type: object
+      properties:
+        product_id:
+          title: Product Id
+          maxLength: 512
+          minLength: 1
+          type: string
+          description: "\nThe unique identifier for this product. The Id can be in any format you use in your product \ndatabase (e.g. the product's SKU, UPC, or UUID or serial number). We will use this Id to track how users \ninteract with products and content in the Interactions records you upload to Miso. It is important to keep the Id \nconsistent between two datasets. For products that have multiple variants, you should have a unique \n`product_id` for each variant, and use `product_group_id` to group them together.\n\nFor example, for a T-shirt with SKU `123ABC` that comes in 4 sizes: `S`, `M`, `L`, `XL`, we should create four different \nproducts:\n\n```\n{ \n  \"product_id\": \"123ABC-S\",\n  \"product_group_id\" \"123ABC\"\n}\n{ \n  \"product_id\": \"123ABC-M\",\n  \"product_group_id\" \"123ABC\"\n}\n{ \n  \"product_id\": \"123ABC-L\",\n  \"product_group_id\" \"123ABC\"\n}\n{ \n  \"product_id\": \"123ABC-XL\",\n  \"product_group_id\" \"123ABC\"\n}\n```   \n\n * Constraints\n    * Can't contain `,`\n    * Can't start with `_`\n    * Length <= 512\n"
+          example: 123ABC-S-Black
+        product_group_id:
+          title: Product Group Id
+          type: string
+          description: "\nThe `product_group_id` is used to prevent the same product (but a different variant) from showing multiple \ntimes in the search or recommendation results. When one product has multiple variants (for example, different \nsizes, colors, or materials), you should assign a unique product_id to each variant, but assign the same \n`product_group_id` to all of them. If `product_group_id` is not given, we default to the value of `product_id`. \n"
+          example: 123ABC
+        parent_id:
+          title: Parent Id
+          type: string
+          description: "\nThe `parent_id` is used to declare a parent-child relationship between two \"Products\". \nSuch relationships are common in marketplaces and content media sites with user generated contents. \nFor example, an E-commerce marketplace (such as E-bay or Amazon) \nmay have \"Shops\" (as parents) and \"Merchandises\" \n(as children), and a social streaming site, such as YouTube, may have \"Channel\" (as parents) and \"Video\" (as children). In these sites, both entities can be modeled as \"Products\", and can both be returned in Search and Recommendation APIs.\n\nDeclaring the parent-child relationships allows Miso to automatically propagate interactions from one product to the other.\nFor example, when a user \"watch\" a \nVideo, Miso will propagate this signal to the \nChannel which publishes this Video, even if users do not directly interact with the Channel page. Such implicit \ninteractions\nare particularly useful when making recommendations for Channel because it gives Miso much more information \nabout users' interests to different Channels than solely relying on users' direct interactions with the \nthem, which happens less often. \n\n`parent_id` needs to be a non-empty string referring to the `product_id` of the parent product. \nThe parent product can be uploaded in a separate batch, and does not need to exist before its children products.\n\nThe implicit interactions will only exist during Miso's training process, and will not show up in the \nInteraction dataset.\n\n"
+          example: Nike_Shop_123
+        related_ids:
+          title: Related Ids
+          type: array
+          items:
+            type: string
+          description: The product_id or product_group_id of other products that are related to this Product
+        type:
+          title: Type
+          type: string
+          description: "\nThe `type` of product. This is for sites that have more than one type of product or content that they want their users \nto interact with. If your site has only one type of product, you can leave this field out. \nA classic example is travel sites, which have both *hotel* and *flight* sales. It is also useful for sites that let \nusers interact with products as well as *product bundles*. For example, on YouTube, each video is a product that users \ncan watch, while each channel, containing multiple videos, is also a product that users can subscribe to.\n\nFor model quality, it is preferable to model all these distinct product types in the same data set, so that a user's \ninterests for one type of product can inform their interests in another type of products. The `type` field helps Miso \nmake these distinctions.\n"
+          example: clothes
+        title:
+          title: Title
+          type: string
+          description: "\nThe title of the product. During a search, Miso will put predictive weight behind the title, \nbecause it is often the main way users identify a product.\n"
+          example: Japanese Shiba Inu Dog Eating Miso Soup T-Shirt
+        description:
+          title: Description
+          type: string
+          description: "\nThe `description` text of the product. Miso assumes `description` contains longer textual content than other \nstring-based fields. For example, term frequency matters more here than in a field like the title. Miso’s \nsemantic understanding can extract a lot of valuable information from having a product description that is \nplain-spoken and detailed. \n"
+          example: This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.
+        short_description:
+          title: Short Description
+          type: string
+          description: "\nThe `short_description` text of the product. Miso assumes `short_description` contains a shorter version \nor a summary of the `description` field.\n"
+          example: Cute Shiba Inu Dog Eating Miso Soup T-Shirt
+        language:
+          title: Language
+          minLength: 2
+          type: string
+          description: "\nThe `language` of the product description and content in [two-letter ISO 639-1 code](\nhttps://en.wikipedia.org/wiki/ISO_639-1). For example, English = `en`, Chinese = `zh`. \nMiso will use this field to determine the proper way to index the product description. If this field is not specified, \nwe will determine the language automatically. \n\nWe also use the language field to determine users’ interests in content of different languages. This is particularly \nimportant for content media sites that have different languages of content. \n\n* Constraints:\n    * [Two-letter ISO 639-1 code](https://en.wikipedia.org/wiki/ISO_639-1). \n    For example, English = `en`, Chinese = `zh`.\n"
+          example: en
+        created_at:
+          title: Created At
+          anyOf:
+          - type: string
+            format: date-time
+          - type: string
+            format: date
+          description: "\nThe time when the product was first created or became available on your site as an ISO-8601 date or datetime string.  \n"
+        published_at:
+          title: Published At
+          anyOf:
+          - type: string
+            format: date-time
+          - type: string
+            format: date
+          description: "\nThe time when the product was published as an ISO-8601 date or datetime string. \n"
+        updated_at:
+          title: Updated At
+          anyOf:
+          - type: string
+            format: date-time
+          - type: string
+            format: date
+          description: "\nThe time when the product was updated as an ISO-8601 date or datetime string. \n"
+        categories:
+          title: Categories
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+          description: "\nIn Miso, you describe a product or content category as a hierarchical list of strings from broad to narrow, \ncalled a `category`. (See the `category_page_view` interaction.) \n\nUse the `categories` field of products to specify the hierarchical category or categories that the product \nbelongs to. A product may belong to only a single `category`, or multiple. \n\nFor example, a product could be in both:\n * *Toys & Games > Toys > Dolls, Playsets & Toy Figures > Stuffed Animals*, and\n * *Arts & Entertainment > Hobbies & Creative Arts > Collectibles*. \n\n This field should be a list of a list of strings, where category levels go from broad to narrow, such as: \n\n```\n{\"categories\":\n    [\n        // the first category the product belongs to\n        [\"TOYS & GAMES\", \"TOYS\", \"DOLLS, PLAYSETS & TOY FIGURES\", \"STUFFED ANIMALS\"],\n        // the second category the product belongs to\n        [\"ARTS & ENTERTAINMENT\", \"HOBBIES & CREATIVE ARTS\", \"COLLECTIBLES\"]\n    ]\n}\n```\n\nIf your product taxonomy has only one single level, that is not an issue:\n```\n{\"categories\":\n    [\n        // the first category the product belongs to\n        [\"Toys\"],\n        // the second category the product belongs to\n        [\"Collectibles\"]\n    ]\n}\n```\n\nThe categories are optional, but very important for profiling the products and tracking users' preferences. \n(See also the `category_page_view` interaction)\n"
+          example:
+          - - Clothing, Shoes & Jewelry
+            - Women
+            - T-Shirts
+          - - Novelty
+            - Tops & Tees
+            - T-Shirts
+        tags:
+          title: Tags
+          type: array
+          items:
+            type: string
+          description: '
+
+            The tags that have been associated with the product.
+
+
+            For example:
+
+            ```
+
+            {"tags": ["TAG_1", "TAG_2", ...]}
+
+            ```
+
+            '
+          example:
+          - cute
+          - anime
+          - dogs
+          - t-shirt
+        url:
+          title: Url
+          maxLength: 65536
+          minLength: 1
+          type: string
+          description: "\nUrl to the product detail page. This is for displaying the product in your Dojo Sandboxes and is not used for Engine training. \nIt is optional, but strongly recommended for a better Sandbox experience.\n"
+          format: uri
+          example: https://example.com/miso-tshirt-123ABC
+        cover_image:
+          title: Cover Image
+          maxLength: 65536
+          minLength: 1
+          type: string
+          description: "\nThe URL of the cover image  of the product. This is for displaying the product in your Dojo Sandboxes and \nis not used for Engine training. It is optional, but strongly recommended for a better Sandbox experience. \n"
+          format: uri
+          example: https://example.com/miso-tshirt-123ABC.jpg
+        original_price:
+          title: Original Price
+          type: number
+          description: "\nThe (original) price of the product. We only use this number to calculate the amount of discount, and use that\nto profile user behaviors.\n\n* Constraints:\n    * Need to be a number, but no constraint on the range of the number\n"
+          example: 20
+        sale_price:
+          title: Sale Price
+          type: number
+          description: "\nThe sale price of the product. \n\n* Constraints:\n    * Need to be a number, but no constraint on the range of the number\n"
+          example: 15
+        margin:
+          title: Margin
+          type: number
+          description: "\nThe margin of the product. Note that for our margin optimization algorithm to work, the margin you specify here\n does not need to be the actual dollar amount, but it needs to be something in proportion to that. \n\n* Constraints:\n    * Need to be a number, but no constraint on the range of the number\n"
+          example: 15
+        size:
+          title: Size
+          type: string
+          description: "\nThe size of the product. For example, for an eCommerce site that sells T-shirts, each T-shirt might come in\nseveral different sizes. In this case, we recommend that you should create one product entry for \neach size variant. When Miso generate search or recommendation results, we use the `product_group_id` to remove \ndifferent variants of the same product, and only show the variant that the user is most likely to buy. \n"
+          example: S
+        color:
+          title: Color
+          type: string
+          description: "\nThe color of the products. Similarly to `size`, when `color` of the products matters, it is recommended to create \none product for each color variant of a product. When Miso generate search or recommendation results, \nwe use the `product_group_id` to remove variants of the same product, and only show the \nvariant that the user is most likely to buy. \n"
+          example: Black
+        material:
+          title: Material
+          type: string
+          description: "\nThe material of the products. Similarly to `size` and `color`, if `material` of the product matters and there \nare multiple material variants, we should create one product for each material variant. When Miso generates search or \nrecommendation results, we use the `product_group_id` to remove variants of the same product, and only show the \nvariant that the user is most likely to buy. \n"
+          example: Cotton
+        condition:
+          title: Condition
+          enum:
+          - NEW
+          - USED
+          - REFURBISHED
+          type: string
+          description: '
+
+            The condition of the product. By default, we assume `condition`= `NEW`
+
+            '
+          default: NEW
+        brand:
+          title: Brand
+          type: string
+          description: '
+
+            The brand of the product.
+
+            '
+          example: Miso Corp.
+        authors:
+          title: Authors
+          type: array
+          items:
+            type: string
+          description: '
+
+            The author(s) of the product or content asset. This field needs to be an array of strings.
+
+            '
+          example:
+          - Andy Hsieh
+        publishers:
+          title: Publishers
+          type: array
+          items:
+            type: string
+          description: '
+
+            The publisher(s) of the product or content asset. This field needs to be an array of strings.
+
+            '
+          example:
+          - O'Reilly Media
+        collections:
+          title: Collections
+          type: array
+          items:
+            type: string
+          description: '
+
+            The collection(s) the product belongs to.
+
+            '
+          example:
+          - Anime T-Shirt Collection
+          - Superhero T-Shirt Collection
+        availability:
+          title: Availability
+          enum:
+          - IN_STOCK
+          - OUT_OF_STOCK
+          - PRE_ORDER
+          type: string
+          description: '
+
+            The availability of the product. Miso mainly uses `availability` to filter `OUT_OF_STOCK` items out of its recommendations.
+
+            As a default, we assume the product is `IN_STOCK`.
+
+            '
+        location:
+          title: Location
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/LocationInformation'
+          - allOf:
+            - $ref: '#/components/schemas/LocationInformation'
+          description: "\nThe location information of the product (e.g. for hotels or restaurants). We support geolocation filtering \nand sorting when creating search and recommendation results if location information is given. \n"
+        rating:
+          title: Rating
+          type: number
+          description: '
+
+            The overall rating of the product in the range of [0, 5]. If you use a different rating scale, please convert it
+
+            to the range of [0, 5].
+
+            '
+          example: 5
+        html:
+          title: Html
+          type: string
+          description: "\nThe HTML content of the product. Miso will search against this field and apply semantic understanding in a way that is\nsimilar to the `description` field, but with HTML tags removed. \n"
+        subtitle:
+          title: Subtitle
+          type: string
+          description: '
+
+            The subtitle of the product (usually for contents).
+
+            '
+        headers:
+          title: Headers
+          type: array
+          items:
+            type: string
+          description: "\nThe headers in the content. This usually corresponds to `<h1>`, `<h2>`, `<h3>` ... tags in HTML. This field need to be an array of strings \n"
+        paragraphs:
+          title: Paragraphs
+          type: array
+          items:
+            type: string
+          description: "\nThe text paragraphs in the content. This usually corresponds to `<p>` tags in HTML. This field need to be an array of strings \n"
+        anchors:
+          title: Anchors
+          type: array
+          items:
+            type: string
+          description: "\nThe anchor texts paragraphs in the content. This usually corresponds to `<a>` tags in HTML. This field need to be an array of strings \n"
+        children:
+          title: Children
+          type: array
+          items:
+            $ref: '#/components/schemas/ChildrenObject'
+          description: '
+
+            Children objects of the product, such as chapters of a book, or sections of a podcast.
+
+            Children are only useful for long-form contents, and are only used for snippet extraction purpose.
+
+            '
+        enable_question_answering:
+          title: Enable Question Answering
+          type: boolean
+          description: '
+
+            Whether to enable question answering capability against the `html` field.
+
+            '
+          default: false
+        custom_attributes:
+          title: Custom Attributes
+          type: object
+          additionalProperties:
+            anyOf:
+            - type: boolean
+            - type: integer
+            - type: number
+            - type: string
+            - type: array
+              items:
+                type: number
+            - type: array
+              items:
+                type: string
+            - type: object
+              additionalProperties:
+                anyOf:
+                - type: string
+                - type: number
+                - type: integer
+                - type: boolean
+            - type: array
+              items:
+                type: object
+          description: "\nDictionary of custom attributes for the product. You can specify attributes specific to your business \nin a `{\"KEY\":VALUE}` format, where `KEY` must be a string, and `VALUE` can be:\n* a `bool`\n* a `string` or an `array of string`\n* a `number` or an `array of numbers`\n* an `array of objects`\n* `null` \n\n\n\nFor example, a video streaming site using Miso may have the movie *Jumanji* with the following custom attributes: \n\n```\n{\n  \"custom_attributes\": {\n    \"cast\": [\n      \"Robin Williams\", \"Jonathan Hyde\", ...\n    ],\n    \"director\": \"Joe Johnston\",\n    \"genres\": [\n      \"Adventure\", \"Fantasy\", \"Family\"\n    ],\n    \"filming_locations\": [\n       {\"country\": \"USA\", \"state\": \"New Hampshire\", \"city\": \"Keene\"},\n       {\"country\": \"Canada\", \"state\": \"British Columbia\", \"city\": \"Vancouver\"}\n    ],\n    \"popularity\": 7.439,\n    \"adult\": false\n  }\n}\n```\n\n**The custom attribute types need to be consistent across every record in the dataset**. \nFor instance, in the example above, the **cast** attribute needs to be a `string` or `an array of string` or `null` \nfor every record in the dataset that specify **cast** attribute.\n\n\nSimilarly, the popularity attribute needs to be a `number`, `an array of numbers`, or `null` for every record in the \ndataset that specifies the popularity attribute. If you try to insert a record with an incompatible data type, the \ninsertion for that record will fail. \n"
+          example:
+            cast:
+            - Robin Williams
+            - Jonathan Hyde
+            director: Joe Johnston
+            genres:
+            - Adventure
+            - Fantasy
+            - Family
+            popularity: 7.439
+            adult: false
+      additionalProperties: false
+    LocationInformation:
+      title: LocationInformation
+      required:
+      - lat
+      - lon
+      type: object
+      properties:
+        lat:
+          title: Lat
+          type: number
+          example: 40.74844
+        lon:
+          title: Lon
+          type: number
+          example: -73.985664
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    DeleteResponse:
+      title: DeleteResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+    ProductIds:
+      title: ProductIds
+      required:
+      - ids
+      type: object
+      properties:
+        ids:
+          title: Ids
+          type: array
+          items:
+            type: string
+    ProductBulkIn:
+      title: ProductBulkIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRecord'
+    ProductReadOut:
+      title: ProductReadOut
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+        data:
+          $ref: '#/components/schemas/ProductRecord'
+      additionalProperties: false
+    TaskId:
+      title: TaskId
+      required:
+      - task_id
+      type: object
+      properties:
+        task_id:
+          title: Task Id
+          type: string
+    ProductBulkDeleteIn:
+      title: ProductBulkDeleteIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ProductIdList'
+    ChildrenObject:
+      title: ChildrenObject
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          title: Id
+          type: string
+        url:
+          title: Url
+          type: string
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+        html:
+          title: Html
+          type: string
+        headers:
+          title: Headers
+          type: array
+          items:
+            type: string
+        custom_attributes:
+          title: Custom Attributes
+          type: object
+          additionalProperties:
+            anyOf:
+            - type: boolean
+            - type: integer
+            - type: number
+            - type: string
+            - type: array
+              items:
+                type: number
+            - type: array
+              items:
+                type: string
+            - type: object
+              additionalProperties:
+                anyOf:
+                - type: string
+                - type: number
+                - type: integer
+                - type: boolean
+            - type: array
+              items:
+                type: object
+                additionalProperties:
+                  anyOf:
+                  - type: string
+                  - type: number
+                  - type: integer
+                  - type: boolean
+    ProductIdList:
+      title: ProductIdList
+      required:
+      - product_ids
+      type: object
+      properties:
+        product_ids:
+          title: Product Ids
+          type: array
+          items:
+            type: string
+    CreateResponse:
+      title: CreateResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+  securitySchemes:
+    Secret API Key:
+      type: apiKey
+      description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
+      in: query
+      name: api_key
+    Publishable API Key:
+      type: apiKey
+      description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
+      in: query
+      name: api_key
+x-tagGroups:
+- name: Data APIs
+  tags:
+  - Interaction APIs
+  - Product / Content APIs
+  - User APIs
+- name: Engine APIs
+  tags:
+  - Search APIs
+  - Ask APIs
+  - Bulk API
+  - User Recommendations
+  - Product Recommendations
+- name: Experiment APIs
+  tags:
+  - Experiment APIs
+- name: Q&A APIs
+  tags:
+  - Q&A APIs
