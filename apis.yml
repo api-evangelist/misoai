@@ -1,7 +1,22 @@
+x-enrichment:
+  date: '2026-07-20'
+  status: enriched
+  artifacts_added: 20
+  pass: local-v1
 aid: misoai
 name: miso.ai
-description: miso.ai is a company surfaced as a portfolio company of 500-global and added to the API Evangelist
-  network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+description: >-
+  Miso (Miso Technologies, askmiso.com) is an AI personalization, search, and
+  answers platform for publishers, media companies, and retailers. Miso trains
+  machine-learning "Engines" on three data sets a site already has — its log of
+  historical and real-time user interactions, its catalog of products/content,
+  and its users — and exposes the output as REST APIs for personalized semantic
+  search, typo-tolerant autocomplete, product and user recommendations, and an
+  LLM-grounded Q&A / "Answers" experience that answers questions using only the
+  customer's own content (reducing hallucination). The platform ships JavaScript
+  (client + server), Python, and PHP SDKs, a WordPress plugin, embeddable Ask /
+  Explore / Hybrid Search web modules, and the Dojo console for training engines
+  and managing API keys and environments.
 url: https://raw.githubusercontent.com/api-evangelist/misoai/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -9,12 +24,725 @@ x-backed-by:
 - 500-global
 x-tier: stub
 x-tier-reason: portfolio-lead
+accessModel:
+  pricing: unknown
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Self-serve signup
+  confidence: medium
+  source:
+  - authentication
+  generated: '2026-07-22'
+  method: derived
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-20'
 tags:
 - Company
-apis: []
+- Artificial Intelligence
+- Machine Learning
+- Search
+- Recommendations
+- Personalization
+- Semantic Search
+- LLM
+- Question Answering
+- Publishing
+- Media
+- Retail
+- Ecommerce
+- Developers
+image: https://miso.ai/favicon.ico
+apis:
+- aid: misoai:misoai-ask-apis-api
+  name: miso.ai Ask APIs API
+  description: >-
+    Miso's new Ask API is the next generation of question answering APIs.
+
+    It is designed to provide accurate and concise answers to your questions
+
+    based on your existing product documents.
+
+
+    Ask API offers a seamless and effective way to address complex queries in
+
+    a near-realtime fasion.
+
+
+    Miso preprocesses your product documents, breaking them into segments.
+
+    When a question is received, Miso finds the most related product and segments, then
+
+    summarize to a concise and informative answer based on the identified segments,
+
+    including products related to the question.
+
+
+    Possible use case includes: knowledge base, documentation search, customer support, and more.
+
+
+    To use the Ask API, you first submit a "question" you want to ask.
+
+    Question can be any human-readable text. Then a question ID will returned,
+
+    and the question will be processed in the background.
+
+
+    After receving question ID, you can then use the question ID to get latest answer
+
+    to the question as it is being compiled.
+
+
+    ----
+
+
+    For example:
+
+
+    If you want to know about the inner workings of nginx:
+
+
+    ```json
+
+    {
+        "question":"How nginx works internally?"
+    }
+
+    ```
+
+
+    The API would response with a question id.
+
+    ```json
+
+    {
+        "data": {
+            "question_id": "ff4775fa-345e-4d28-91b0-8fb8bf095e6a"
+        },
+        "message": "success"
+    }
+
+    ```
+
+
+    Then you can send a GET request to `/v1/ask/questions/{question_id}/answer`
+
+    to get the latest answer as it is being compiled and summerized.
+
+    You can use `answer_stage` and `finished` to check current answer status.
+
+
+    Here's the response of answer API when data is fetched and being verified, before answer is summerized:
+
+    ```json
+
+    {
+        "message": "success",
+        "data": {
+            "question": "How nginx works internally?",
+            "question_id": "ff4775fa-345e-4d28-91b0-8fb8bf095e6a",
+            "parent_question_id": null,
+            "answer_stage": "Verifying possible answers",
+            "finished": false,
+            "answer": "Verifying possible answers ...",
+            "sources": [],
+            "related_resources": [],
+            "followup_questions": []
+        }
+    }
+
+    ```
+
+
+    Here's the response when answer is fullly summerized:
+
+
+    ```json
+
+    {
+        "message": "success",
+        "data": {
+            "question": "How nginx works internally?",
+            "question_id": "ff4775fa-345e-4d28-91b0-8fb8bf095e6a",
+            "parent_question_id": null,
+            "answer_stage": "Generating summary",
+            "finished": true,
+            "answer": "# How does Nginx work internally?\n\n## Internal requests [1]\n\nNginx differentiates
+    between external and internal requests. External requests...[omitted for simplicity]",
+            "sources": [
+                {
+                    "title": "Internal requests",
+                    "product_id": "9781788623551",
+                    "child_title": "Internal requests",
+                    "child_id": "203",
+                    "snippet": "&lt;mark&gt;Internal requests\nNginx differentiates external and internal
+    requests.&lt;/mark&gt;"
+                },
+                {
+                    "title": "5. Nginx Core Architecture",
+                    "product_id": "9781484216569",
+                    "child_title": "5. Nginx Core Architecture",
+                    "child_id": "5",
+                    "snippet": "Checks if the client can access of the requested the resource.\n&lt;mark&gt;It
+    is at this step that Nginx...[omitted]&lt;/mark&gt;"
+                },
+                {
+                    "title": "2. Managing Nginx",
+                    "product_id": "9781785289538",
+                    "child_title": "2. Managing Nginx",
+                    "child_id": "14",
+                    "snippet": "&lt;mark&gt;The Nginx connection processing architecture\nBefore you study...[omitted]&lt;/mark&gt;"
+                },
+                {
+                    "title": "3. Nginx Core Directives",
+                    "product_id": "9781484216569",
+                    "child_title": "3. Nginx Core Directives",
+                    "child_id": "3",
+                    "snippet": "&lt;mark&gt;Understanding the Default Configuration\nThe default configuration...[omitted]&lt;/mark&gt;"
+                },
+                {
+                    "title": "4. Nginx Modules",
+                    "product_id": "9781484216569",
+                    "child_title": "4. Nginx Modules",
+                    "child_id": "4",
+                    "snippet": "&lt;mark&gt;Based on the context like HTTP, MAIL, and STREAM, it creates
+    a ...[omitted]&lt;/mark&gt;"
+                }
+            ],
+            "related_resources": [],
+            "followup_questions": [
+                "What are the steps involved in processing a request and generating a response in Nginx?",
+                "How do Nginx modules contribute to the internal workings of Nginx?"
+            ]
+        }
+    }
+
+    ```
+
+
+    Related product IDs will be returned along with human-readable answer. Related text section in the
+    product will also be quoted.
+
+
+    If a product has any children, they will also be matched, `child_id` and `child_title` will be included
+    for sources belonging to the product's children.
+
+
+    You can use `fq` to limit the search scope, for example, to a specific product type or other condition.
+
+
+    If you only want to search for books (no articles of videos), you can use `fq=type:book` like this:
+
+    ```json
+
+    {
+        "question":"How nginx works internally?"
+        "fq": "type:book"
+    }
+
+    ```
+
+
+    If you want the answer to contain any other fields, set `source_fl` when submitting the question.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Ask APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-ask-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-bulk-api-api
+  name: miso.ai Bulk API API
+  description: "The Bulk API provides an efficient interface for making multiple Search / Recommendations\
+    \ / Q&A requests in one API\ncall. These requests will be executed concurrently at the Miso side,\
+    \ and returned at once when all of them are finished.\nThis API is particularly useful when you need\
+    \ to invoke multiple Miso APIs to respond to a user request.\nUsing this API, you can batch multiple\
+    \ API calls into one, and significantly save the network round-trip times.\n\n### Request schema\n\
+    The request schema for this API call is as follow:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n   \
+    \ {\n      \"api_name\": \"search/search\",\n      \"body\": { ... }\n    },\n    {\n      \"api_name\"\
+    : \"recommendation/product_to_product\",\n      \"body\": { ... }\n    },\n    ...\n  ]\n}\n```\n\
+    Each request object should contain:\n* **api_name**: name of the API you want to access. The name\
+    \ should contain a slash `/`.\nFor example, search/search for search requests, search/autocomplete\
+    \ for autocomplete requests, etc.\n* **body**: the complete request body as if you are making the\
+    \ API request individually.\n\nAny errors in one of the requests will be returned, and will not prevent\
+    \ other requests from being\nexecuted.\n\n### Response Schema\nBulk API endpoint will return the API\
+    \ responses in the same order as they appear in the request.\nFor example, if the Bulk API request\
+    \ is like the following:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {... request 1 ...},\n   \
+    \ {... request 2 ...}\n  ]\n}\n``` \n\nThe response will be like:\n```\n{\n  \"data\": [\n    // response\
+    \ for request 1\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": { ...\
+    \ }\n    },\n    // response for request 2\n    {\n      \"error\": false,\n      \"status_code\"\
+    : 200,\n      \"body\": { ... }\n    }\n  ]\n}\n```\n\nEach response object will contain the following\
+    \ fields:\n* **error**: whether there was an error with the request. You should check this field to\
+    \ determine whether to\nperform error handling.\n* **status_code**: status code of the request.\n\
+    * **body**: the response body of the request (as if the request was sent individually).\n\nLet's see\
+    \ a complete example with MovieLens data. The following requests will issue two requests in one API\
+    \ call that \nreturn the `Sci-Fi` movies directed by\n*Ridley Scott*, and *James Cameron* respectively\
+    \ in the first and second responses:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {\n      \"api_name\"\
+    : \"search/search\",\n      \"body\": {\n        \"user_id\": \"test_user\",\n        \"q\": \"sci-fi\"\
+    ,\n        \"fq\": \"custom_attributes.director:\\\"Ridley Scott\\\"\"\n      }\n    },\n    {\n \
+    \     \"api_name\": \"search/search\",\n      \"body\": {\n        \"user_id\": \"test_user\",\n \
+    \       \"q\": \"sci-fi\",\n        \"fq\": \"custom_attributes.director:\\\"James Cameron\\\"\"\n\
+    \      }\n    }\n  ]\n}\n```\nThe response will be like:\n```\n{\n  \"data\": [\n    {\n      \"error\"\
+    : false,\n      \"status_code\": 200,\n      \"body\": {\n        \"data\": {\n          \"took\"\
+    : 136,\n          \"miso_id\": \"19ab254c-5fb8-11ec-bd48-b20169940af9\",\n          \"products\":\
+    \ [\n            {\n              \"product_id\": \"blade-runner\",\n              \"title\": \"Blade\
+    \ Runner (1982)\"\n            }\n          ],\n          \"total\": 6,\n          \"start\": 0\n\
+    \        }\n      }\n    },\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"\
+    body\": {\n        \"data\": {\n          \"took\": 116,\n          \"miso_id\": \"19ab254c-5fb8-11ec-bd48-b20169940af9\"\
+    ,\n          \"products\": [\n            {\n              \"product_id\": \"avatar\",\n         \
+    \     \"title\": \"Avatar (2009)\"\n            }\n          ],\n          \"total\": 10,\n      \
+    \    \"start\": 0\n        }\n      }\n    }\n  ]\n}\n```"
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Bulk API
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-bulk-api-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-experiment-apis-api
+  name: miso.ai Experiment APIs API
+  description: >-
+    Miso's experiment APIs let you do the A/B testing of your current result with Miso.
+
+
+    ### Start an experiment in Dojo.
+
+
+    Login to the [dojo](https://dojo.askmiso.com) platform.
+
+    Create an experiment event for you.
+
+
+    ### Start running A/B testing in your environment.
+
+
+    #### Implement A/B testing code.
+
+
+    Here's an example in NodeJS. You can also use any programming language of you choice.
+
+    ```nodejs
+
+    const axios = require('axios');
+
+
+    async function get_user_experiment_info(api_key, experiment_id, user_id) {
+        data = {"user_id": user_id}
+        endpoint = `https://api.askmiso.com/v1/experiments/${experiment_id}/events?api_key=${api_key}`
+        return await axios.post(endpoint, data)
+    }
+
+
+    const api_key = '<YOUR_SECRET_API_KEY>'
+
+    const experiment_id = "<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>"
+
+    let user_id = 'user_1234'  // use to evaluate a treatment for
+
+
+    const user_experiment_info = get_user_experiment_info(api_key, experiment_id, user_id)
+
+    user_experiment_info.then((response) => {
+        let variant = response.data['variant']
+        if (variant['name'] == "treatment") {
+            // insert code here to show "treatment" variant
+        } else if (variant['name'] == "control") {
+            // insert code here to show "control" variant
+        } else {
+            // unexpected variant name. raise error
+            throw new Error(`Unexpected variant name ${variant["name"]}`)
+        }
+    })
+
+    ```
+
+
+    If you implement A/B testing code in FrontEnd, like JavaScript, and are also worried about exploding
+    the secret api_key. You can choose to use anonymous_id with the public_api_key for this API. Here's
+    an example.
+
+
+    ```javascript
+
+    const apiKey = '<YOUR_PUBLIC_API_KEY>';
+
+    const experimentId = '<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>';
+
+    const anonymous_id = 'user_1234';  // use to evaluate a treatment for
+
+
+    function getUserExperimentInfo(apiKey, experimentId, anonymous_id) {
+      const data = {
+        user_id: anonymous_id
+      };
+      const url = `https://api.askmiso.com/v1/experiments/${experimentId}/events?api_key=${apiKey}`;
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      };
+
+      return window.fetch(url, options)
+        .then((response) => response.json())
+        .then((data) => {
+          const variantName = data.variant.name;
+          if (variantName === `${this.treatmentName}`) {
+            // insert code here to show 'treatment' variant
+          } else if (variantName === `${this.controlName}`) {
+            // insert code here to show 'control' variant
+          } else {
+            // unexpected variant name, throw error
+            throw new Error(`Unexpected variant name: ${variantName}`);
+          }
+        })
+        .catch((error) => console.error(error));
+    }
+
+
+    getUserExperimentInfo(apiKey, experimentId, anonymous_id);
+
+    ```
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Experiment APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-experiment-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-interaction-apis-api
+  name: miso.ai Interaction APIs API
+  description: >-
+    Miso’s Interaction APIs let you manage your Interaction records stored with Miso.
+
+
+    ### Interaction records
+
+    Your Interaction records tell Miso about user interactions with products and content on your site
+    or application.
+
+    From these interactions, Miso understands how users move through your conversion funnels: which products
+    or content
+
+    assets attract the attention of each individual user, and which products or content ultimately will
+    be purchased or
+
+    consumed by each of them. With these insights, Miso makes real-time tailored recommendations for each
+    user, and
+
+    responds to each of their clicks and views on the site (even for anonymous users).
+
+
+    Interaction records share some common attributes, but are distinguished by their type.
+
+    Miso captures 23 different interaction types, divided into the following 6 groups:
+
+
+    #### Core click-streams
+
+    * `product_detail_page_view`: a user viewed the detail page for a product
+
+    * `search`: a user made a search request with keywords and (optionally) filters
+
+
+    The above interactions are the core fuel for Miso's personalization Engines, because they happen in
+    a much higher
+
+    frequency than other interactions and provide an unbiased and high-fidelity view of users' interests
+    on the site.
+
+    The collection of these interactions is highly important for Miso's personalization performance. At
+    the minimum,
+
+    you should implement the `product_detail_page_view` interaction to start with.
+
+
+    #### Conversion (eCommerce)
+
+    * `add_to_cart`: a user added a product to the shopping cart
+
+    * `remove_from_cart`: a user removed a product from the shopping cart
+
+    * `checkout`: a user checked out and started the payment process
+
+    * `refund`: a user refunded the product
+
+    * `subscribe`: a user subscribed to a product
+
+
+    The above interactions are the main revenue drivers for eCommerce sites. It’s important to collect
+    them so that
+
+    Miso can not only drive click-through rates, but actually improve the revenue in a targeted way. To
+    start with,
+
+    you should at least implement the `add_to_cart` interaction.
+
+
+    #### Consumption (content media)
+
+    * `read`, `watch`, and `listen` interactions capture how and for how long a user consumed a piece
+    of content.
+
+    * `add_to_collection`: a user added an product to their personal collection
+
+    * `remove_from_collection`: a user removed an product from their personal collection
+
+
+    If you are a content site, the above interactions are the main drivers to users' satisfaction on the
+    site.
+
+    Collecting these interactions allows Miso to drive consumption rates and consumption durations for
+    the content on
+
+    your site. If you run a content site, you should implement at least one of these interactions.
+
+
+    #### Feedback signals
+
+    * `like`, `dislike`, `share`, `rate`,  and `bookmark` are common ways  users express their interests.
+
+
+    These are strong signals for Miso to understand each user's preferences regarding your products or
+    content. You
+
+    should send these signals to Miso if you have any of these UI patterns on your site.
+
+
+    #### Performance Checking
+
+    * `impression`: a user saw or was presented with a product or content asset (but didn't yet interact
+    with it)
+
+    * `viewable_impression`: the product or content presented is actually viewed by the user
+      (for example, minimum of 50% of the pixels were in viewable space for at least one continuous second.)
+    * `click`: a user clicked on something (for example, a product item)
+
+
+    #### Additional click-streams
+
+    * `home_page_view`: user viewed your home page
+
+    * `category_page_view`: a user viewed the page for a specific “group” or “family” or products or content
+    in your catalog
+
+    * `promo_page_view`: user viewed the promotion pages about certain products
+
+    * `product_image_view`: user clicked on or otherwise interacted with  the product image (e.g. enlarged
+    the image)
+
+
+    The above interactions are additional signals for Miso to understand users' behavior on the site.
+
+
+    #### Custom
+
+    * `custom` interaction types are reserved for you to define your own business-specific interaction
+    types.
+
+
+    Miso will analyze any custom interactions you define to infer users' interests and preferences.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Interaction APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-interaction-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-product-content-apis-api
+  name: miso.ai Product / Content APIs API
+  description: >-
+    Miso's Product / Content APIs let you upload, read, and delete Product / Content records that represent
+    your site's
+
+    catalog.
+
+
+    ### Product / Content records
+
+    Miso analyzes your Product / Content records to provide personalized search and recommendations that
+    connect users
+
+    with products or content on your site or application.
+
+
+    Much of Miso's search and personalization capability relies on understanding your catalog in-depth
+    and drawing
+
+    correlations between your catalog and your users' consumption or purchasing behaviors. In other words,
+    Miso
+
+    discovers that, with high correlation, users who are interested in certain product attributes would
+    also be
+
+    interested in other products with similar or related attributes. (For simplicity, we will often overload
+    the word
+
+    "products" to mean items for purchase if you are an eCommerce business, and content to consume if
+    you are a content
+
+    marketplace.)
+
+
+    To fully optimize your search and recommendations, it is important to provide Miso with Product /
+    Content records
+
+    that are complete and accurate. We define a set of common attributes that capture the basics of most
+    eCommerce and
+
+    content media products, such as `title`, `description`, `categories`, `tags`, `material`, `authors`,
+    etc.
+
+
+    If your products' characteristics cannot be fully captured by these fields, we recommend that you
+    specify
+
+    `custom_attributes`. For Miso, the more complete the product information is, the better its personalized
+    search
+
+    and recommendations become.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Product / Content APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-product-content-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-product-recommendations-api
+  name: miso.ai Product Recommendations API
+  description: APIs for recommending related products based on a given product.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Product Recommendations
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-product-recommendations-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-q-a-apis-api
+  name: miso.ai Q&A APIs API
+  description: The Q&A APIs API from miso.ai — 3 operation(s) for q&a apis.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Q&A APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-q-a-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-search-apis-api
+  name: miso.ai Search APIs API
+  description: The Search APIs API from miso.ai — 3 operation(s) for search apis.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - Search APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-search-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-user-apis-api
+  name: miso.ai User APIs API
+  description: >-
+    Miso’s User APIs let you upload, read, and delete User records that tell Miso about your site’s unique
+    users and
+
+    visitors.
+
+
+    ### User records
+
+    User records specify relatively static attributes for a given user, such as their `age`, `gender`,
+    `city`, etc. As a
+
+    rule of thumb, you should put information here that is not already captured in your
+
+    [Interaction records](#tag/Interaction-APIs). For example, *last_bought_product* is probably not needed
+    here because
+
+    Miso already can tell that from the [Interaction records](#tag/Interaction-APIs).
+
+
+    Miso will discover the correlations between a user's attributes and their behaviors on your site.
+    For example, Miso
+
+    might determine that users of a certain age group tend to be interested in certain products or a certain
+    price
+
+    range. These insights will be taken into account when predicting users' interests, in particular for
+    new users who
+
+    have not yet generated many interaction records.
+
+
+    We define a set of common user attributes for e-Commerce and content media sites. Some of them, such
+    as `name` are
+
+    for display in the Dojo dashboard only. The rest are for model quality. Most attributes are optional
+    and you don't
+
+    need to specify them if you don't collect such data. On the other hand, you can specify your custom
+    user attributes
+
+    in the `custom_attributes` field. Miso will analyze custom user attributes to improve the model quality
+    as well.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - User APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-user-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
+- aid: misoai:misoai-user-recommendations-api
+  name: miso.ai User Recommendations API
+  description: APIs for recommending products and content to users based on their interests.
+  humanURL: https://docs.miso.ai/api-reference/introduction
+  baseURL: https://api.askmiso.com
+  tags:
+  - User Recommendations
+  properties:
+  - type: OpenAPI
+    url: openapi/misoai-user-recommendations-api-openapi.yml
+  - type: Documentation
+    url: https://docs.miso.ai/api-reference/introduction
+  - type: Authentication
+    url: authentication/misoai-authentication.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -22,4 +750,58 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://askmiso.com
+  url: https://miso.ai/
+- type: DeveloperPortal
+  url: https://docs.miso.ai/
+- type: Documentation
+  url: https://docs.miso.ai/api-reference/introduction
+- type: APIReference
+  url: https://docs.miso.ai/api-reference/introduction
+- type: GettingStarted
+  url: https://docs.miso.ai/introduction/getting-started
+- type: Quickstart
+  url: https://docs.miso.ai/introduction/quickstart-ask
+- type: Authentication
+  url: authentication/misoai-authentication.yml
+- type: Pricing
+  url: https://docs.miso.ai/introduction/pricing
+- type: SignUp
+  url: https://miso.ai/get-answers
+- type: Login
+  url: https://dojo.miso.ai
+- type: TermsOfService
+  url: https://miso.ai/terms-of-service
+- type: PrivacyPolicy
+  url: https://miso.ai/privacy-policy
+- type: Support
+  url: https://docs.miso.ai/support/faqs
+- type: HelpCenter
+  url: https://docs.miso.ai/support/answers-faqs
+- type: GitHubOrganization
+  url: https://github.com/MisoAI
+- type: Sandbox
+  url: https://dojo.miso.ai
+- type: SDKs
+  url: packages/misoai-packages.yml
+- type: Packages
+  url: packages/misoai-packages.yml
+- type: LLMsTxt
+  url: llms/misoai-llms.txt
+- type: MCPServer
+  url: mcp/misoai-mcp.yml
+- type: Conventions
+  url: conventions/misoai-conventions.yml
+- type: ErrorCatalog
+  url: errors/misoai-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/misoai-lifecycle.yml
+- type: Conformance
+  url: conformance/misoai-conformance.yml
+- type: DomainSecurity
+  url: security/misoai-domain-security.yml
+- type: DataModel
+  url: data-model/misoai-data-model.yml
+- type: Components
+  url: components/misoai-components.yml
+- type: AgentSkill
+  url: skills/_index.yml
