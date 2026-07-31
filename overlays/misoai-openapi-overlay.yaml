@@ -1,0 +1,31 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Miso API
+  version: 1.0.0
+extends: openapi/misoai-openapi-original.json
+actions:
+- target: $.info
+  update:
+    x-apievangelist-provider: misoai
+    x-apievangelist-artifacts:
+      authentication: authentication/misoai-authentication.yml
+      conventions: conventions/misoai-conventions.yml
+      errors: errors/misoai-problem-types.yml
+      lifecycle: lifecycle/misoai-lifecycle.yml
+      conformance: conformance/misoai-conformance.yml
+      data_model: data-model/misoai-data-model.yml
+      packages: packages/misoai-packages.yml
+      mcp: mcp/misoai-mcp.yml
+      skills: skills/_index.yml
+- target: $.info
+  update:
+    x-apievangelist-categories:
+    - Search
+    - Recommendations
+    - Personalization
+    - Question Answering
+    - Artificial Intelligence
+- target: $.servers
+  update:
+  - url: https://api.askmiso.com
+    description: Miso production API (single environment; test vs live is by API key).

@@ -1,0 +1,28 @@
+generated: '2026-07-20'
+method: searched
+source: >-
+  Live probe (HTTPS GET) of /.well-known/* discovery paths on the API host and
+  docs/marketing hosts. Absence is valid recorded data. The marketing hosts
+  (miso.ai, www.askmiso.com) are a Nuxt SPA that returns HTTP 200 with an HTML
+  shell for every path, so those are not treated as real well-known documents.
+hosts:
+- host: https://api.askmiso.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+- host: https://docs.miso.ai
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /llms.txt, status: 200, note: "captured verbatim in llms/misoai-llms.txt (LLMsTxt, not a well-known path)"}
+note: >-
+  No /.well-known/ discovery documents are published. Authentication is API-key
+  (query parameter api_key), not OAuth/OIDC, so no openid-configuration or
+  oauth-authorization-server is expected. A machine-readable docs index is
+  published at https://docs.miso.ai/llms.txt.

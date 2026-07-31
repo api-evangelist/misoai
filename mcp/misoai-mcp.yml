@@ -1,0 +1,65 @@
+generated: '2026-07-20'
+method: derived
+status: candidate
+source: >-
+  Derived from openapi/misoai-openapi-original.json operations. No official
+  hosted/remote Miso MCP server was found (searched docs.miso.ai, the MisoAI
+  GitHub org, and npm @modelcontextprotocol). This is a candidate tool surface
+  mapping each Miso API operation to an MCP tool — a starting point, not a
+  published server.
+server:
+  name: misoai
+  transport: http
+  url: null
+tools:
+- name: search
+  description: Personalized, typo-correcting semantic search over your catalog.
+  source_operation: openapi/misoai-openapi-original.json#search_v1_search_search_post
+- name: autocomplete
+  description: Real-time personalized typeahead / search suggestions.
+  source_operation: openapi/misoai-openapi-original.json#autocomplete_v1_search_autocomplete_post
+- name: multiple_get
+  description: Retrieve products by their product_ids.
+  source_operation: openapi/misoai-openapi-original.json#mget_v1_search_mget_post
+- name: user_to_products
+  description: Products most likely to drive conversion for a given user.
+  source_operation: openapi/misoai-openapi-original.json#user_to_products_v1_recommendation_user_to_products_post
+- name: user_to_categories
+  description: Product categories (with products) that drive conversion for a user.
+  source_operation: openapi/misoai-openapi-original.json#user_to_categories_v1_recommendation_user_to_categories_post
+- name: user_to_attributes
+  description: Product attributes expected to drive conversion for a user.
+  source_operation: openapi/misoai-openapi-original.json#user_to_attributes_v1_recommendation_user_to_attributes_post
+- name: user_to_trending
+  description: Trending products of interest to a user.
+  source_operation: openapi/misoai-openapi-original.json#trending_items_v1_recommendation_user_to_trending_post
+- name: product_to_products
+  description: Products related to an anchor product.
+  source_operation: openapi/misoai-openapi-original.json#product_to_products_v1_recommendation_product_to_products_post
+- name: ask_question
+  description: Submit a question to Miso (LLM answers grounded in your content).
+  source_operation: openapi/misoai-openapi-original.json#questions_v1_ask_questions_post
+- name: get_answer
+  description: Fetch the latest answer for a previously submitted question.
+  source_operation: openapi/misoai-openapi-original.json#questions_answer_v1_ask_questions__question_id__answer_get
+- name: qa_question_answering
+  description: Extract answering paragraphs from a product's html field.
+  source_operation: openapi/misoai-openapi-original.json#question_and_answer_v1_qa_question_answering_post
+- name: qa_question_autocomplete
+  description: Autocomplete for the Q&A question bank.
+  source_operation: openapi/misoai-openapi-original.json#post_autocomplete_v1_qa_question_autocomplete_post
+- name: upload_products
+  description: Bulk insert product / content records.
+  source_operation: openapi/misoai-openapi-original.json#content_write_api_v1_products_post
+- name: read_product
+  description: Read a single product / content record by product_id.
+  source_operation: openapi/misoai-openapi-original.json#content_read_api_v1_products__product_id__get
+- name: upload_users
+  description: Bulk insert user records.
+  source_operation: openapi/misoai-openapi-original.json#user_write_api_v1_users_post
+- name: upload_interactions
+  description: Stream user interaction records to Miso.
+  source_operation: openapi/misoai-openapi-original.json#interaction_upload_api_v1_interactions_post
+- name: bulk_request
+  description: Batch multiple Miso API requests in one call.
+  source_operation: openapi/misoai-openapi-original.json#bulk_v1_bulk_post

@@ -1,0 +1,50 @@
+generated: '2026-07-20'
+method: derived
+source: >-
+  Derived from the 4xx/5xx responses across openapi/misoai-openapi-original.json
+  (23 paths / 26 operations), enriched from the response examples in the spec.
+  Miso does NOT use RFC 9457 problem+json; it returns a JSON envelope of the
+  shape { "errors": true|false, "message": <string>, "data": <array|object> }.
+format: custom-json-envelope
+error_envelope:
+  media_type: application/json
+  shape: '{ "errors": bool, "message": string, "data": array|object }'
+  detail: >-
+    On failure "errors" is true and "message" describes the problem; "data"
+    carries per-record validation detail for bulk write endpoints. FastAPI-style
+    422 responses use the HTTPValidationError schema (detail[].loc/msg/type).
+problems:
+- status: 400
+  title: Bad Request
+  description: Malformed request (invalid JSON body or query parameters).
+  occurs_on: [search, autocomplete, recommendation, ask, qa]
+- status: 401
+  title: Unauthorized
+  description: Missing or invalid api_key.
+  occurs_on: [all authenticated operations]
+- status: 403
+  title: Forbidden
+  description: >-
+    The supplied key lacks access to the requested operation — e.g. a
+    publishable key used for a secret-key-only data-ingestion or engine call.
+  occurs_on: [interactions, products, users, engine APIs]
+- status: 404
+  title: Not Found
+  description: The referenced resource (product_id, user_id, question_id) does not exist.
+  occurs_on: [content_read, user_read, ask_answer]
+- status: 422
+  title: Unprocessable Entity / Validation Error
+  description: >-
+    Request failed schema validation. For bulk write endpoints Miso may reject
+    the whole batch when at least one record contains schema errors; the "data"
+    field lists per-record problems. FastAPI HTTPValidationError shape.
+  schema: '#/components/schemas/HTTPValidationError'
+  occurs_on: [interactions, products, users, bulk, most POST operations]
+- status: 500
+  title: Internal Server Error
+  description: Unexpected server-side error; retry or contact support.
+  occurs_on: [multiple operations]
+notes: >-
+  No numeric/decline error-code registry is published (Miso is not a payments
+  provider). The authoritative human reference for error behavior is each
+  endpoint page under https://docs.miso.ai/api-reference/.

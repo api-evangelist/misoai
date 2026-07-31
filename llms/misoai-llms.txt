@@ -1,0 +1,52 @@
+# Miso AI Documentation
+
+## Docs
+
+- [Get latest answer of asked question](https://docs.miso.ai/api-reference/ask-apis/ask-questions-answer-api.md): This API is used to fetch the latest answer of previous submitted question from Miso
+- [Create a new question](https://docs.miso.ai/api-reference/ask-apis/ask-questions-api.md): This API is used to submit questions to Miso.
+- [Authentication](https://docs.miso.ai/api-reference/authentication.md)
+- [Bulk Request API](https://docs.miso.ai/api-reference/bulk-api/bulk-upload-api.md)
+- [Send Experiment Event](https://docs.miso.ai/api-reference/experiment-apis/send-experiment-event.md)
+- [Interaction Delete API](https://docs.miso.ai/api-reference/interaction-apis/interaction-delete-api.md): The endpoint will delete users' interaction data entirely from the log of interactions you have uploaded to Miso. This API enables you to comply with users' data removal requests (i.e. right to be forgotten). Once a user's interactions are deleted, we will not be able to recover them, and they will…
+- [Interaction Upload API](https://docs.miso.ai/api-reference/interaction-apis/interaction-upload-api.md): Miso’s Interaction APIs let you manage your Interaction records stored with Miso.
+- [Miso API Overview](https://docs.miso.ai/api-reference/introduction.md)
+- [Product / Content Bulk Delete API](https://docs.miso.ai/api-reference/product-content-apis/product-content-bulk-delete-api.md): This API endpoint allows you to delete multiple products by providing their product_ids.
+- [Product / Content Delete API](https://docs.miso.ai/api-reference/product-content-apis/product-content-delete-api.md): This API endpoint allows you to delete a specific product / content from the system using its `product_id`. To remove a product, make a DELETE request to:
+- [Product / Content ID List API](https://docs.miso.ai/api-reference/product-content-apis/product-content-id-list-api.md): This API endpoint allows you to fetch the unique identifiers (product_ids) of all products stored in the app. To get a list of product_ids, make a GET request to the following URL:
+- [Product / Content Read API](https://docs.miso.ai/api-reference/product-content-apis/product-content-read-api.md): This API endpoint retrieves the details of a specific product / content using its `product_id`. To fetch the product / content information, make a GET request to the following URL:
+- [Product / Content Upload API](https://docs.miso.ai/api-reference/product-content-apis/product-content-upload-api.md): Bulk API to insert Product records. This API endpoint accepts POST requests with JSON data containing a list of Product / Content records wrapped in a dictionary: ``` POST /v1/products
+- [Upload Question Bank API](https://docs.miso.ai/api-reference/qa-apis/qa-questions.md): Question Bank API lets you upload your *question bank* to Miso. A *question bank* is a list of questions that can be used for **Question Autocomplete** and **Similar Question Search**.
+- [Q&A API](https://docs.miso.ai/api-reference/qa-apis/question-answering.md): Question Answering API analyzes each Product's `html` field and extracts paragraphs that can answer users' questions.
+- [Question Autocomplete API](https://docs.miso.ai/api-reference/qa-apis/question-autocomplete.md): Question Autocomplete is an important feature for Q&A applications. It not only saves your users from typing the complete questions, but also showcases what questions your app is capable answering. This is important because Q&A is an advanced search feature that not every user is familar with.
+- [Product to Products API](https://docs.miso.ai/api-reference/recommendation-apis/product-to-products.md): The Product to Products API returns the products that are related to an anchor product (often the product the user is currently engaging with) and are also likely to drive conversions by connecting with the user’s interests. It is different from the User to Products API as it not only considers the…
+- [User to Attributes API](https://docs.miso.ai/api-reference/recommendation-apis/user-to-attributes.md): The `User to Attributes` API is a generalized version of `User to Categories` API --- it returns the product attributes that Miso expects to drive a conversion for the current user. You specify a field in your Product catalog you want recommendations for, e.g. the `brand` or a custom field like `cus…
+- [User to Categories API](https://docs.miso.ai/api-reference/recommendation-apis/user-to-categories.md): The User to Categories API returns the product categories that will drive the conversion for the current user, along with the recommended products for each returned category.
+- [User to Products API](https://docs.miso.ai/api-reference/recommendation-apis/user-to-products.md): Returns the products that are most likely to drive conversion for the given user. Depending on the conversion metrics you choose when training your Miso Engines in Dojo, this API returns products that are most likely to optimize those metrics (such as `add_to_cart`, `checkout`, or `read`).
+- [User to Trending API](https://docs.miso.ai/api-reference/recommendation-apis/user-to-trending.md): The User to Trending API returns the products that are currently trending and are most likely to be of interest to this user. It's different from the User to Products API because it will only recommend trending products. However, each user should still see unique recommendations that are not only tr…
+- [Search API](https://docs.miso.ai/api-reference/search-apis/search-api.md): The Search API provides personalized, typo-correcting, semantic search for your site. You send this API the search queries users entered, and the API returns the relevant search results tailored to your users' interests.
+- [Autocomplete API](https://docs.miso.ai/api-reference/search-apis/search-autocomplete-api.md): The Autocompletion API provides real-time, personalized, typo resistant typeahead for your search bar. You send this API what users are currently typing, and the API returns the complete search query suggestions.
+- [Multiple Get API](https://docs.miso.ai/api-reference/search-apis/search-mget-api.md): The Multiple Get API provides a simple and fast interface to retrieve Products by their product ids. For example, the following query will retrieve products whose product_ids are `123ABC-S-Black` and `123ABC-S-Blue` ``` {     "product_ids": ["123ABC-S-Black", "123ABC-S-Blue"] } ``` Miso will respond…
+- [User Bulk Delete API](https://docs.miso.ai/api-reference/user-apis/user-bulk-delete-api.md): This API endpoint allows you to delete multiple users by providing their user_ids.
+- [User Delete API](https://docs.miso.ai/api-reference/user-apis/user-delete-api.md): This API endpoint allows you to delete a specific user from the system using their `user_id`.
+- [User Read API](https://docs.miso.ai/api-reference/user-apis/user-read-api.md): This API endpoint retrieves the details of a specific user using their `user_id`. To fetch the user information, make a GET request to the following URL:
+- [User Upload API](https://docs.miso.ai/api-reference/user-apis/user-upload-api.md): Bulk API to insert User records. This API endpoint accepts POST requests with JSON data containing a list of User records wrapped in a dictionary.
+- [Data Management](https://docs.miso.ai/data-integration/integrating-your-data.md): Learn how to manage your data with Miso
+- [Custom and Third‑Party JavaScript Integration](https://docs.miso.ai/data-integration/integration-custom.md)
+- [Dojo: Answer Metrics](https://docs.miso.ai/dojo/dojo-answers-metrics.md)
+- [Getting started](https://docs.miso.ai/introduction/getting-started.md)
+- [Pricing](https://docs.miso.ai/introduction/pricing.md)
+- [Ask Module Quick Start](https://docs.miso.ai/introduction/quickstart-ask.md): Integrate Miso's AI-driven Q&A interface into your website in minutes.
+- [Explore Module Quick Start](https://docs.miso.ai/introduction/quickstart-explore.md): Help users discover content through curated, AI-generated related questions.
+- [Hybrid Search Quick Start](https://docs.miso.ai/introduction/quickstart-hybrid-search.md): Combine traditional keyword search with AI-generated answers in a single unified interface.
+- [Welcome to Miso!](https://docs.miso.ai/introduction/welcome-to-miso.md)
+- [Answers FAQs](https://docs.miso.ai/support/answers-faqs.md): Deployment FAQs
+- [🙋‍♂️ FAQ](https://docs.miso.ai/support/faqs.md): Have a question? We just might have you covered.
+
+## OpenAPI Specs
+
+- [swagger](https://docs.miso.ai/swagger.json)
+- [openapi](https://docs.miso.ai/api-reference/openapi.json)
+
+## Optional
+
+- [Website](https://miso.ai/)

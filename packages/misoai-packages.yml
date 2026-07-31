@@ -1,0 +1,64 @@
+generated: '2026-07-20'
+method: searched
+source: >-
+  npm registry, PyPI, and the MisoAI GitHub organization (github.com/MisoAI).
+  Only first-party client libraries published by Miso Technologies are marked
+  official.
+packages:
+- language: javascript
+  registry: npm
+  name: "@miso.ai/client-sdk"
+  url: https://www.npmjs.com/package/@miso.ai/client-sdk
+  install: npm install @miso.ai/client-sdk
+  version: 1.13.1
+  official: true
+  repo: https://github.com/MisoAI/miso-client-js-sdk
+  notes: Miso JavaScript SDK for websites (browser / front-end).
+- language: javascript
+  registry: npm
+  name: "@miso.ai/server-sdk"
+  url: https://www.npmjs.com/package/@miso.ai/server-sdk
+  install: npm install @miso.ai/server-sdk
+  version: 0.6.6
+  official: true
+  repo: https://github.com/MisoAI/miso-server-js-sdk
+  notes: Miso JavaScript SDK for Node.js (server-side data ingestion / engine calls).
+- language: javascript
+  registry: npm
+  name: "@miso.ai/commons"
+  url: https://www.npmjs.com/package/@miso.ai/commons
+  install: npm install @miso.ai/commons
+  version: 1.13.1
+  official: true
+  notes: Shared utilities used by the Miso JavaScript SDKs.
+- language: python
+  registry: pypi
+  name: miso-sdk
+  url: https://pypi.org/project/miso-sdk/
+  install: pip install miso-sdk
+  version: 1.3.0
+  official: true
+  repo: https://github.com/MisoAI/miso-python-sdk
+  notes: Miso Python SDK.
+- language: php
+  registry: github
+  name: miso-php-sdk
+  url: https://github.com/MisoAI/miso-php-sdk
+  install: composer require (see repo)
+  official: true
+  repo: https://github.com/MisoAI/miso-php-sdk
+  notes: Miso PHP SDK (published on GitHub; not indexed on Packagist at capture time).
+- language: javascript
+  registry: github
+  name: miso-shopify-client-js
+  url: https://github.com/MisoAI/miso-shopify-client-js
+  official: true
+  repo: https://github.com/MisoAI/miso-shopify-client-js
+  notes: JavaScript client library for the Miso Shopify integration.
+- language: php
+  registry: github
+  name: miso-wordpress-plugin
+  url: https://github.com/MisoAI/miso-wordpress-plugin
+  official: true
+  repo: https://github.com/MisoAI/miso-wordpress-plugin
+  notes: Official WordPress plugin for Miso data integration.

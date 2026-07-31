@@ -1,0 +1,29 @@
+generated: '2026-07-20'
+method: searched
+source: openapi/misoai-openapi-original.json
+docs: https://docs.miso.ai/api-reference/authentication
+summary:
+  types:
+  - apiKey
+  api_key_in:
+  - query
+  - header
+  key_types:
+  - {name: secret, access: full, usage: server-side only}
+  - {name: publishable, access: interaction streaming + read-only search/recs, usage: front-end (user_id must be hashed)}
+  transports:
+  - api_key query parameter (e.g. ?api_key=...)
+  - X-API-KEY request header
+  management: Keys are issued, rotated, and revoked in the Dojo console (https://dojo.miso.ai).
+schemes:
+- name: Secret API Key
+  type: apiKey
+  in: query
+  parameter: api_key
+  description: "Your secret API key is used to access every Miso API endpoint. You should secure\
+    \ this key and only use it on a backend \nserver. Never leave this key in your client-side\
+    \ JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser)\
+    \ and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n\
+    ```\nPOST /v1/use"
+  sources:
+  - openapi/misoai-openapi-original.json

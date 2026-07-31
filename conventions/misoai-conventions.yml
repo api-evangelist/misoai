@@ -1,0 +1,77 @@
+generated: '2026-07-20'
+method: searched
+source: >-
+  https://docs.miso.ai/api-reference/authentication and the operation schemas in
+  openapi/misoai-openapi-original.json. Captures the cross-cutting request/
+  response conventions that apply across Miso's REST API rather than any single
+  operation.
+description: >-
+  How the Miso API behaves across operations: authentication, pagination,
+  field selection, filtering, versioning, the error envelope, and rate limits.
+base_url: https://api.askmiso.com
+api_style: REST over HTTPS, JSON request and response bodies (POST for most reads).
+
+authentication:
+  scheme: API key in the api_key query parameter (also accepted as X-API-KEY header)
+  key_types:
+  - secret (full access; server-side only)
+  - publishable (front-end; interaction streaming + read-only search/recs; user_id must be hashed)
+  docs: https://docs.miso.ai/api-reference/authentication
+  detail: authentication/misoai-authentication.yml
+
+idempotency:
+  supported: false
+  detail: >-
+    Miso does not document an idempotency-key mechanism, and the OpenAPI declares
+    no Idempotency-Key parameter. Data-ingestion endpoints are upserts keyed by
+    the record's own id (product_id / user_id), which provides natural
+    write-deduplication, but there is no request-level idempotency contract.
+
+pagination:
+  style: offset (Solr-style start / rows)
+  request_params:
+    start: Zero-based offset into the result set.
+    rows: Number of results to return (page size).
+  applies_to: [search, autocomplete, mget, recommendation APIs]
+  detail: Search and recommendation results are backed by a Solr-style engine.
+
+field_selection:
+  supported: true
+  mechanism: fl request parameter — list of fields to retrieve on returned products.
+
+filtering:
+  supported: true
+  mechanism: fq request parameter — a filter query in Solr syntax to restrict results.
+
+versioning:
+  scheme: uri-path
+  current: v1
+  example: https://api.askmiso.com/v1/search/search
+  detail: lifecycle/misoai-lifecycle.yml
+
+error_envelope:
+  media_type: application/json
+  rfc9457: false
+  shape: '{ "errors": bool, "message": string, "data": array|object }'
+  validation_schema: HTTPValidationError (FastAPI-style detail[] on 422)
+  detail: errors/misoai-problem-types.yml
+
+rate_limits:
+  documented: false
+  detail: >-
+    Miso advertises a flat monthly fee with "unlimited API requests", so no
+    numeric rate-limit tier is published; no X-RateLimit response headers are
+    declared in the OpenAPI.
+
+environments:
+  detail: >-
+    A single production host (api.askmiso.com). Test vs live is separated by API
+    key (secret vs publishable), and engines/keys are managed in the Dojo console
+    (https://dojo.miso.ai). Miso offers a free sandbox account at
+    https://miso.ai/get-answers.
+
+data_ingestion:
+  detail: >-
+    Interactions, Products/Content, and Users are uploaded (upserted) by their
+    own ids; bulk write endpoints validate every record and may reject the whole
+    batch on any schema error (see errors/misoai-problem-types.yml).

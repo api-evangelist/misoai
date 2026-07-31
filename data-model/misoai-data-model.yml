@@ -1,0 +1,28 @@
+generated: '2026-07-20'
+method: derived
+source: >-
+  Derived from the schemas and id-reference fields in
+  openapi/misoai-openapi-original.json (Product/Content, User, Interaction,
+  Question/Answer, Experiment) and the object descriptions in the Miso API
+  reference (https://docs.miso.ai/api-reference/).
+docs: https://docs.miso.ai/api-reference/introduction
+notation: >-
+  relationships use has_one / has_many / belongs_to with the foreign-key field
+  name; direction is from the entity that owns the reference.
+entities:
+- {name: Product, id_field: product_id, domain: catalog, description: A product or content record in your catalog; the core object Miso search/recs/Q&A operate over.}
+- {name: User, id_field: user_id, domain: audience, description: An end user whose profile drives n=1 personalization.}
+- {name: Interaction, id_field: null, domain: events, description: A logged user action (view, add_to_cart, checkout, read, etc.) linking a user to products.}
+- {name: Question, id_field: question_id, domain: ask, description: A question submitted to Miso's Ask/Answers (LLM) API.}
+- {name: Answer, id_field: null, domain: ask, description: The generated answer (with citations) for a submitted question.}
+- {name: Experiment, id_field: experiment_id_or_slug, domain: experimentation, description: An A/B experiment; receives experiment events.}
+- {name: Engine, id_field: null, domain: personalization, description: A trained ML model (search/recommendation) configured in the Dojo console.}
+relationships:
+- {from: Interaction, to: User, kind: belongs_to, via: user_id}
+- {from: Interaction, to: Product, kind: has_many, via: product_ids}
+- {from: User, to: Interaction, kind: has_many, via: user_id}
+- {from: Product, to: Interaction, kind: has_many, via: product_ids}
+- {from: Question, to: Answer, kind: has_one, via: question_id}
+- {from: Experiment, to: Interaction, kind: has_many, via: experiment_id_or_slug}
+- {from: Engine, to: Product, kind: has_many, via: trained-on-catalog}
+- {from: Engine, to: User, kind: has_many, via: trained-on-users}

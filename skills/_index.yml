@@ -1,0 +1,36 @@
+generated: '2026-07-20'
+method: generated
+source: >-
+  Generated from openapi/misoai-openapi-original.json operations and the
+  conventions/errors artifacts in this repo. Every step is grounded in a real
+  operationId verified against the spec. No provider-published AGENTS.md/skill
+  files were found.
+api: openapi/misoai-openapi-original.json
+skills:
+- file: misoai-ingest-catalog.md
+  name: Ingest your catalog, users, and interactions
+  api: openapi/misoai-openapi-original.json
+  operations:
+  - content_write_api_v1_products_post
+  - user_write_api_v1_users_post
+  - interaction_upload_api_v1_interactions_post
+- file: misoai-personalized-search.md
+  name: Add personalized search and autocomplete
+  api: openapi/misoai-openapi-original.json
+  operations:
+  - search_v1_search_search_post
+  - autocomplete_v1_search_autocomplete_post
+  - mget_v1_search_mget_post
+- file: misoai-recommendations.md
+  name: Serve personalized recommendations
+  api: openapi/misoai-openapi-original.json
+  operations:
+  - user_to_products_v1_recommendation_user_to_products_post
+  - product_to_products_v1_recommendation_product_to_products_post
+  - trending_items_v1_recommendation_user_to_trending_post
+- file: misoai-ask-answers.md
+  name: Answer questions from your content (Ask)
+  api: openapi/misoai-openapi-original.json
+  operations:
+  - questions_v1_ask_questions_post
+  - questions_answer_v1_ask_questions__question_id__answer_get

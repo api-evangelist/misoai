@@ -1,0 +1,25 @@
+generated: '2026-07-20'
+method: searched
+source: >-
+  https://docs.miso.ai/ quick-start guides and the Miso client-side JavaScript
+  SDK (github.com/MisoAI/miso-client-js-sdk). These are embeddable front-end UI
+  modules, distinct from the server-side SDKs catalogued in
+  packages/misoai-packages.yml.
+loader:
+  library: "@miso.ai/client-sdk"
+  npm: https://www.npmjs.com/package/@miso.ai/client-sdk
+  delivery: JavaScript SDK + drop-in HTML snippet; configured with a publishable API key.
+  docs: https://docs.miso.ai/data-integration/integration-custom
+component_families:
+- family: Ask
+  description: AI-driven Q&A interface that answers user questions grounded in your content.
+  docs: https://docs.miso.ai/introduction/quickstart-ask
+- family: Explore
+  description: Content-discovery module presenting curated, AI-generated related questions.
+  docs: https://docs.miso.ai/introduction/quickstart-explore
+- family: Hybrid Search
+  description: Unified search experience combining keyword search with AI-generated answers.
+  docs: https://docs.miso.ai/introduction/quickstart-hybrid-search
+integrations:
+- {name: Shopify, repo: https://github.com/MisoAI/miso-shopify-client-js}
+- {name: WordPress, repo: https://github.com/MisoAI/miso-wordpress-plugin}

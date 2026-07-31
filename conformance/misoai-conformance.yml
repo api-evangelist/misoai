@@ -1,0 +1,33 @@
+generated: '2026-07-20'
+method: derived
+source: >-
+  Derived from openapi/misoai-openapi-original.json (securitySchemes, response
+  media types, request/response conventions) and the docs. No published
+  compliance/certification program (SOC 2, ISO 27001, PCI, HIPAA, FedRAMP) was
+  found for Miso, so no `Compliance` pointer is emitted.
+standards:
+- id: apikey-auth
+  conforms: true
+  evidence: two apiKey securitySchemes (secret + publishable) in the api_key query parameter.
+- id: oauth2
+  conforms: false
+  evidence: no oauth2 securityScheme declared.
+- id: oidc
+  conforms: false
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: errors use a custom { errors, message, data } JSON envelope, not application/problem+json.
+- id: json-api
+  conforms: false
+- id: pagination
+  conforms: true
+  evidence: Solr-style offset pagination via start / rows parameters.
+- id: idempotency
+  conforms: false
+  evidence: no Idempotency-Key parameter or documented idempotency contract.
+- id: openapi-3
+  conforms: true
+  evidence: OpenAPI 3.0.2 document published at docs.miso.ai/swagger.json.
+- id: rest-json
+  conforms: true
+  evidence: JSON request/response bodies over HTTPS.

@@ -1,0 +1,32 @@
+{
+  "provider": "misoai",
+  "sources": [
+    "misoai-ask-apis-api-openapi.yml",
+    "misoai-bulk-api-api-openapi.yml",
+    "misoai-experiment-apis-api-openapi.yml",
+    "misoai-interaction-apis-api-openapi.yml",
+    "misoai-product-content-apis-api-openapi.yml",
+    "misoai-product-recommendations-api-openapi.yml",
+    "misoai-q-a-apis-api-openapi.yml",
+    "misoai-search-apis-api-openapi.yml",
+    "misoai-user-apis-api-openapi.yml",
+    "misoai-user-recommendations-api-openapi.yml"
+  ],
+  "outputs": [
+    "misoai-ask-apis-api-openapi.yml",
+    "misoai-bulk-api-api-openapi.yml",
+    "misoai-experiment-apis-api-openapi.yml",
+    "misoai-interaction-apis-api-openapi.yml",
+    "misoai-product-content-apis-api-openapi.yml",
+    "misoai-product-recommendations-api-openapi.yml",
+    "misoai-q-a-apis-api-openapi.yml",
+    "misoai-search-apis-api-openapi.yml",
+    "misoai-user-apis-api-openapi.yml",
+    "misoai-user-recommendations-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
