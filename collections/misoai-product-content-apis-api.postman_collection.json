@@ -1,0 +1,1608 @@
+{
+  "item": [
+    {
+      "id": "06448d13-9ebe-4356-874c-cd015247cdbd",
+      "name": "Product / Content APIs",
+      "description": {
+        "content": "\nMiso's Product / Content APIs let you upload, read, and delete Product / Content records that represent your site's\ncatalog.\n\n### Product / Content records\nMiso analyzes your Product / Content records to provide personalized search and recommendations that connect users\nwith products or content on your site or application.\n\nMuch of Miso's search and personalization capability relies on understanding your catalog in-depth and drawing\ncorrelations between your catalog and your users' consumption or purchasing behaviors. In other words, Miso\ndiscovers that, with high correlation, users who are interested in certain product attributes would also be\ninterested in other products with similar or related attributes. (For simplicity, we will often overload the word\n\"products\" to mean items for purchase if you are an eCommerce business, and content to consume if you are a content\nmarketplace.)\n\nTo fully optimize your search and recommendations, it is important to provide Miso with Product / Content records\nthat are complete and accurate. We define a set of common attributes that capture the basics of most eCommerce and\ncontent media products, such as `title`, `description`, `categories`, `tags`, `material`, `authors`, etc.\n\nIf your products' characteristics cannot be fully captured by these fields, we recommend that you specify\n`custom_attributes`. For Miso, the more complete the product information is, the better its personalized search\nand recommendations become.\n\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "1f8f54e3-d58a-46b0-9e39-1c1cdd007eb8",
+          "name": "Product / Content Upload API",
+          "request": {
+            "name": "Product / Content Upload API",
+            "description": {
+              "content": "Bulk API to insert Product records. This API endpoint accepts POST requests with JSON data\ncontaining a list of Product / Content records wrapped in a dictionary:\n```\nPOST /v1/products\n\n{\"data\": [product_1, product_2, product_3]}\n```\n\nEach product is uniquely identified by its `product_id`. If a record with the same `product_id`\nalready exists in the dataset, the existing one will be **replaced** by the insertion (no\npartial update is allowed at this time). We recommend limiting your calls to around 100\nrecords at a time to avoid memory issues or timeout risks.\n\n### Schema validation\nThis API validates the inserted records against the API schema; any schema error will cause\nthe whole request to fail (`status_code=422`), and none of the records will be inserted. You\nshould check the `response.errors` field to see if there are any errors. For example,\nthe response below means there are no errors (`status_code=200`):\n\n```json\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nA common source of errors when uploading Product records is that the custom attributes' data\ntypes are not consistent with the data types of the existing records. In such cases,\nyou can check the individual error message in the `data` array. For example, if there is an\nerror regarding the second record you tried to insert, the response might look like:\n\n```json\n{\n  \"errors\": true, // there are errors. please check!\n  \"data\": [\n    \"data.0.custom_attributes.designer is invalid. Its data type is not consistent with other records\",\n    \"data.0.product_id is invalid. The attribute expected to be of type 'string', but 'array' is given.\",\n    \"data.0.created_at is invalid. The attribute should match 'date-time' format.\"\n  ]\n}\n```\n\n### Internationalization (I18N)\nMiso has the built-in support for majority of Western European languages, including `English`, `French`, `German`,\n`Spanish`, `Italian`, `Dutch`, `Russian`, and `Ukrainian`, as well as, major Asian languages, including `Mandarin`\n (both Simplified and Traditional), `Japanese`, and `Korean`.\n\nIn Dojo, you can choose the *Primary Language* for your product catalog (default is English).\nHowever, you can also have more than one language in your product catalog that is\nbeyond your primary languages using the `i18n_$LN` fields (replace `$LN` with the [two-letter language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of your choice),\nand let Miso apply the language-specific preprocessing for you, such as tokenization, stemming, elision\nremoval, folding, decompounding, and traditional to simplified Chinese conversion.\n\nFor example, you may have a product called \"Arizona, Green Tea with Ginseng & Honey\" in your catalog, and you also\nsell it in your Spanish, French, and Chinese sites, and want your customers to be able to search for this product\nin their native languages.\n\nIn this case, your product records will like the following sample record, where English is the primary language of\nthe record, and `i18n_es`, `i18n_fr`, `i18n_zh` fields contain product details in their corresponding languages.\n```javascript\n{\n    \"product_id\": \"arizona-ginseng-honey\",\n    // the primary language is English\n    \"title\": \"Arizona, Green Tea with Ginseng & Honey\",\n    // ... other product details in English\n    \"i18n_es\": {\n       \"title\": \"AriZona, Té verde con ginseng y miel\"\n        // ... other product details in Spanish\n    },\n    \"i18n_fr\": {\n       \"title\": \"AriZona - Thé Vert Aromatisé au Miel\"\n        // ... other product details in French\n    },\n    \"i18n_zh\": {\n       \"title\": \"美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶\"\n        // ... other product details in Chinese\n    }\n }\n```\nIn this way, your customer can find this product with any of the following search queries\nwithout additional configuration:\n* `arizona green tea`\n* `arizona te verde`\n* `arizona the vert`\n* `arizona 綠茶`\n\nThe similar concept applies to Autocomplete as well. You can specify a `language` parameter\nin the requests to Autocomplete API, and the autocomplete results for the specific language\nwill be returned.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "products"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"product_id\": \"<string>\",\n      \"product_group_id\": \"<string>\",\n      \"parent_id\": \"<string>\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"<string>\",\n      \"title\": \"<string>\",\n      \"description\": \"<string>\",\n      \"short_description\": \"<string>\",\n      \"language\": \"<string>\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"url\": \"<uri>\",\n      \"cover_image\": \"<uri>\",\n      \"original_price\": \"<number>\",\n      \"sale_price\": \"<number>\",\n      \"margin\": \"<number>\",\n      \"size\": \"<string>\",\n      \"color\": \"<string>\",\n      \"material\": \"<string>\",\n      \"condition\": \"NEW\",\n      \"brand\": \"<string>\",\n      \"authors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"publishers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"collections\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": \"<number>\",\n          \"lon\": \"<number>\"\n        },\n        {\n          \"lat\": \"<number>\",\n          \"lon\": \"<number>\"\n        }\n      ],\n      \"rating\": \"<number>\",\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    },\n    {\n      \"product_id\": \"<string>\",\n      \"product_group_id\": \"<string>\",\n      \"parent_id\": \"<string>\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"<string>\",\n      \"title\": \"<string>\",\n      \"description\": \"<string>\",\n      \"short_description\": \"<string>\",\n      \"language\": \"<string>\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"url\": \"<uri>\",\n      \"cover_image\": \"<uri>\",\n      \"original_price\": \"<number>\",\n      \"sale_price\": \"<number>\",\n      \"margin\": \"<number>\",\n      \"size\": \"<string>\",\n      \"color\": \"<string>\",\n      \"material\": \"<string>\",\n      \"condition\": \"NEW\",\n      \"brand\": \"<string>\",\n      \"authors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"publishers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"collections\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": \"<number>\",\n          \"lon\": \"<number>\"\n        },\n        {\n          \"lat\": \"<number>\",\n          \"lon\": \"<number>\"\n        }\n      ],\n      \"rating\": \"<number>\",\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\",\n            \"key_3\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "d8e38d05-7323-4032-8eb5-9779c7918b31",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    },\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\",\n            \"key_3\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\",\n        \"key_2\": \"<boolean>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"success\",\n  \"data\": {\n    \"task_id\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b0fbb973-27a0-4b4c-a130-a0ca08edd0f8",
+              "name": "Bad Request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    },\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\",\n            \"key_3\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\",\n        \"key_2\": \"<boolean>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message:\": \"Request timeout.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "00edea7a-fc70-4f83-b5a8-0bb15cbc6639",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    },\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\",\n            \"key_3\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\",\n        \"key_2\": \"<boolean>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"invalid api key.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "56b042bb-eb1f-4118-b055-d1b37d1ac398",
+              "name": "Forbidden",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    },\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\",\n            \"key_3\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\",\n        \"key_2\": \"<boolean>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4d889c2a-0980-4473-9c0a-ec51d94b0507",
+              "name": "Unprocessable Entity",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    },\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\",\n            \"key_3\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\",\n        \"key_2\": \"<boolean>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"errors\": true,\n  \"message\": \"None of the records are inserted, because at least one of them contain schema errors. Please see `data` field for details.\",\n  \"data\": [\n    \"data.0.product_id is invalid. The attribute expected to be of type 'string', but 'array' is given.\",\n    \"data.0.created_at is invalid. The attribute should match 'date-time' format.\"\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "016b9d81-df62-4001-965a-55b08bcbfa3e",
+              "name": "Internal Server Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\"\n      }\n    },\n    {\n      \"product_id\": \"123ABC-S-Black\",\n      \"product_group_id\": \"123ABC\",\n      \"parent_id\": \"Nike_Shop_123\",\n      \"related_ids\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"type\": \"clothes\",\n      \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n      \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n      \"language\": \"en\",\n      \"created_at\": \"<dateTime>\",\n      \"published_at\": \"<dateTime>\",\n      \"updated_at\": \"<dateTime>\",\n      \"categories\": [\n        [\n          \"<string>\",\n          \"<string>\"\n        ],\n        [\n          \"<string>\",\n          \"<string>\"\n        ]\n      ],\n      \"tags\": [\n        \"cute\",\n        \"anime\",\n        \"dogs\",\n        \"t-shirt\"\n      ],\n      \"url\": \"https://example.com/miso-tshirt-123ABC\",\n      \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n      \"original_price\": 20,\n      \"sale_price\": 15,\n      \"margin\": 15,\n      \"size\": \"S\",\n      \"color\": \"Black\",\n      \"material\": \"Cotton\",\n      \"condition\": \"NEW\",\n      \"brand\": \"Miso Corp.\",\n      \"authors\": [\n        \"Andy Hsieh\"\n      ],\n      \"publishers\": [\n        \"O'Reilly Media\"\n      ],\n      \"collections\": [\n        \"Anime T-Shirt Collection\",\n        \"Superhero T-Shirt Collection\"\n      ],\n      \"availability\": \"<string>\",\n      \"location\": [\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        },\n        {\n          \"lat\": 40.74844,\n          \"lon\": -73.985664\n        }\n      ],\n      \"rating\": 5,\n      \"html\": \"<string>\",\n      \"subtitle\": \"<string>\",\n      \"headers\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"paragraphs\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"anchors\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"children\": [\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\"\n          }\n        },\n        {\n          \"id\": \"<string>\",\n          \"url\": \"<string>\",\n          \"title\": \"<string>\",\n          \"description\": \"<string>\",\n          \"html\": \"<string>\",\n          \"headers\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"custom_attributes\": {\n            \"key_0\": \"<boolean>\",\n            \"key_1\": \"<boolean>\",\n            \"key_2\": \"<boolean>\",\n            \"key_3\": \"<boolean>\"\n          }\n        }\n      ],\n      \"enable_question_answering\": false,\n      \"custom_attributes\": {\n        \"key_0\": \"<boolean>\",\n        \"key_1\": \"<boolean>\",\n        \"key_2\": \"<boolean>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "94b33a10-641c-4b14-ae95-d7cc5b43e6f5",
+          "name": "Product / Content Read API",
+          "request": {
+            "name": "Product / Content Read API",
+            "description": {
+              "content": "This API endpoint retrieves the details of a specific product / content using its `product_id`.\nTo fetch the product / content information, make a GET request to the following URL:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nGET /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to fetch.\n\n## Response Format\n\nThe API will return the product / content details in a JSON object if the given `product_id`\nis valid and exists in the system. The JSON object will include fields like `title`,\n`description`, `price`, `images`, and any internationalization fields (`i18n_$LN`).\n\n### Example Response\n\nHere's an example of a successful API response for a product / content with the `product_id`\n\"arizona-ginseng-honey\":\n\n```json\n{\n  \"product_id\": \"arizona-ginseng-honey\",\n  \"title\": \"Arizona, Green Tea with Ginseng & Honey\",\n  \"description\": \"A refreshing and delicious blend of green tea with ginseng and honey.\",\n  \"price\": 1.99,\n  \"i18n_es\": {\n    \"title\": \"AriZona, Té verde con ginseng y miel\"\n    // ... other product details in Spanish\n  },\n  \"i18n_fr\": {\n    \"title\": \"AriZona - Thé Vert Aromatisé au Miel\"\n    // ... other product details in French\n  },\n  \"i18n_zh\": {\n    \"title\": \"美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶\"\n    // ... other product details in Chinese\n  }\n}\n```\n\nIf the provided `product_id` is invalid or does not exist in the system, the API will return\nan error response with a `status_code=404`.\n\n### Example Error Response\n```json\n{\n  \"message\": \"not found\"\n}\n```",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "products",
+                ":product_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "product_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "fb1abd13-d18b-4b36-8750-1709ffb39d62",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"data\": {\n    \"product_id\": \"123ABC-S-Black\",\n    \"product_group_id\": \"123ABC\",\n    \"parent_id\": \"Nike_Shop_123\",\n    \"related_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"type\": \"clothes\",\n    \"title\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n    \"description\": \"This cute Shiba inu dog eating Miso soup is perfect for those who love Japanese culture.\",\n    \"short_description\": \"Cute Shiba Inu Dog Eating Miso Soup T-Shirt\",\n    \"language\": \"en\",\n    \"created_at\": \"<dateTime>\",\n    \"published_at\": \"<dateTime>\",\n    \"updated_at\": \"<dateTime>\",\n    \"categories\": [\n      [\n        \"<string>\",\n        \"<string>\"\n      ],\n      [\n        \"<string>\",\n        \"<string>\"\n      ]\n    ],\n    \"tags\": [\n      \"cute\",\n      \"anime\",\n      \"dogs\",\n      \"t-shirt\"\n    ],\n    \"url\": \"https://example.com/miso-tshirt-123ABC\",\n    \"cover_image\": \"https://example.com/miso-tshirt-123ABC.jpg\",\n    \"original_price\": 20,\n    \"sale_price\": 15,\n    \"margin\": 15,\n    \"size\": \"S\",\n    \"color\": \"Black\",\n    \"material\": \"Cotton\",\n    \"condition\": \"NEW\",\n    \"brand\": \"Miso Corp.\",\n    \"authors\": [\n      \"Andy Hsieh\"\n    ],\n    \"publishers\": [\n      \"O'Reilly Media\"\n    ],\n    \"collections\": [\n      \"Anime T-Shirt Collection\",\n      \"Superhero T-Shirt Collection\"\n    ],\n    \"availability\": \"<string>\",\n    \"location\": [\n      {\n        \"lat\": 40.74844,\n        \"lon\": -73.985664\n      },\n      {\n        \"lat\": 40.74844,\n        \"lon\": -73.985664\n      }\n    ],\n    \"rating\": 5,\n    \"html\": \"<string>\",\n    \"subtitle\": \"<string>\",\n    \"headers\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"paragraphs\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"anchors\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"children\": [\n      {\n        \"id\": \"<string>\",\n        \"url\": \"<string>\",\n        \"title\": \"<string>\",\n        \"description\": \"<string>\",\n        \"html\": \"<string>\",\n        \"headers\": [\n          \"<string>\",\n          \"<string>\"\n        ],\n        \"custom_attributes\": {\n          \"key_0\": \"<boolean>\",\n          \"key_1\": \"<boolean>\"\n        }\n      },\n      {\n        \"id\": \"<string>\",\n        \"url\": \"<string>\",\n        \"title\": \"<string>\",\n        \"description\": \"<string>\",\n        \"html\": \"<string>\",\n        \"headers\": [\n          \"<string>\",\n          \"<string>\"\n        ],\n        \"custom_attributes\": {\n          \"key_0\": \"<boolean>\"\n        }\n      }\n    ],\n    \"enable_question_answering\": false,\n    \"custom_attributes\": {\n      \"key_0\": \"<boolean>\"\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8bef8694-38e7-4d7f-96bc-ca93ebd11b05",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"invalid api key.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "baec92a3-f4e1-4ce2-9ec1-7c427f33eb49",
+              "name": "Product not Found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"not found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "66371328-35b3-4fb1-9243-48ef18a92ff6",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6dfbc0df-9200-4f17-9e43-85fe546e69bc",
+              "name": "Internal Server Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "30a82557-7e2e-40a1-9898-212115d14c57",
+          "name": "Product / Content Delete API",
+          "request": {
+            "name": "Product / Content Delete API",
+            "description": {
+              "content": "This API endpoint allows you to delete a specific product / content from the system using its\n`product_id`. To remove a product, make a DELETE request to:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nDELETE /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to delete.\n\n## Response Format\n\nThe API will return a JSON object indicating the success or failure of the deletion request.\nIf the deletion is successful, the `status_code` will be `200`, and the `message` field will\nconfirm the successful deletion.\n\n### Example Successful Deletion Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\":  [\n    {\n      \"task_id\": \"{task_id}\"\n    }\n  ]\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/products/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "products",
+                ":product_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "product_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "42d5497e-66c4-4565-860c-d4d0392fb331",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"success\",\n  \"data\": {\n    \"task_id\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c18bcce1-0990-4331-a746-f6d9cfbc01f3",
+              "name": "Bad Request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message:\": \"Request timeout.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8d399cf7-5d95-4b17-a291-caaabff77528",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"invalid api key.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "03036566-aa4f-4326-bbbe-4139adbd7506",
+              "name": "Forbidden",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c8efc9b8-2279-443d-a390-206cfa681f84",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "274ff1f6-dd6c-44ee-bec1-decc0d194c5f",
+              "name": "Internal Server Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    ":product_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "product_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a6017c4a-7334-4028-80fd-85c97ed28acd",
+          "name": "Product / Content ID List API",
+          "request": {
+            "name": "Product / Content ID List API",
+            "description": {
+              "content": "This API endpoint allows you to fetch the unique identifiers (product_ids) of all products\nstored in the app. To get a list of product_ids, make a GET request to the following URL:\n\n```\nGET /v1/products/_ids\n```\n\n## Response Format\n\nThe API will return an array of product_ids in a JSON object. The `status_code` will be `200`\nif the request is successful. If any error occurs during the request, the `status_code` will\nnot be `200` and the `message` field will indicate the error.\n\n### Example Successful Response\n\n```json\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"ids\": [\n      \"product_1\",\n      \"product_2\",\n      \"product_3\",\n      // ... more product_ids\n    ]\n  }\n}\n```\n\n### Example Error Response\n\nIf the dataset cannot be found, the API will return a `404` error:\n\n```json\n{\n  \"status_code\": 404,\n  \"message\": \"not found\"\n}\n```\n\nIf another error occurs during the request, the API will return a `500` error\n\n```json\n{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}\n```",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "products",
+                "_ids"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "38a707d9-2648-49d6-bbc6-447ca554a1b5",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_ids"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"data\": {\n    \"ids\": [\n      \"string\",\n      \"string\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "42bbcbb2-1c66-4bee-97d7-c59b41600c74",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_ids"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"invalid api key.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c978d431-bb52-415b-8c3a-dd38fd2efb22",
+              "name": "Internal Server Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_ids"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b65ca250-28e9-46a3-ad5c-08c4698e3601",
+          "name": "Product / Content Bulk Delete API",
+          "request": {
+            "name": "Product / Content Bulk Delete API",
+            "description": {
+              "content": "This API endpoint allows you to delete multiple products by providing their product_ids.\n\nTo delete multiple products, make a POST request to the following URL:\n\n```\nPOST /v1/products/_delete\n```\n\nThe request body should contain a JSON object with an array of product_ids:\n\n```json\n{\n  \"data\": {\n    \"product_ids\": [\n      \"product-1\",\n      \"product-2\",\n      // ... more product_ids to delete\n    ]\n  }\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `message` and an array of `data`\ncontaining a `task_id` that can be used to get the status of the bulk deletion process.\n\n#### Example Successful Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/products/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "products",
+                "_delete"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "be5c61a8-f514-4893-a2b6-583616628a5f",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_delete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"success\",\n  \"data\": {\n    \"task_id\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "813c12b6-8dc7-4512-a76f-2c7a699c1c43",
+              "name": "Bad Request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_delete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message:\": \"Request timeout.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4562c7fa-d0a5-451b-a60a-a44d137ae417",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_delete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"invalid api key.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "12e40784-4be2-409f-bfa6-402da8817c22",
+              "name": "Forbidden",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_delete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Request is denied due to bot blocking. Please only access this API from a real browser or use Secret API Key instead.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1913476a-994c-4272-8c05-26c9318f623f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_delete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1b28583d-6f34-4a0b-af7e-9f8a5ccb7a04",
+              "name": "Internal Server Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "products",
+                    "_delete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.askmiso.com",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "84385a25-11fa-4f57-ab11-496cb07df5c0",
+    "name": "Miso Ask APIs Product / Content APIs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Overview\nMiso’s approach to personalization is to train machine learning Engines on three core data sets:\n\n1. Your site’s log of historical and real-time interactions,\n2. Your catalog of products and content, and\n3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation\nexperiences that are personalized down to the individual level (n=1 personalization).\n\nTo see how Miso works and explore the power of its Engines, we recommend following\n[this tutorial](https://docs.askmiso.com/) to get\nstarted with our Playground data. Integrating your site or application with Miso happens in three basic steps:\n\n1. Upload your data\n2. Train your Engines\n3. Build search and recommendation experiences with the output of your Engines.\n\n\nMiso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),\nwhich is used to set up your Engines with the conversions you want to optimize and your training schedule.\nDojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of\nMiso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search\nand recommendations running on your live data.\n\nThe second integration point is Miso’s API, which lets you automatically manage your data in Miso and build\nexperiences that leverage the output of Miso’s personalization Engines.\n\n\nMiso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.\n\n### Data APIs\nData APIs collect input to Miso's personalization Engines. These APIs all support high-throughput\ndata ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data\nfrom Miso. Subcategories of Data APIs are:\n\n* [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction\nrecords, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s\nEngines learn how to optimize your conversion funnels.\n* [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic\nunderstanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely\nsuggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.\n* [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,\nso Miso can build an understanding of user segmentation and behavior in relation to products and content.\nThe `user_id` is how Miso links User records to your Interaction records.\n\nAs a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User\nUpload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction\nUpload API, we recommend limiting your calls to around 10,000 records at a time.\n\n### Engine APIs\nEngine APIs provide the output of Miso's personalization Engines. We designed these APIs with a focus on low\nlatency and high availability. Most of these APIs' 95th percentile response time is under 75ms,\nand the services are replicated to at least three separate instances for high availability.\nThe types of Engine APIs are:\n\n* [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and\nautocompletion.\n* [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with\nthe products, categories, and product attributes that are likely to drive conversions.\n\n# Authentication\n[View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)\n\nThere are three environments in Miso:\n* **Playground**, a read-only tutorial environment with sample data.\n* **Development**, for staging, QA, and experimentation.\n* **Production**, where you run your live integration with Miso.\n\nAccess a Miso environment by passing in the corresponding API key in your API calls. There is one publishable\nkey and one secret key per environment.\n\nAPI Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.\n",
+      "type": "text/plain"
+    }
+  }
+}

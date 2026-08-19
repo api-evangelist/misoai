@@ -1,0 +1,530 @@
+{
+  "item": [
+    {
+      "id": "6f2467a3-42b0-4390-82df-504cf9d128ec",
+      "name": "Search APIs",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "4b084ff6-9242-4b82-982d-b53422d7f418",
+          "name": "Search API",
+          "request": {
+            "name": "Search API",
+            "description": {
+              "content": "The Search API provides personalized, typo-correcting, semantic search for your site.\nYou send this API the search queries users entered, and the API returns the relevant search results tailored to your\nusers' interests.\n\n### Personalized search\nPersonalized search is a key factor in driving search conversion on many major sites.\nIt is particularly powerful for short search queries (≤ 3 keywords), which account for [up to 80% of search traffic in the U.S.](https://www.statista.com/statistics/269740/number-of-search-terms-in-internet-research-in-the-us/),\nbut are usually the hardest to get right with traditional search engines. This is because shorter search queries tend\nto match a larger number of results, but there\nis not enough information in the query strings alone to determine which results the users\nare actually looking for.\n\nFor example, when users search for *jeans* on Levi's.com, it is\nimpossible to know which *jeans* the user is looking for, among thousands of options.\nEven if the user adds: *jeans for men*, it is still unclear to a traditional search engine what style, material,\nor size the user wants.\n\nIn the contrary, with Miso's personalized search, we not only analyze the search query itself, but also take into\naccount the *context* in which the searches are made, including who are the users, where are they from, what are their\npast interactions on the site, what other searches the user made, etc. These signals together\nallow Miso to generate more than 15% to 20% higher search conversion rate than the traditional non-personalized search\nengines.\n\n### Balancing relevancy and personalization\nAlthough personalization is a powerful technique, over-using it can be harmful to the user experiences. In the\ncontext of search optimization, the relevancy of the search results are still the most important criteria, and we\ndon't want personalization to overwhelm the search relevancy.\nFor example, when users search for a very specific term, or directly search for the product names,\nMiso's algorithm will respond with the most relevant search results first, and then only apply personalization to\nrerank more ambiguous search results.\n\n\n### Basic usage\nFor every search query, you let Miso know the user's `user_id` and the search keywords in the API request body,\nfor example:\n```\nPOST /v1/search/search\n{\n  \"q\": \"jeans\",\n  \"user_id\": \"user-123\"\n}\n```\n\nFor site visitors who do not sign in, you can let Miso know the `anonymous_id` of this visitor:\n```\nPOST /v1/search/search\n{\n  \"q\": \"jeans\",\n  \"anonymous_id\": \"visitor-123\"\n}\n```\n\n### Search response\nWith the query above, Miso responds with the search results like the following:\n```javascript\n{\n   \"message\":\"success\",\n   \"data\":{\n      \"took\":50,\n      \"total\":30,\n      \"start\":0,\n      \"miso_id\":\"f34b90de-086b-11eb-b498-1ee8abb1818b\",\n      \"products\":[\n         {\n            \"product_id\":\"505-regular-fit-mens-jeans\",\n            \"title\":\"The 505 Regular Fit Men's Jeans\",\n            \"url\":\"https://levi.com/jeans/505-regular-fit-mens-jeans/\",\n            \"size\":\"29\",\n            \"material\":\"Cotton\",\n            \"color\":\"Rinse - Dark Wash\",\n            \"_search_score\": 78.12,\n            \"_personalization_score\": 0.98\n         }\n      ],\n      \"spellcheck\":{\n         \"spelling_errors\":false\n      }\n\n   }\n}\n```\n* **took**: the amount of time (in milliseconds) Miso took to answer the query\n* **total**: the total number of matched products. You can paginate through all the products by using the combination\nof *start* and *rows* parameters (see *Request Body Schema* below)\n* **miso_id**: a UUID of the search request. You should include **miso_id** in the Interaction records for every\ninteractions that result from this search request, e.g. user click-through a product in the search results.\nMiso use miso_id to track the search performance and fine-tune the algorithm accordingly.\n* **products**: an array of [Product records](#operation/content_write_api_v1_products_post) that match the search\nquery, ranked in the order of relevancy and\nprobability that the user will be interested in this product. By default, only the `product_id` of the Product is\nreturned. You can ask Miso to return additional fields by using the *fl* parameter (see *Request Body Schema* below)\n* **products[ ]._search_score**: the search relevancy score of the products based on keyword matching and Miso's\nsemantic matching. This score is similar to traditional Lucene search score.\n* **products[ ]._personalization_score**: the score assigned by Miso's personalization algorithm based on users'\nprofile and their interactions on the site. This score quantifies the probability of whether users will be\ninterested in this product or not.\n* **spellcheck**: an dictionary contains spell checking information.\n\n### Spellcheck and auto-correction\nAccording to a [Microsoft Research study](https://www.aclweb.org/anthology/W04-3238.pdf), roughly 10-15% of the\nqueries sent to search engines contain errors. A misspelled search keyword often results in poor search\nquality, and users have been accustomed to Google's automatic spelling correction functionality and expect the same\non your site.\n\nHowever, correcting spelling and typos at scale is a non-trivial machine learning problem.\nMiso's spellcheck is based on a sequence-to-sequence\ndeep learning model, trained and updated regularly on a corpus of billion tokens. It detects hard-to-spot errors,\nauto-correct keywords according to its context, and recognize terms that are newer or lesser known.\n\nSpellcheck is always on for every search request so you don't need to turn it on.\nWhat you need to decide is whether to turn on *auto spelling correction*.\nFor example, the following search request turns on the auto-spelling-correction, and Miso will automatically\nreplace any misspelled queries with their correct spelling:\n```\nPOST /v1/search/search\n{\n   \"q\":\"whte denem jeans\",\n   \"user_id\":\"user-123\",\n   \"spellcheck\":{\n      \"enable_auto_spelling_correction\":true\n   }\n}\n```\nThe API will respond:\n```javascript\n{\n   \"message\":\"success\",\n   \"data\":{\n      \"took\":50,\n      \"total\":30,\n      \"start\":0,\n      \"miso_id\":\"f34b90de-086b-11eb-b498-1ee8abb1818b\",\n      \"spellcheck\":{\n         \"spelling_errors\":true,\n         \"auto_spelling_correction\":true,\n         \"original_query\":\"whte denem jeans\",\n         \"original_query_with_markups\":\"&lt;mark&gt;whte&lt;/mark&gt; &lt;mark&gt;denem&lt;/mark&gt; jeans\",\n         \"corrected_query\":\"white denim jeans\",\n         \"corrected_query_with_markups\":\"&lt;mark&gt;white&lt;/mark&gt; &lt;mark&gt;denim&lt;/mark&gt; jeans\"\n      },\n      \"products\":[\n         ......\n      ]\n   }\n}\n```\nThe *spellcheck* object contains the following fields:\n* **spelling_errors** indicates whether there is a spelling error in the query\n* **auto_spelling_correction** indicates whether the search query has been replaced with the *corrected_query*\n* **original_query** the original search query\n* **original_query_with_markups** the original search query with the misspelled words highlighted by `<mark>` html tags\n* **corrected_query** the search query with misspelling and typos corrected\n* **corrected_query_with_markups** the search query with misspelling and typos corrected, and the corrected parts are highlighted by `<mark>` html tags\n\nYou can opt-out the auto-spelling-correction by setting `enable_auto_spelling_correction=false`. For example:\n```\nPOST /v1/search/search\n{\n   \"q\":\"whte denem jeans\",\n   \"user_id\":\"user-123\",\n   \"spellcheck\":{\n      \"enable_auto_spelling_correction\":false\n   }\n}\n```\nIn this case, Miso will still run spellcheck against the query. However, users' queries will be used as it is,\nand **auto_spelling_correction** field will be *false*.\n\n### Boosting and Diversification\nWhile Miso's personalized search can drive conversion by showing search results that are tailored\nto users' interests, ultimately, it is important to make sure that the search results meet your business goals.\nTo that end, Miso provides a great set of tools that enable you to fine-tune the search ranking and make it aligned\n with your goals.\n\nOne great example is **boosting**. Boosting allows you to define a query that can be used to boost a\nsubset of products to the top of the ranking, or to specific *boost positions*. You can use boosting to run\ndifferent kinds of promotion campaigns, or to promote certain set of products for individual users that you know\nthey will be interested in.\n\nFor example, consider a scenario where you need to promote the sales of Nike's products. Then, you might want to\nuse the query below, that will promote the sneakers whose brand are `Nike` to the top of the search result:\n```\nPOST /v1/search/search\n{\n   \"q\":\"sneaker\",\n   \"user_id\":\"user-123\",\n   \"boost_fq\": \"brand:\\\"Nike\\\"\"\n}\n```\n\nFor a slightly more complex example, the query below will promote the Nike products which have also been tagged\nas `ON SALE`:\n```\nPOST /v1/search/search\n{\n   \"q\":\"sneaker\",\n   \"user_id\":\"user-123\",\n   \"boost_fq\": \"brand:\\\"Nike\\\" AND tags:\\\"ON SALE\\\"\"\n}\n```\n\nYou can have as complex boosting logic as you want in the boosting query,\nbut it is worth mentioning that Miso will only boost\nproducts that are relevant and have high likelihood to convert. In other words, Miso will not boost low\nperformance products even if they match the boosting query.\n\nDepending on your boosting rules, in certain cases, you would like to prevent search results from becoming\ntoo \"plain\" due to boosting. For example, you don't want the first page of the search result to contain only Nike\nproducts.\n\nWith Miso, you have two tools to avoid so. First, you can specify `boost_positions` to place boosted products at\nspecific positions in the ranking. For example, the query below will place boosted products only at the first,\nfourth, seventh places in the ranking (positions are 0-based), and place the remaining products in their original\nranking, skipping these three positions.\n\n```\nPOST /v1/search/search\n{\n   \"q\":\"sneaker\",\n   \"user_id\":\"user-123\",\n   \"boost_fq\": \"brand:\\\"Nike\\\" AND tags:\\\"ON SALE\\\"\",\n   \"boost_positions\": [0, 3, 6]\n}\n```\n\nThe second tool is `diversification`. Miso's `diversification` algorithm will maintain a desired minimum distance\nbetween any two products that have the same attributes. For example, the\nfollowing query will make sure products made by the same *brand* are at least two slots apart from each\nother in the search results.\n\n```\nPOST /v1/search/search\n{\n   \"q\":\"sneaker\",\n   \"user_id\":\"user-123\",\n   \"boost_fq\": \"brand:\\\"Nike\\\" AND tags:\\\"ON SALE\\\"\",\n   \"diversification\": {\n       \"brand\": {\"minimum_distance\": 2}\n    }\n}\n```\n\nIt is also very often to use both \"boost_positions\" and \"diversification\" at the same time to make sure that\n(1) the search results are not overwhelmed by the boosted products, and (2) there is a good mix of products from\ndifferent brands showing side-by-side to increase product discovery rate.\n\n### Result ordering\n\nYou can override Miso's default ranking order by specifing a list of fields for Miso to rank the search results.\nThese fields can be any numeric or boolean fields in your Product catalog, or one of the following special\nfields:\n* **_personalization_score**: the score that estimates the probability that a user will interact with a product\ndetermined by Miso's personalization algorithm. The range of this score is between [0, 1]. The scores are\nnon-uniformly distributed. The Products that are relevant to users' interests will have scores much closer to 1,\nthan products that are not.\n* **_search_score**: the score that rates the degree of \"match\" between search keywords and a product's catalog\nwith a focus on Product's titles.\nThis score is mostly based on a variant of [BM25](https://en.wikipedia.org/wiki/Okapi_BM25), but additionally\nconsider the term proximity, typos, term semantic similarity.\nIts value is always larger than 0, but its range is unbounded.\n* **_boosting_score**: a binary score indicates whether a Product is boosted by your boosting query.\n* **_geo_distance**: distance between any point on map, `geo` must be specified when sorting with this field.\n\nFor example, the following query returns all the Products (because `q=*`), ranked by the `_personalization_score`\nfirst, and then by the values in the `custom_attributes.promote_score` field in the Product catalog, then the\ndistance between the product and New York city.\n```\n{\n  \"q\": \"*\",\n  \"order_by\": [\n        {\n            \"field\": \"_personalization_score\",\n            \"tie_breaker\": {\n                \"type\": \"relative_difference\",\n                \"threshold\": \"0.05\"\n            },\n            \"order\": \"desc\"\n        },\n        {\n            \"field\": \"custom_attributes.promote_score\",\n            \"order\": \"desc\"\n        },\n        {\n            \"field\": \"_geo_distance\",\n            \"geo\": {\n                \"lat\": 40.711967,\n                \"lon\": -74.006076,\n            }\n            \"order\": \"asc\"\n        }\n  ]\n}\n```\n#### Mathematical Functions\nMiso supports mathematical functions that transform and combine different sorting criteria into one.\nFor example, a powerful strategy to improve gross merchandise volume (GMV), but maintain user\nexperience is\nto sort the products based on the multiplication of personalization scores and product prices. You can achieve this with\nthe following `order_by` query:\n```\n{\n  \"q\": \"*\",\n  \"order_by\": [\n        {\n            \"field\": \"_personalization_score * pow(sale_price, 0.5)\",\n            \"order\": \"desc\"\n        }\n\n  ]\n}\n```\nFunction `pow(sale_price, 0.5)` takes the square root of the sale price and avoids very expensive products from\noverwhelming the ranking.\n\nMiso supports all the common mathematical operators including `+`, `-`, `*`, `/`, `%`, `^`, `**`, and more\nadvanced functions including:\n  * Power functions: `pow(X, y)`, `sqrt(X)`\n  * Exponents and logarithms: `exp(X)`, `log(X)`, `log2(X)`, `log10(X)`\n  * Element-wise maximum / minimum: `maximum(X, y)`, `minimum(X, y)`\n  * Absolute function: `abs(X)`\n  * Rounding functions: `round(X)`, `floor(X)`, `ceil(X)`\n  * Trigonometric functions: `sin(X)`, `cos(X)`, `tan(X)`, `asin(X)`, `acos(X)`, `atan(X)`\n\n\n#### Soft Tie-Breaker\nFor scores that have granular resolutions, for example `_personalization_score`,`_search_scores`, or\nProducts' `sale_price`, we usually don't want to rank Products by their raw values. After all,\na 0.001 difference in `_personalization_score` or $0.01 difference in sale price typically will not make a\ndifference in users' preferences. In such cases, *soft* tie-breakers should be used to smooth out these minor\ndifferences in scores.\n\nFor example, in the query above, we apply a soft tie-breaker to `_personalization_score` based on score values'\nrelative difference. Specifically, we first sort the score's raw values in the descending order, then\nfor two consecutive values, if their relative difference is no more than a pre-defined threshold\n(in this case `0.05` or `5%`), they are considered as a tie, and the next field\n(i.e. `custom_attributes.promote_score`)\nwill be used to determine their ranking.\n\nIt is also common to utilize tie-breakers to combine the effect of two types of scores. For example, in the\nfollowing query, we set `threshold=0.2` or `20%` for `_personalization_score`, then only the\nProducts that users are 20% more likely to interact with will be ranked higher, the remaining Products will be\nranked by their sale prices. In this way, we combine the effect of personalization score and sale prices, where\nthe Products are roughly ranked by personalization, but favor the pricier products when they have comparable\npersonalization scores.\n```\n{\n  \"q\": \"*\",\n  \"order_by\": [\n        {\n            \"field\": \"_personalization_score\",\n            \"tie_breaker\": {\n                \"type\": \"relative_difference\",\n                \"threshold\": \"0.20\"\n            },\n            \"order\": \"desc\"\n        },\n        {\n            \"field\": \"sale_price\",\n            \"order\": \"desc\"\n        }\n\n  ]\n}\n```\n\nAlso note that, when search keywords are present, it is recommended to always include `_search_score`\nas the first field (plus a tie-breaker) to maintain the relevance of the search results. A tie-breaker is usually\nrequired as well to let the subsequent score have effect to the ranking.\n```\n{\n  \"q\": \"toy story\",\n  \"order_by\": [\n      {\n            \"field\": \"_search_score\",\n            \"tie_breaker\": {\n                \"type\": \"relative_difference\",\n                \"threshold\": \"0.20\"\n            },\n            \"order\": \"desc\"\n        },\n        {\n            \"field\": \"_personalization_score\",\n            \"tie_breaker\": {\n                \"type\": \"relative_difference\",\n                \"threshold\": \"0.20\"\n            },\n            \"order\": \"desc\"\n        },\n        {\n            \"field\": \"sale_price\",\n            \"order\": \"desc\"\n        }\n\n  ]\n}\n```",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "search",
+                "search"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": \"<object>\",\n  \"q\": \"<string>\",\n  \"advanced_q\": \"<string>\",\n  \"enable_boosting_campaigns\": true,\n  \"language\": \"<string>\",\n  \"like\": \"<string>\",\n  \"category\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"spellcheck\": {\n    \"enable_auto_spelling_correction\": true\n  },\n  \"start\": 0,\n  \"facet_filters\": {},\n  \"exclude_fields_from_search\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"enable_partial_match\": false,\n  \"partial_match_mode\": \"blended\",\n  \"enable_partial_match_threshold\": \"<integer>\",\n  \"enable_semantic_search\": false,\n  \"semantic_search_threshold\": 0.5,\n  \"enable_matched_fields\": false,\n  \"query_product_existence\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  },\n  \"personalization_weight\": 5,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "692ede38-b39a-42c4-ab82-6aadf79ba76d",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    "search"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"q\": \"<string>\",\n  \"advanced_q\": \"<string>\",\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"enable_boosting_campaigns\": true,\n  \"language\": \"<string>\",\n  \"like\": \"<string>\",\n  \"category\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"spellcheck\": {\n    \"enable_auto_spelling_correction\": true\n  },\n  \"start\": 0,\n  \"facet_filters\": {},\n  \"exclude_fields_from_search\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"enable_partial_match\": false,\n  \"partial_match_mode\": \"blended\",\n  \"enable_partial_match_threshold\": \"<integer>\",\n  \"enable_semantic_search\": false,\n  \"semantic_search_threshold\": 0.5,\n  \"enable_matched_fields\": false,\n  \"query_product_existence\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  },\n  \"personalization_weight\": 5,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"products\": [\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      },\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      }\n    ],\n    \"total\": 1000,\n    \"start\": 0,\n    \"spellcheck\": {\n      \"spelling_errors\": true,\n      \"auto_spelling_correction\": true,\n      \"original_query\": \"what is pythn\",\n      \"original_query_with_markups\": \"what is &lt;mark&gt;pythn&lt;/mark&gt;\",\n      \"corrected_query\": \"what is python\",\n      \"corrected_query_with_markups\": \"what is &lt;mark&gt;python&lt;/mark&gt;\"\n    },\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"product_existence\": {\n      \"key_0\": false,\n      \"key_1\": false,\n      \"key_2\": true,\n      \"key_3\": true\n    },\n    \"partially_matched_products\": [\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      },\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      }\n    ],\n    \"facet_counts\": {},\n    \"filtering_rule\": \"string\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4ccf9c61-aa33-4e2d-ae10-3dce474b47f0",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    "search"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"q\": \"<string>\",\n  \"advanced_q\": \"<string>\",\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"enable_boosting_campaigns\": true,\n  \"language\": \"<string>\",\n  \"like\": \"<string>\",\n  \"category\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"spellcheck\": {\n    \"enable_auto_spelling_correction\": true\n  },\n  \"start\": 0,\n  \"facet_filters\": {},\n  \"exclude_fields_from_search\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"enable_partial_match\": false,\n  \"partial_match_mode\": \"blended\",\n  \"enable_partial_match_threshold\": \"<integer>\",\n  \"enable_semantic_search\": false,\n  \"semantic_search_threshold\": 0.5,\n  \"enable_matched_fields\": false,\n  \"query_product_existence\": {\n    \"product_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  },\n  \"personalization_weight\": 5,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0a1ab7e7-9ac8-418d-b3fb-d2382ca7b6bd",
+          "name": "Autocomplete API",
+          "request": {
+            "name": "Autocomplete API",
+            "description": {
+              "content": "The Autocompletion API provides real-time, personalized, typo resistant typeahead for your search bar.\nYou send this API what users are currently typing, and the API returns the complete search query suggestions.\n\n### Personalized typeahead\nPersonalized typeahead is an extreme example of personalized search. The personalization starts immediately when\nusers enter even just one character. The typeahead results are personalized so that the entries most likely to drive\nconversion for the current user are ranked at the top. Miso will predict what the user is looking for in real-time\nbased on their interests and past behaviors.\n\n### Basic usage\nThe request schema of Autocompletion API is similar to that of Search API: you put the search query users typed so\nfar, and the `user_id` or `anonymous_id` for Miso to identify the current user.\nFor example, when a user types the first character `r`, you send Miso the following request:\n```\nPOST /v1/search/autocomplete\n{\n   \"q\":\"r\",\n   \"user_id\":\"user-123\"\n}\n```\n\nThe response will be like:\n```javascript\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 50,\n    \"miso_id\": \"e93a6d02-0a7a-11eb-a896-d28586dc1386\",\n    \"completions\": {\n      \"title\": [\n        {\n          \"text\": \"Robin Hood: Prince of Thieves (1991)\",\n          \"text_with_markups\": \"R&lt;mark&gt;obin Hood: Prince of Thieves (1991)&lt;/mark&gt;\",\n          \"product\": {\n            \"product_id\": \"tmdb-8367\"\n          }\n        },\n        {\n          \"text\": \"Reservoir Dogs (1992)\",\n          \"text_with_markups\": \"R&lt;mark&gt;eservoir Dogs (1992)&lt;/mark&gt;\",\n          \"product\": {\n            \"product_id\": \"tmdb-500\"\n          }\n        },\n        ...\n      ]\n    }\n  }\n}\n```\n* **took**: the amount of time (in milliseconds) Miso took to answer the query\n* **completions**: an dictionary of autocompletion candidates from different sources. By default, we only run\nautocompletion against the titles of products, but you can choose to get autocompletion candidates from other fields\nusing the `completion_fields` parameters.\n* **completions.title[].text**: the text of completion candidates\n* **completions.title[].text_with_markups**: the completion candidates with the part of text that users\nhaven't typed yet surrounded by `<mark>` HTML tags.\n* **completions.title[].product**: the product record whose title matches the autocompletion candidate. This object can be used to implement direct-to-product links: when they click on the link they will go\ndirectly to the product page instead of the search result page. By default, only the `product_id` field is returned,\n you use `fl` request parameter to get more fields returned in the product object.\n\n\n### Typo resistance\nMiso's autocompletion algorithm accepts up to 4 typos in the query string. For example, users may try to find the\n movie `Robin Hood`, but make two typos in the query, which becomes `robonhood` instead (`robin`->`robon`, and a space is missing).\n\n```\nPOST /v1/search/autocomplete\n{\n   \"q\":\"robanhood\",\n   \"user_id\":\"user-123\"\n}\n```\n\nMiso can still find the movie \"*Robin Hood: Prince of Thieves*\" as a autocompletion candidate.\n```javascript\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 50,\n    \"miso_id\": \"e93a6d02-0a7a-11eb-a896-d28586dc1386\",\n    \"completions\": {\n      \"title\": [\n        {\n          \"text\": \"Robin Hood: Prince of Thieves (1991)\",\n          \"text_with_markups\": \"Rob&lt;mark&gt;in Hood: Prince of Thieves (1991)&lt;/mark&gt;\",\n          \"product\": {\n            \"product_id\": \"tmdb-8367\"\n          }\n        },\n        ...\n      ]\n    }\n  }\n}\n```\n\n### Completion fields\nThe auto-completions are made against your product attributes. By default, Miso finds completion candidates from the\n`title` field. The `completion_fields` parameter\nlets you specify the attributes you want to perform auto-completion for.\nFor example, the following query will return auto-completion candidates from the `title` and a custom attribute\nfield:`custom_attributes.director`.\n```\nPOST /v1/search/autocomplete\n{\n  \"q\": \"rob\",\n  \"user_id\": \"user-123\",\n  \"completion_fields\": [\n    \"title\",\n    \"custom_attributes.director\"\n  ]\n}\n```\nThe response will be like the following:\n```javascript\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 52,\n    \"miso_id\": \"16d95080-0bb0-11eb-948d-66359cf29022\",\n    \"completions\": {\n      \"title\": [\n        {\n          \"text\": \"Robin Hood: Prince of Thieves (1991)\",\n          \"text_with_markups\": \"Rob&lt;mark&gt;in Hood: Prince of Thieves (1991)&lt;/mark&gt;\",\n          \"product\": {\n            \"product_id\": \"tmdb-8367\"\n          }\n        },\n        {\n          \"text\": \"RoboCop (1987)\",\n          \"text_with_markups\": \"Rob&lt;mark&gt;oCop (1987)&lt;/mark&gt;\",\n          \"product\": {\n            \"product_id\": \"tmdb-5548\"\n          }\n        },\n        ...\n      ],\n      \"custom_attributes.director\": [\n        {\n          \"text\": \"Robert Z. Leonard\",\n          \"text_with_markups\": \"&lt;mark&gt;Rob&lt;/mark&gt;ert Z. Leonard\",\n        },\n        ...\n      ]\n    }\n  }\n}\n```",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "search",
+                "autocomplete"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"q\": \"<string>\",\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"language\": \"<string>\",\n  \"min_query_users\": 5,\n  \"completion_fields\": [\n    \"title\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "42657f48-8fa3-46b1-a6f0-1b58daaebc77",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    "autocomplete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"q\": \"<string>\",\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"language\": \"<string>\",\n  \"min_query_users\": 5,\n  \"completion_fields\": [\n    \"title\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"completions\": {\n      \"key_0\": [\n        {\n          \"text\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n          \"text_with_markups\": \"Japanese&lt;mark&gt; Shiba Inu Dog Eating Miso Soup T-Shirt&lt;/mark&gt;\",\n          \"text_with_inverted_markups\": \"&lt;mark&gt;Japanese&lt;/mark&gt; Shiba Inu Dog Eating Miso Soup T-Shirt\",\n          \"product\": {\n            \"product_id\": \"123ABC-S-Black\"\n          }\n        },\n        {\n          \"text\": \"Japanese Shiba Inu Dog Eating Miso Soup T-Shirt\",\n          \"text_with_markups\": \"Japanese&lt;mark&gt; Shiba Inu Dog Eating Miso Soup T-Shirt&lt;/mark&gt;\",\n          \"text_with_inverted_markups\": \"&lt;mark&gt;Japanese&lt;/mark&gt; Shiba Inu Dog Eating Miso Soup T-Shirt\",\n          \"product\": {\n            \"product_id\": \"123ABC-S-Black\"\n          }\n        }\n      ]\n    },\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6ce9f8a7-ccf4-457d-8e6c-2755009a3d41",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    "autocomplete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"q\": \"<string>\",\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"language\": \"<string>\",\n  \"min_query_users\": 5,\n  \"completion_fields\": [\n    \"title\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "28005f13-4a68-4061-a490-ca3bd4413a6c",
+          "name": "Multiple Get API",
+          "request": {
+            "name": "Multiple Get API",
+            "description": {
+              "content": "The Multiple Get API provides a simple and fast interface to retrieve Products by their product ids.\nFor example, the following query will retrieve products whose product_ids are `123ABC-S-Black` and `123ABC-S-Blue`\n```\n{\n    \"product_ids\": [\"123ABC-S-Black\", \"123ABC-S-Blue\"]\n}\n```\nMiso will respond with the complete Products records in the same order as the given `product_ids`:\n```\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"products\": [\n      {\n        \"_found\": true,\n        \"product_id\": \"123ABC-S-Black\",\n        \"title\": \"Product ABC in Black\",\n        ...\n      },\n      {\n        \"_found\": true,\n        \"product_id\": \"123ABC-S-Blue\",\n        \"title\": \"Product ABC in Blue\",\n        ...\n      }\n    ]\n  }\n}\n\n```\nYou can use the `_found` field to determine whether a product is found in the Miso database or not.\nWhen the given product_id is not found, the `_found` field in the corresponding Product record\nwill become `false`.\n\nFor example, the following query requests a `product_id` that does not exist in the Miso database:\n```\n{\n    \"product_ids\": [\"Product_Not_Exists\", \"123ABC-S-Black\"]\n}\n```\nMiso will respond:\n```\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"products\": [\n      {\n        \"_found\": false,\n        \"product_id\": \"Product_Not_Exists\"\n      },\n      {\n        \"_found\": true,\n        \"product_id\": \"123ABC-S-Black\",\n        \"title\": \"Product ABC in Black\",\n        ...\n      }\n    ]\n  }\n}\n```\nFinally, like every Miso API, you can use `fl` to control what Product fields to return. By default, all the Product\nfields will be returned, but the following query will return only `title` field of the product (in addition\nto `product_id`)\n```\n{\n    \"product_ids\": [\"123ABC-S-Black\", \"123ABC-S-Blue\"],\n    \"fl\": [\"title\"]\n}\n```",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "search",
+                "mget"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"fl\": [\n    \"*\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "78e92088-4400-4a6c-bdb9-bf9bbbfefee0",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    "mget"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"fl\": [\n    \"*\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"products\": [\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      },\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b26cceb8-d451-4945-9e5f-30565e3f7b72",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    "mget"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"fl\": [\n    \"*\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.askmiso.com",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "133fa4c7-7b8f-40a9-b398-9adce3b25fd5",
+    "name": "Miso Ask APIs Search APIs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Overview\nMiso’s approach to personalization is to train machine learning Engines on three core data sets:\n\n1. Your site’s log of historical and real-time interactions,\n2. Your catalog of products and content, and\n3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation\nexperiences that are personalized down to the individual level (n=1 personalization).\n\nTo see how Miso works and explore the power of its Engines, we recommend following\n[this tutorial](https://docs.askmiso.com/) to get\nstarted with our Playground data. Integrating your site or application with Miso happens in three basic steps:\n\n1. Upload your data\n2. Train your Engines\n3. Build search and recommendation experiences with the output of your Engines.\n\n\nMiso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),\nwhich is used to set up your Engines with the conversions you want to optimize and your training schedule.\nDojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of\nMiso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search\nand recommendations running on your live data.\n\nThe second integration point is Miso’s API, which lets you automatically manage your data in Miso and build\nexperiences that leverage the output of Miso’s personalization Engines.\n\n\nMiso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.\n\n### Data APIs\nData APIs collect input to Miso's personalization Engines. These APIs all support high-throughput\ndata ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data\nfrom Miso. Subcategories of Data APIs are:\n\n* [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction\nrecords, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s\nEngines learn how to optimize your conversion funnels.\n* [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic\nunderstanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely\nsuggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.\n* [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,\nso Miso can build an understanding of user segmentation and behavior in relation to products and content.\nThe `user_id` is how Miso links User records to your Interaction records.\n\nAs a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User\nUpload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction\nUpload API, we recommend limiting your calls to around 10,000 records at a time.\n\n### Engine APIs\nEngine APIs provide the output of Miso's personalization Engines. We designed these APIs with a focus on low\nlatency and high availability. Most of these APIs' 95th percentile response time is under 75ms,\nand the services are replicated to at least three separate instances for high availability.\nThe types of Engine APIs are:\n\n* [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and\nautocompletion.\n* [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with\nthe products, categories, and product attributes that are likely to drive conversions.\n\n# Authentication\n[View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)\n\nThere are three environments in Miso:\n* **Playground**, a read-only tutorial environment with sample data.\n* **Development**, for staging, QA, and experimentation.\n* **Production**, where you run your live integration with Miso.\n\nAccess a Miso environment by passing in the corresponding API key in your API calls. There is one publishable\nkey and one secret key per environment.\n\nAPI Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.\n",
+      "type": "text/plain"
+    }
+  }
+}

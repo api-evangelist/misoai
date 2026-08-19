@@ -1,0 +1,192 @@
+{
+  "item": [
+    {
+      "id": "fe655495-b617-4ae5-9a08-90eb8e04baee",
+      "name": "Bulk API",
+      "description": {
+        "content": "\nThe Bulk API provides an efficient interface for making multiple Search / Recommendations / Q&A requests in one API\ncall. These requests will be executed concurrently at the Miso side, and returned at once when all of them are finished.\nThis API is particularly useful when you need to invoke multiple Miso APIs to respond to a user request.\nUsing this API, you can batch multiple API calls into one, and significantly save the network round-trip times.\n\n### Request schema\nThe request schema for this API call is as follow:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {\n      \"api_name\": \"search/search\",\n      \"body\": { ... }\n    },\n    {\n      \"api_name\": \"recommendation/product_to_product\",\n      \"body\": { ... }\n    },\n    ...\n  ]\n}\n```\nEach request object should contain:\n* **api_name**: name of the API you want to access. The name should contain a slash `/`.\nFor example, search/search for search requests, search/autocomplete for autocomplete requests, etc.\n* **body**: the complete request body as if you are making the API request individually.\n\nAny errors in one of the requests will be returned, and will not prevent other requests from being\nexecuted.\n\n### Response Schema\nBulk API endpoint will return the API responses in the same order as they appear in the request.\nFor example, if the Bulk API request is like the following:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {... request 1 ...},\n    {... request 2 ...}\n  ]\n}\n``` \n\nThe response will be like:\n```\n{\n  \"data\": [\n    // response for request 1\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": { ... }\n    },\n    // response for request 2\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": { ... }\n    }\n  ]\n}\n```\n\nEach response object will contain the following fields:\n* **error**: whether there was an error with the request. You should check this field to determine whether to\nperform error handling.\n* **status_code**: status code of the request.\n* **body**: the response body of the request (as if the request was sent individually).\n\nLet's see a complete example with MovieLens data. The following requests will issue two requests in one API call that \nreturn the `Sci-Fi` movies directed by\n*Ridley Scott*, and *James Cameron* respectively in the first and second responses:\n```\nPOST /v1/bulk\n{\n  \"requests\": [\n    {\n      \"api_name\": \"search/search\",\n      \"body\": {\n        \"user_id\": \"test_user\",\n        \"q\": \"sci-fi\",\n        \"fq\": \"custom_attributes.director:\\\"Ridley Scott\\\"\"\n      }\n    },\n    {\n      \"api_name\": \"search/search\",\n      \"body\": {\n        \"user_id\": \"test_user\",\n        \"q\": \"sci-fi\",\n        \"fq\": \"custom_attributes.director:\\\"James Cameron\\\"\"\n      }\n    }\n  ]\n}\n```\nThe response will be like:\n```\n{\n  \"data\": [\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": {\n        \"data\": {\n          \"took\": 136,\n          \"miso_id\": \"19ab254c-5fb8-11ec-bd48-b20169940af9\",\n          \"products\": [\n            {\n              \"product_id\": \"blade-runner\",\n              \"title\": \"Blade Runner (1982)\"\n            }\n          ],\n          \"total\": 6,\n          \"start\": 0\n        }\n      }\n    },\n    {\n      \"error\": false,\n      \"status_code\": 200,\n      \"body\": {\n        \"data\": {\n          \"took\": 116,\n          \"miso_id\": \"19ab254c-5fb8-11ec-bd48-b20169940af9\",\n          \"products\": [\n            {\n              \"product_id\": \"avatar\",\n              \"title\": \"Avatar (2009)\"\n            }\n          ],\n          \"total\": 10,\n          \"start\": 0\n        }\n      }\n    }\n  ]\n}\n```\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "762d58e4-f092-49aa-a6cf-12b854db4411",
+          "name": "Bulk Request API",
+          "request": {
+            "name": "Bulk Request API",
+            "description": {},
+            "url": {
+              "path": [
+                "v1",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requests\": [\n    {\n      \"api_name\": \"<string>\",\n      \"body\": \"<object>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "f0c76327-e629-45fb-bc20-ba06490c4e5a",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"requests\": [\n    {\n      \"api_name\": \"<string>\",\n      \"body\": \"<object>\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"error\": true,\n      \"status_code\": 4319,\n      \"body\": {}\n    },\n    {\n      \"error\": false,\n      \"status_code\": 3883,\n      \"body\": {}\n    }\n  ],\n  \"errors\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "65396af3-e87e-470c-ae7c-1b701a2c273f",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"requests\": [\n    {\n      \"api_name\": \"<string>\",\n      \"body\": \"<object>\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.askmiso.com",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "6d978254-28d6-4040-bfcc-330061547f36",
+    "name": "Miso Ask APIs Bulk API API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Overview\nMiso’s approach to personalization is to train machine learning Engines on three core data sets:\n\n1. Your site’s log of historical and real-time interactions,\n2. Your catalog of products and content, and\n3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation\nexperiences that are personalized down to the individual level (n=1 personalization).\n\nTo see how Miso works and explore the power of its Engines, we recommend following\n[this tutorial](https://docs.askmiso.com/) to get\nstarted with our Playground data. Integrating your site or application with Miso happens in three basic steps:\n\n1. Upload your data\n2. Train your Engines\n3. Build search and recommendation experiences with the output of your Engines.\n\n\nMiso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),\nwhich is used to set up your Engines with the conversions you want to optimize and your training schedule.\nDojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of\nMiso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search\nand recommendations running on your live data.\n\nThe second integration point is Miso’s API, which lets you automatically manage your data in Miso and build\nexperiences that leverage the output of Miso’s personalization Engines.\n\n\nMiso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.\n\n### Data APIs\nData APIs collect input to Miso's personalization Engines. These APIs all support high-throughput\ndata ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data\nfrom Miso. Subcategories of Data APIs are:\n\n* [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction\nrecords, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s\nEngines learn how to optimize your conversion funnels.\n* [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic\nunderstanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely\nsuggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.\n* [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,\nso Miso can build an understanding of user segmentation and behavior in relation to products and content.\nThe `user_id` is how Miso links User records to your Interaction records.\n\nAs a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User\nUpload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction\nUpload API, we recommend limiting your calls to around 10,000 records at a time.\n\n### Engine APIs\nEngine APIs provide the output of Miso's personalization Engines. We designed these APIs with a focus on low\nlatency and high availability. Most of these APIs' 95th percentile response time is under 75ms,\nand the services are replicated to at least three separate instances for high availability.\nThe types of Engine APIs are:\n\n* [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and\nautocompletion.\n* [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with\nthe products, categories, and product attributes that are likely to drive conversions.\n\n# Authentication\n[View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)\n\nThere are three environments in Miso:\n* **Playground**, a read-only tutorial environment with sample data.\n* **Development**, for staging, QA, and experimentation.\n* **Production**, where you run your live integration with Miso.\n\nAccess a Miso environment by passing in the corresponding API key in your API calls. There is one publishable\nkey and one secret key per environment.\n\nAPI Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.\n",
+      "type": "text/plain"
+    }
+  }
+}

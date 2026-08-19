@@ -1,0 +1,530 @@
+{
+  "item": [
+    {
+      "id": "3484ce2f-73ea-4477-9dc0-d7e850aca429",
+      "name": "Q&A APIs",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "968698d9-4c68-43a1-920c-5d61827c1938",
+          "name": "Q&A API",
+          "request": {
+            "name": "Q&A API",
+            "description": {
+              "content": "Question Answering API analyzes each Product's `html` field and extracts paragraphs that can answer users'\nquestions.\n\nFor example, Miso can take question likes `What is python?`, and extract an answer like\n`Python is an interpreted, object-oriented, high-level programming language.` from a product's `html` field.\n\nEach answer is assigned a `probability` score that determines how likely a paragraph can accurately answer the\nquestion. A probability at least 0.7 is recommended, but you usually will need to fine-tune\nthis threshold to find the precision-and-recall sweet-spot for your application.\n\n### Limitations\nMiso will only extract answers from the `html` field and from products that have `enable_question_answering` set to `true`. Also,\nsince Q&A is a much more complex search problem, the response time of this API is usually between 1 to 2 seconds\nfor a new question. For an old question this API has answered before, the response time will be less than 75ms.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "qa",
+                "question_answering"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"q\": \"<string>\",\n  \"min_probability\": \"<number>\",\n  \"version\": \"v1.2\",\n  \"rows\": 1,\n  \"spellcheck\": {\n    \"enable_auto_spelling_correction\": true\n  },\n  \"enable_answer_html\": false,\n  \"enable_answer_block\": false,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"boost_probability_threshold\": \"<number>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "4dc4220e-dbb1-4eb2-8021-20a3c2b1d596",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "qa",
+                    "question_answering"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"q\": \"what is gradient descent\",\n  \"min_probability\": 0.7,\n  \"version\": \"v1.2\",\n  \"rows\": 1,\n  \"spellcheck\": {\n    \"enable_auto_spelling_correction\": true\n  },\n  \"enable_answer_html\": false,\n  \"enable_answer_block\": false,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"boost_probability_threshold\": \"<number>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"total\": 1000,\n    \"spellcheck\": {\n      \"spelling_errors\": true,\n      \"auto_spelling_correction\": true,\n      \"original_query\": \"what is pythn\",\n      \"original_query_with_markups\": \"what is &lt;mark&gt;pythn&lt;/mark&gt;\",\n      \"corrected_query\": \"what is python\",\n      \"corrected_query_with_markups\": \"what is &lt;mark&gt;python&lt;/mark&gt;\"\n    },\n    \"answers\": [\n      {\n        \"product_id\": \"string\",\n        \"answer\": {\n          \"probability\": 0.6123223824741298,\n          \"text\": \"string\",\n          \"css_selector\": \"string\",\n          \"html\": \"string\"\n        },\n        \"answer_block\": {\n          \"html\": \"string\",\n          \"css_selector\": \"string\",\n          \"relevant_children_slice\": [\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            }\n          ],\n          \"answer_css_selector\": \"string\",\n          \"title\": \"string\"\n        }\n      },\n      {\n        \"product_id\": \"string\",\n        \"answer\": {\n          \"probability\": 0.974291839377967,\n          \"text\": \"string\",\n          \"css_selector\": \"string\",\n          \"html\": \"string\"\n        },\n        \"answer_block\": {\n          \"html\": \"string\",\n          \"css_selector\": \"string\",\n          \"relevant_children_slice\": [\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            }\n          ],\n          \"answer_css_selector\": \"string\",\n          \"title\": \"string\"\n        }\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a175ba13-97d0-4f78-bd63-50d457b5ac2e",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "qa",
+                    "question_answering"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"q\": \"what is gradient descent\",\n  \"min_probability\": 0.7,\n  \"version\": \"v1.2\",\n  \"rows\": 1,\n  \"spellcheck\": {\n    \"enable_auto_spelling_correction\": true\n  },\n  \"enable_answer_html\": false,\n  \"enable_answer_block\": false,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"boost_probability_threshold\": \"<number>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f616fc43-139e-434c-afaa-8f132c4b5230",
+          "name": "Upload Question Bank API",
+          "request": {
+            "name": "Upload Question Bank API",
+            "description": {
+              "content": "Question Bank API lets you upload your *question bank* to Miso. A *question bank* is a list of questions that\ncan be used for **Question Autocomplete** and **Similar Question Search**.\n\nThis API follows a *replace-all* model, i.e. a successful upload request will replace all the existing questions\nin the question bank.\n\nFor example, the following request will replace the existing question bank with the given three questions:\n```\nPOST /v1/qa/questions\n{\"data\": [\n    {\"question\": \"What is python?\"},\n    {\"question\": \"What is list comprehension?\"},\n    {\"question\": \"How to sort a list in Python?\"}\n]}\n```\n\n\n\n    ",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "qa",
+                "questions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"question\": \"<string>\",\n      \"weight\": 1\n    },\n    {\n      \"question\": \"<string>\",\n      \"weight\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "1a91895b-d3ef-4173-8fe0-545044740f25",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "qa",
+                    "questions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"question\": \"<string>\",\n      \"weight\": 1\n    },\n    {\n      \"question\": \"<string>\",\n      \"weight\": 1\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f9a31067-921c-4cd1-924c-eb9190a153aa",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "qa",
+                    "questions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": [\n    {\n      \"question\": \"<string>\",\n      \"weight\": 1\n    },\n    {\n      \"question\": \"<string>\",\n      \"weight\": 1\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d4f59e0f-cd39-48ec-b63a-0349c0205a19",
+          "name": "Question Autocomplete API",
+          "request": {
+            "name": "Question Autocomplete API",
+            "description": {
+              "content": "Question Autocomplete is an important feature for Q&A applications. It not only saves your users from typing\nthe complete questions, but also showcases what questions your app is capable answering. This is important because\nQ&A is an advanced search feature that not every user is familar with.\n\nMiso generates autocomplete candidates from the question bank you uploaded (see [Question Bank Upload API](...)).\nGiven a partial question string, Question Autocomplete API will suggest question candidates that match the query\nthe user is typing.\n\n\nFor example, let's first upload three questions to the question bank:\n```\nPOST /v1/qa/questions\n{\"data\": [\n    {\"question\": \"What is python?\"},\n    {\"question\": \"What is pypy?\"},\n    {\"question\": \"How to sort a list in Python?\"}\n]}\n```\n\nThen, immediately after the above request finished, you can send the request below to get autocompletion\ncandidates for any partial query string. For example, if the query string the user types so far is *\"what is p\"*:\n\n```\nPOST /v1/qa/question_autocomplete\n{\n    \"q\": \"what is p\",\n    \"rows\": 5\n}\n```\n\nThe API will respond the completion candidates like the following:\n```\n{\n    \"data\":\n        \"completions\": [\n            {\"question\": \"What is python?\"},\n            {\"question\": \"What is pypy?\"}\n        ]\n    }\n}\n```\n\nThe API supports adaptive fuzzy matching such that even if there are typos in the query string, the API\nis still able to return the question candidates with the correct spellings. For example, if the query string is\n\"*How to sorta*\". The API is still able to match the completion candidate:\n\"*How to sort a list in Python?*\"\n\nThe API is optimized for instant experience and has an average response time lower than 50ms.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "qa",
+                "question_autocomplete"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"q\": \"<string>\",\n  \"rows\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "a614e205-1a0a-4f76-9d67-ca619357d9d2",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "qa",
+                    "question_autocomplete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"q\": \"what is g\",\n  \"rows\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"completions\": [\n      {\n        \"question\": \"string\",\n        \"weight\": 1\n      },\n      {\n        \"question\": \"string\",\n        \"weight\": 1\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cc76821c-890a-4450-bc65-28be6a66bec0",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "qa",
+                    "question_autocomplete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"q\": \"what is g\",\n  \"rows\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.askmiso.com",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "823ef60a-9508-42b2-a8bd-273a96cf4d50",
+    "name": "Miso Ask APIs Q&A APIs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Overview\nMiso’s approach to personalization is to train machine learning Engines on three core data sets:\n\n1. Your site’s log of historical and real-time interactions,\n2. Your catalog of products and content, and\n3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation\nexperiences that are personalized down to the individual level (n=1 personalization).\n\nTo see how Miso works and explore the power of its Engines, we recommend following\n[this tutorial](https://docs.askmiso.com/) to get\nstarted with our Playground data. Integrating your site or application with Miso happens in three basic steps:\n\n1. Upload your data\n2. Train your Engines\n3. Build search and recommendation experiences with the output of your Engines.\n\n\nMiso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),\nwhich is used to set up your Engines with the conversions you want to optimize and your training schedule.\nDojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of\nMiso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search\nand recommendations running on your live data.\n\nThe second integration point is Miso’s API, which lets you automatically manage your data in Miso and build\nexperiences that leverage the output of Miso’s personalization Engines.\n\n\nMiso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.\n\n### Data APIs\nData APIs collect input to Miso's personalization Engines. These APIs all support high-throughput\ndata ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data\nfrom Miso. Subcategories of Data APIs are:\n\n* [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction\nrecords, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s\nEngines learn how to optimize your conversion funnels.\n* [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic\nunderstanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely\nsuggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.\n* [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,\nso Miso can build an understanding of user segmentation and behavior in relation to products and content.\nThe `user_id` is how Miso links User records to your Interaction records.\n\nAs a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User\nUpload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction\nUpload API, we recommend limiting your calls to around 10,000 records at a time.\n\n### Engine APIs\nEngine APIs provide the output of Miso's personalization Engines. We designed these APIs with a focus on low\nlatency and high availability. Most of these APIs' 95th percentile response time is under 75ms,\nand the services are replicated to at least three separate instances for high availability.\nThe types of Engine APIs are:\n\n* [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and\nautocompletion.\n* [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with\nthe products, categories, and product attributes that are likely to drive conversions.\n\n# Authentication\n[View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)\n\nThere are three environments in Miso:\n* **Playground**, a read-only tutorial environment with sample data.\n* **Development**, for staging, QA, and experimentation.\n* **Production**, where you run your live integration with Miso.\n\nAccess a Miso environment by passing in the corresponding API key in your API calls. There is one publishable\nkey and one secret key per environment.\n\nAPI Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.\n",
+      "type": "text/plain"
+    }
+  }
+}

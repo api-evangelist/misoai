@@ -1,0 +1,39 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs Bulk API API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Bulk API",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Bulk Request API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/bulk",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Bulk Request API"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

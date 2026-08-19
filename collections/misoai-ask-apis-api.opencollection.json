@@ -1,0 +1,63 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Ask APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Create a new question",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/ask/questions",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API is used to submit questions to Miso.\n\nAfter a question is submitted, a `question_id` is returned.\nThen you can use `question_id` to check the latest status of it's answer\nas it is being compiled.\n    "
+        },
+        {
+          "info": {
+            "name": "Get latest answer of asked question",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.askmiso.com/v1/ask/questions/:question_id/answer",
+            "params": [
+              {
+                "name": "question_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API is used to fetch the latest answer of previous submitted question from Miso\n\nA submitted question is put into a job with following stage:\n\n- Initialization\n- Parsing and fecthing related content\n- Relevance checking\n- Summarization\n\nThis API will tell you at what stage current question is in.\nIf answer is fetched and being summerized, it will also return the latest summarization result.\n\nBesides human readable answer, the products used to generate answer are also returned.\n    "
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,198 @@
+{
+  "item": [
+    {
+      "id": "e7b29fde-fbc4-4892-b489-d935b2619167",
+      "name": "Product Recommendations",
+      "description": {
+        "content": "APIs for recommending related products based on a given product.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "a29ae3c7-deb2-4b6e-8302-c7c052749ab1",
+          "name": "Product to Products API",
+          "request": {
+            "name": "Product to Products API",
+            "description": {
+              "content": "The Product to Products API returns the products that are related to an anchor product (often the product the user\nis currently engaging with) and are also likely to drive conversions by connecting with the user’s interests. It is\ndifferent from the User to Products API as it not only considers the user’s interests but also considers the\nrecommended products' relevancy to the anchor product.\n\n### Applicable scenarios\nThis API is frequently used in product detail page to show related products that users can consume\nfurther, such as \"Related products you may like\" on Amazon or \"Up next video\" on Youtube. It is one of Miso's best\nperforming APIs. Our customers usually see more than 30% and some times 110% relative lift in click-through rate after\ndeploying this a feature using this API.\n\n### Basic usage\nTo use this API, you just need to let Miso knows the `user_id` (or `anonymous_id`) and the `product_id` you\nwant to get related recommendations for. For example, the following request will return the products that are\nrelated to the movie `Toy Story`.\n```\nPOST https://api.askmiso.com/v1/recommendation/product_to_products\n{\n    \"user_id\": \"user_123\",\n    \"product_id\": [\"toy-story-1995\"],\n    \"rows\": 3,\n    \"fl\": [\"title\"]\n}\n```\n* **product_id**: the id of the anchor product\n* **rows**: the number of related products to return\n* **fl**: like in other Miso API, you can use `fl` to control which fields to return for each Product\n\nThe response will be like:\n```javascript\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"took\": 56,\n        \"miso_id\": \"f98b1904-ddce-11eb-be53-fa1729b23183\",\n        \"products\": [\n            {\n                \"product_id\": \"toy-story-2-1999\",\n                \"title\": \"Toy Story 2 (1999)\"\n            },\n            {\n                \"product_id\": \"toy-story-3-2010\",\n                \"title\": \"Toy Story 3 (2010)\"\n            },\n            {\n                \"product_id\": \"the-lion-king-1994\",\n                \"title\": \"The Lion King (1994)\"\n            }\n        ]\n    }\n}\n```\n* **products**: a list of products related to the anchor product\n* **products[ ].product_id**: the id of the recommended product\n* **products[ ].title**: the title of the recommended product. You can use `fl` parameter to make Miso return more fields\n\n### Boosting and filtering\nLike every Miso API, you can utilize `fq` and `boost_fq` to fine-tune the recommendations returned by Miso, and\nMiso will guarantee to return the required number of recommendations that meet the given criteria.\n\nFor example, the following request still recommends movies related to \"Toy Story\" but limits the recommendations\nto only the movies released after year 2010.\n```\nPOST https://api.askmiso.com/v1/recommendation/product_to_products\n{\n    \"user_id\": \"user_123\",\n    \"product_id\": [\"toy-story-1995\"],\n    \"rows\": 3,\n    \"fl\": [\"title\"],\n    \"fq\": \"custom_attributes.year: [2010 TO *]\"\n}\n```\n\nFor another example, the following request will *boost* the movies that are acted by `Tom Hanks`. The boosting is\ndifferent from filtering as it only prioritizes those products that match the boosting criteria and are relevant to\nthe anchor products, but it will not limit the results to only such products.\n```\nPOST https://api.askmiso.com/v1/recommendation/product_to_products\n{\n    \"user_id\": \"user_123\",\n    \"product_id\": [\"toy-story-1995\"],\n    \"rows\": 3,\n    \"fl\": [\"title\"],\n    \"boost_fq\": \"custom_attributes.actors:\\\"Tom Hanks\\\"\"\n}\n```\n\n### Multiple anchor products\nIn the scenarios where you want to recommend products related to **multiple** anchor products, for example,\nfor shopping cart cross-sell or up-sell, you can utilize `product_ids`\nparameter and have multiple product ids in it.\n\nFor instance, the following request recommends products related to movies \"Toy Story\" and \"Monsters, Inc.\"\nthat will be of interest to the the current user.\n```\nPOST https://api.askmiso.com/v1/recommendation/product_to_products\n{\n    \"user_id\": \"user_123\",\n    \"product_ids\": [\"toy-story-1995\", \"monsters-inc-2001\"],\n    \"rows\": 3,\n    \"fl\": [\"title\"]\n}\n```",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "recommendation",
+                "product_to_products"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": \"<string>\",\n  \"product_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"product_group_id\": \"<string>\",\n  \"product_group_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"buy_together\": false,\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": \"<object>\",\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "6743c65d-5e4a-4995-b722-c1765f18aeb1",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "product_to_products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_id\": \"<string>\",\n  \"product_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"product_group_id\": \"<string>\",\n  \"product_group_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"buy_together\": false,\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"products\": [\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      },\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a02a9e94-3aab-4976-acf9-9d6fdd64869d",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "product_to_products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_id\": \"<string>\",\n  \"product_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"product_group_id\": \"<string>\",\n  \"product_group_ids\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"buy_together\": false,\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.askmiso.com",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "fa7564b2-6d25-4685-9e72-4bdf6d3a6455",
+    "name": "Miso Ask APIs Product Recommendations API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Overview\nMiso’s approach to personalization is to train machine learning Engines on three core data sets:\n\n1. Your site’s log of historical and real-time interactions,\n2. Your catalog of products and content, and\n3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation\nexperiences that are personalized down to the individual level (n=1 personalization).\n\nTo see how Miso works and explore the power of its Engines, we recommend following\n[this tutorial](https://docs.askmiso.com/) to get\nstarted with our Playground data. Integrating your site or application with Miso happens in three basic steps:\n\n1. Upload your data\n2. Train your Engines\n3. Build search and recommendation experiences with the output of your Engines.\n\n\nMiso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),\nwhich is used to set up your Engines with the conversions you want to optimize and your training schedule.\nDojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of\nMiso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search\nand recommendations running on your live data.\n\nThe second integration point is Miso’s API, which lets you automatically manage your data in Miso and build\nexperiences that leverage the output of Miso’s personalization Engines.\n\n\nMiso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.\n\n### Data APIs\nData APIs collect input to Miso's personalization Engines. These APIs all support high-throughput\ndata ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data\nfrom Miso. Subcategories of Data APIs are:\n\n* [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction\nrecords, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s\nEngines learn how to optimize your conversion funnels.\n* [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic\nunderstanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely\nsuggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.\n* [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,\nso Miso can build an understanding of user segmentation and behavior in relation to products and content.\nThe `user_id` is how Miso links User records to your Interaction records.\n\nAs a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User\nUpload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction\nUpload API, we recommend limiting your calls to around 10,000 records at a time.\n\n### Engine APIs\nEngine APIs provide the output of Miso's personalization Engines. We designed these APIs with a focus on low\nlatency and high availability. Most of these APIs' 95th percentile response time is under 75ms,\nand the services are replicated to at least three separate instances for high availability.\nThe types of Engine APIs are:\n\n* [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and\nautocompletion.\n* [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with\nthe products, categories, and product attributes that are likely to drive conversions.\n\n# Authentication\n[View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)\n\nThere are three environments in Miso:\n* **Playground**, a read-only tutorial environment with sample data.\n* **Development**, for staging, QA, and experimentation.\n* **Production**, where you run your live integration with Miso.\n\nAccess a Miso environment by passing in the corresponding API key in your API calls. There is one publishable\nkey and one secret key per environment.\n\nAPI Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.\n",
+      "type": "text/plain"
+    }
+  }
+}

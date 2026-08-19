@@ -1,0 +1,696 @@
+{
+  "item": [
+    {
+      "id": "da14d47a-416e-4ed2-a3f8-5dfabaa8848d",
+      "name": "User Recommendations",
+      "description": {
+        "content": "APIs for recommending products and content to users based on their interests.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "94d61bf2-a355-4087-8748-f40a7caa2242",
+          "name": "User to Products API",
+          "request": {
+            "name": "User to Products API",
+            "description": {
+              "content": "Returns the products that are most likely to drive conversion for the given user. Depending on the conversion\nmetrics you choose when training your Miso Engines in Dojo, this API returns products that are most likely to\noptimize those metrics (such as `add_to_cart`, `checkout`, or `read`).\n\nThis API considers both user's interests and the conversion probability. The user's interests are determined from\ntheir past interactions on the site and the context of their current browsing session, including recent trending\nproducts, time of the day, recent search behaviors, etc.\n\n### Application scenarios\nThe User to Products API is usually used in homepage recommendations, such as \"*Inspired by your shopping trends*\" on\nAmazon, or \"*Recommended videos*\" on Youtube. It can also be used to run an email marketing campaign such as a\nnewsletter from Medium with recent articles you might like. These kind of recommendations are particularly powerful\nin driving product discovery.\n\n### Basic usage\nFor basic usage of this API, you just need to let Miso knows the id of the current user or visitor via `user_id`\nor `anonymous_id` field. For example, for a currently logged-in user, your request may look like the following:\n```\nPOST /v1/recommendation/user_to_products\n{\"user_id\": \"user-123\"}\n```\nFor a un-signed visitor, your request may look like the following:\n```\nPOST /v1/recommendation/user_to_products\n{\"anonymous_id\": \"visitor-123\"}\n```\n\nThis API will respond with the recommended products for the specified user or visitor:\n```javascript\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 37,\n    \"miso_id\": \"517452b0-0ccf-11eb-948d-66359cf29022\",\n    \"products\": [\n      {\n        \"product_id\": \"tmdb-475557\",\n        \"_personalization_score\": 0.91\n      },\n      {\n        \"product_id\": \"tmdb-299534\",\n        \"_personalization_score\": 0.89\n      },\n      ...\n    ]\n  }\n}\n```\n* **took**: the amount of time (in milliseconds) Miso took to answer the query\n* **miso_id**: a UUID of the search request. You should include **miso_id** in the Interaction records for every\ninteractions that result from this search request, e.g. user click-through a product in the search results.\nMiso use miso_id to track the search performance and fine-tune the algorithm accordingly.\n* **products**: an array of [Product records](#operation/content_write_api_v1_products_post) recommended to this\nuser ranked by the probability that the user will be interested in this product. By default, only the `product_id`\nof the Product is returned. You can ask Miso to return additional fields by using the *fl* request argument (see example below)\n* **products[ ]._personalization_score**: the score assigned by Miso's personalization algorithm based on users'\nprofile and their interactions on the site. This score quantifies the probability of whether users will be\ninterested in this product or not.\n\nYou can use the `fl` request argument to ask Miso to return more product fields. For example, the following request\nasks Miso to additionally return the *title* and *category* fields of every recommended product:\n```\nPOST /v1/recommendation/user_to_products\n{\n    \"user_id\": \"user-123\",\n    \"fl\": [\"title\", \"categories\"]\n}\n```\nThe response will be like:\n```javascript\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 37,\n    \"miso_id\": \"517452b0-0ccf-11eb-948d-66359cf29022\",\n    \"products\": [\n      {\n        \"product_id\": \"tmdb-475557\",\n        \"categories\": [\n          [\n            \"Crime\"\n          ],\n          [\n            \"Thriller\"\n          ],\n          [\n            \"Drama\"\n          ]\n        ],\n        \"title\": \"Joker (2019)\",\n        \"_personalization_score\": 0.91\n      },\n      {\n        \"product_id\": \"tmdb-299534\",\n        \"categories\": [\n          [\n            \"Adventure\"\n          ],\n          [\n            \"Science Fiction\"\n          ],\n          [\n            \"Action\"\n          ]\n        ],\n        \"title\": \"Avengers: Endgame (2019)\",\n        \"_personalization_score\": 0.89\n      },\n     ...\n    ]\n  }\n}\n```\n### Filtering and Boosting\nLike every other Miso API, `User To Products` API supports filter query (`fq`) and boost query (`boost_fq`) to\ngenerate recommendations that meet your business needs.\n\n#### Filter Query\nYou can use filter query to filter recommendation results against\narbitrary criteria, and Miso will *guarantee* to return sufficient number of recommendation results that meet the\ncriteria. For example, the following requests will limit the recommendations to only `Drama` films:\n```\nPOST /v1/recommendation/user_to_products\n{\n    \"user_id\": \"user-123\",\n    \"fl\": [\"title\", \"categories\"],\n    \"fq\": \"categories:Drama\"\n}\n```\n\nFor another example with `custom_attributes`, the following requests will limit the recommendations to\n only `Drama` films after `2010`:\n```\nPOST /v1/recommendation/user_to_products\n{\n    \"user_id\": \"user-123\",\n    \"fl\": [\"title\", \"categories\"],\n    \"fq\": \"categories:Drama AND custom_attributes.year:[2010 to *]\"\n}\n```\n\n#### Latency Consideration\nMiso achieves **instant** recommendations by pre-computing a large pool of candidates (N>1,000)\nfor each user with the products they are mostly likely to be interested in. However, when the given filter query do\nnot match a sufficient number of\ncandidates, Miso will fall back to Search API to find additional matches to fill in the remaining\nslots. While falling back to Search API will increase the latency, the latency increase is usually minimum if the\nsame filter query is being used repeatedly due to Miso's caching mechanism.\n\n\n#### Boost Query\nYou can use `boost_fq` to boost Products with arbitrary criteria. The relevant Products that match the `boost_fq`\nwill be ranked at the top of the recommendations or at the positions specified in the\n`boost_positions` parameter. Boosting is particularly useful for product promotions (e.g. sponsored products) to\nhighlight the Products you want more impression.\n\nFor example, the following request will boost the `Sci-Fi` films directed by `Ridley Scott`:\n```\nPOST /v1/recommendation/user_to_products\n{\n    \"user_id\": \"user-123\",\n    \"fl\": [\"title\", \"categories\"],\n    \"boost_fq\": \"categories:\\\"Sci-Fi\\\" AND custom_attributes.director:\\\"Ridley Scott\\\"\"\n}\n```\nThe response will be like:\n\n```javascript\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 83,\n    \"miso_id\": \"54bf6d9a-dd32-11eb-99d6-a62d401473b5\",\n    \"products\": [\n      {\n        \"product_id\": \"tmdb-286217\",\n        \"title\": \"The Martian (2015)\",\n        \"_personalization_score\": 0.5364759309088403,\n        \"_boosted\": true,\n        \"categories\": [\n          [\n            \"Drama\"\n          ],\n          [\n            \"Adventure\"\n          ],\n          [\n            \"Science Fiction\"\n          ]\n        ]\n      },\n      ...\n    ]\n  }\n}\n```\nThe additional field **products[ ].boosted** is a boolean that indicates whether the Product matches the `boost_fq`.\n\nYou can also use `boost_positions` to specify the positions in the recommendation list you want the\nboosted Products to be placed. For example, the following request will place the boosted Product at the second place,\nand the third place (the `boost_positions` are 0-based):\n\n```\nPOST /v1/recommendation/user_to_products\n{\n    \"user_id\": \"user-123\",\n    \"fl\": [\"title\", \"categories\"],\n    \"boost_fq\": \"categories:\\\"Sci-Fi\\\" AND custom_attributes.director:\\\"Ridley Scott\\\"\",\n    \"boost_positions\": [1, 2]\n}\n```\n\n### Filtering \"already seen\" items\nTypically, the User to Products API is used to let users discover new products they might be interested in. Therefore,\nit is important not to recommend products users have already interacted with recently. By default, the User to Products\nAPI filters out the most recent 50 products users have had interactions with (except for `impression` interactions)",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "recommendation",
+                "user_to_products"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\",\n    \"key_2\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": \"<object>\",\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "7ff40712-a539-45c9-9945-4fc2aa1623d9",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_3\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"products\": [\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      },\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4971012e-0948-428f-8593-ddefecc49f1e",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_products"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_3\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ffe27e1c-15ae-4236-810f-cbe639fee686",
+          "name": "User to Categories API",
+          "request": {
+            "name": "User to Categories API",
+            "description": {
+              "content": "The User to Categories API returns the product categories that will drive the conversion for the current user,\nalong with the recommended products for each returned category.\n\n### Application scenarios\nThis API is usually used in homepage recommendations, or category recommendations\nwhere recommendations are organized by categories,\nsuch as Netflix's \"*Action / Sci-Fi / Drama movies for you*\"\nor Amazon's \"*Recommendations for you in Grocery & Gourmet Food*\". The goal of such recommendations is to help\nusers discover attractive products under the categories they\nhave a high chance to be interested in.\n\n### Basic usage\nFor basic usage of this API, you just need to let Miso knows the `user_id` or\n`anonymous_id` of the current users. Miso will return a list of top categories along with the recommended\nProducts under each of the categories.\n```\nPOST https://api.askmiso.com/v1/recommendation/user_to_categories\n{\n    \"user_id\": \"user-123\",\n    \"rows\": 2,\n    \"products_per_category\": 3,\n    \"fl\": [\"title\"]\n}\n```\n* **rows**: the number of categories to return\n* **products_per_category**: the number of Products to return per each category\n* **fl**: like in other Miso API, you can use `fl` to control which fields to return for each Product\n\nThe response of this request will be like:\n```\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 85,\n    \"miso_id\": \"7cd6059c-dd54-11eb-8050-a62d401473b5\",\n    \"categories\": [\n      {\n        \"category\": [\n          \"Drama\"\n        ],\n        \"total\": 61510,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"tmdb-286217\",\n            \"title\": \"The Martian (2015)\"\n          },\n          {\n            \"product_id\": \"tmdb-281957\",\n            \"title\": \"The Revenant (2015)\"\n          },\n          {\n            \"product_id\": \"tmdb-68718\",\n            \"title\": \"Django Unchained (2012)\"\n          }\n        ]\n      },\n      {\n        \"category\": [\n          \"Thriller\"\n        ],\n        \"total\": 21870,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"tmdb-11324\",\n            \"title\": \"Shutter Island (2010)\"\n          },\n          {\n            \"product_id\": \"tmdb-1949\",\n            \"title\": \"Zodiac (2007)\"\n          },\n          {\n            \"product_id\": \"tmdb-1422\",\n            \"title\": \"The Departed (2006)\"\n          }\n        ]\n      }\n    ]\n  }\n}\n```\n* **categories**: a list of categories recommended to the users.\n* **categories[].category**: the recommended category in the format of category hierarchy. `[\"Sci-Fi\"]` is a top level category,\n`[\"Sci-Fi\", \"Space Travel\"]` is a second-level category under `Sci-Fi` (a.k.a subcategory).\n* **categories[].total**: the total number of Products belonging to the category\n* **categories[].recommended_products**: a list of Products (in that category) recommended to the users\n\n### Root Category\nBy default, `User To Categories` API recommends top level categories, but you can change this behavior\nvia `root_category` parameter. Miso will recommend the immediate sub-categories of the given `root_category`\nFor example, the following request will recommend sub-categories under\n`Science Fiction`, for example `[\"Science Fiction\", \"Space Travel\"]` or `[\"Science Fiction\", \"Steampunk\"]`:\n```\nPOST https://api.askmiso.com/v1/recommendation/user_to_categories\n{\n    \"user_id\": \"test\",\n    \"root_category\": [\"Science Fiction\"]\n}\n```\n\nIn some cases, you may want to get recommendations from *any* subcategories (regardless their parent category).\nIn such case, you can use wildcard `*` to achieve such results. For example, the following request will recommend\nany sub-categories regardless their parent category:\n```\nPOST https://api.askmiso.com/v1/recommendation/user_to_categories\n{\n    \"user_id\": \"test\",\n    \"root_category\": [\"*\"]\n}\n```\n### Filter and boost query\nLike every Miso API, `User To Categories` supports `fq` for filtering, and `boost_fq` for boosting. You can use\nthese parameters to make the recommendation results meet your exact business needs. For example, the following\nrequest will recommend categories\nthat contain sufficient number of Products that meet the `fq` criteria (i.e. films after 2010), and each Product\nreturned in the `recommended_products` list will also meet the `fq` criteria:\n```\nPOST https://api.askmiso.com/v1/recommendation/user_to_categories\n{\n    \"user_id\": \"user-123\",\n    \"rows\": 2,\n    \"products_per_category\": 3,\n    \"fq\": \"custom_attributes.year: [2010 TO *]\"\n}\n```\nSimilarly, you can use `boost_fq` to promote Products that meet your business criteria in each category. For example,\nthe following request will prioritize Products that are promoted (indicated by `custom_attributes.promoted`):\n```\nPOST https://api.askmiso.com/v1/recommendation/user_to_categories\n{\n    \"user_id\": \"user-123\",\n    \"rows\": 2,\n    \"products_per_category\": 3,\n    \"boost_fq\": \"custom_attributes.promoted: true\"\n}\n```\n### Latency considerations\n`User To Categories` API is one of more complex API because it needs to first identify categories the user will be\ninterested in, and then find the top Products in that categories. We make this process real-time by pre-computing a\nlarge number of top Products users may find interesting in for each category, therefore the end-to-end latency is\nusually under 100ms. To further reduce the latency, you can:\n* Use a smaller `products_per_category` to reduce number of products to return, or set it to zeros if you don't need any.\n* Request only the necessary fields using `fl` parameters\n* Use a smaller `rows` to reduce number of categories to return",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "recommendation",
+                "user_to_categories"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": \"<object>\",\n  \"products_per_category\": 5,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "7ac61436-38b4-4290-b801-00a0f4545358",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_categories"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\",\n    \"key_2\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"products_per_category\": 5,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"categories\": [\n      {\n        \"category\": [\n          \"Miso T-Shirt Shop\"\n        ],\n        \"total\": 1000,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          },\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          }\n        ]\n      },\n      {\n        \"category\": [\n          \"Miso T-Shirt Shop\"\n        ],\n        \"total\": 1000,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          },\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          }\n        ]\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6ef99227-a063-4e17-a90b-02f095b5f084",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_categories"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\",\n    \"key_2\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"products_per_category\": 5,\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d08db083-de6f-4b0a-a24b-119c234cbc62",
+          "name": "User to Attributes API",
+          "request": {
+            "name": "User to Attributes API",
+            "description": {
+              "content": "The `User to Attributes` API is a generalized version of `User to Categories` API --- it returns the product\nattributes that Miso expects to drive a conversion for the current\nuser. You specify a field in your Product catalog you want recommendations for, e.g. the `brand` or a custom field like\n`custom_attributes.director`, and this API will return a list of values from that fields Miso expects users will be most\ninterested in, as well as a list of personalized product suggestions.\n\n### Applicable scenarios\nThis API is usually used in homepage recommendations, where users can interact with recommended attributes.\nFor example, this API could generate suggestions for \"the brands you may like\" or \"the creators you may like.\"\n\n### Basic usage\nFor basic usage of this API, you just need to let Miso knows the `user_id` or `anonymous_id`, and the `field` you\nwant to get recommendations for. For example, the following request will return the recommended `director` for\nthe given users:\n```\nPOST https://api.askmiso.com/v1/recommendation/user_to_attributes\n{\n    \"user_id\": \"test\",\n    \"field\": \"custom_attributes.director\",\n    \"rows\": 3,\n    \"products_per_attribute\": 2,\n    \"fl\": [\"title\"]\n}\n```\n* **field**: the name of the field you want to get recommendation for\n* **rows**: the number of categories to return\n* **products_per_attribute**: the number of Products to return per each attribute\n* **fl**: like in other Miso API, you can use `fl` to control which fields to return for each Product\n\nThe response of this request will be like:\n```javascript\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"took\": 296,\n    \"miso_id\": \"9d7c8d9c-dd73-11eb-b20d-9a566192e5c6\",\n    \"attributes\": [\n      {\n        \"value\": \"Christopher Nolan\",\n        \"total\": 12,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"tmdb-272\",\n            \"title\": \"Batman Begins (2005)\"\n          },\n          {\n            \"product_id\": \"tmdb-77\",\n            \"title\": \"Memento (2000)\"\n          }\n        ]\n      },\n      {\n        \"value\": \"Ridley Scott\",\n        \"total\": 26,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"tmdb-286217\",\n            \"title\": \"The Martian (2015)\"\n          },\n          {\n            \"product_id\": \"tmdb-4982\",\n            \"title\": \"American Gangster (2007)\"\n          }\n        ]\n      },\n      {\n        \"value\": \"Quentin Tarantino\",\n        \"total\": 13,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"tmdb-680\",\n            \"title\": \"Pulp Fiction (1994)\"\n          },\n          {\n            \"product_id\": \"tmdb-68718\",\n            \"title\": \"Django Unchained (2012)\"\n          }\n        ]\n      }\n    ]\n  }\n}\n\n```\n* **attributes**: a list of attributes recommended to the users.\n* **attributes[ ].value**: the recommended attribute value (in this case, director name)\n* **attributes[ ].total**: the total number of Products that have this attribute\n* **attributes[ ].recommended_products**: a list of Products (with the attribute) recommended to the users",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "recommendation",
+                "user_to_attributes"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"field\": \"<string>\",\n  \"rows\": 5,\n  \"products_per_attribute\": 2,\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\"\n  },\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": \"<object>\",\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "db7311e1-b258-4b0a-bd44-e3760cc81ab4",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_attributes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"field\": \"<string>\",\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"rows\": 5,\n  \"products_per_attribute\": 2,\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\",\n    \"key_2\": \"<boolean>\"\n  },\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"attributes\": [\n      {\n        \"value\": \"Miso T-Shirt Shop\",\n        \"total\": 1000,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          },\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          }\n        ]\n      },\n      {\n        \"value\": \"Miso T-Shirt Shop\",\n        \"total\": 1000,\n        \"recommended_products\": [\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          },\n          {\n            \"product_id\": \"123ABC-S-Black\"\n          }\n        ]\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "29b56340-9092-4e09-8ae7-bbe71da3bde8",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_attributes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"field\": \"<string>\",\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"rows\": 5,\n  \"products_per_attribute\": 2,\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\",\n    \"key_2\": \"<boolean>\"\n  },\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b49194ad-a333-47c3-9397-caed67e657ab",
+          "name": "User to Trending API",
+          "request": {
+            "name": "User to Trending API",
+            "description": {
+              "content": "The User to Trending API returns the products that are currently trending\nand are most likely to be of interest to this user. It's different from the User to Products API because it will only\nrecommend trending products. However, each user should still see unique recommendations that are not only trending but\nalso suit their interests.\n\n### Applicable scenarios\nThis API is typically used to make homepage recommendations such as \"Trending products for users like you\" or\n\"Trending on Youtube\".\n\n### Filtering \"already seen\" items\nThe User to Trending API will not recommend products users have recently interacted with.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "recommendation",
+                "user_to_trending"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\",\n    \"key_2\": \"<boolean>\",\n    \"key_3\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": \"<object>\",\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "42b5fbeb-5a24-48ce-8f34-6dc4e0bfcd46",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_trending"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_3\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"products\": [\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      },\n      {\n        \"product_id\": \"123ABC-S-Black\"\n      }\n    ],\n    \"took\": 0,\n    \"miso_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9b61360e-6c74-4294-8363-e32485d3470d",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "recommendation",
+                    "user_to_trending"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"engine_id\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_cohort\": {\n    \"key_0\": \"<boolean>\",\n    \"key_1\": \"<boolean>\"\n  },\n  \"rows\": 5,\n  \"type\": \"<string>\",\n  \"dedupe_product_group_id\": true,\n  \"exclude\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"custom_context\": {\n    \"session_variable_1\": [\n      \"value_1\",\n      \"value_2\"\n    ]\n  },\n  \"boosting_tags\": [\n    \"tag-1\",\n    \"quetag-2\"\n  ],\n  \"fq\": \"<string>\",\n  \"boost_fq\": \"<string>\",\n  \"boost_positions\": [\n    \"<integer>\",\n    \"<integer>\"\n  ],\n  \"boost_rule_name\": \"<string>\",\n  \"geo\": {},\n  \"diversification\": {\n    \"key_0\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_1\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_2\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    },\n    \"key_3\": {\n      \"minimum_distance\": 1,\n      \"always_together\": false\n    }\n  },\n  \"dithering\": 1,\n  \"pagination_id\": \"<string>\",\n  \"start\": 0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.askmiso.com",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "4440d69d-28ac-4056-822f-b2d4438214eb",
+    "name": "Miso Ask APIs User Recommendations API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Overview\nMiso’s approach to personalization is to train machine learning Engines on three core data sets:\n\n1. Your site’s log of historical and real-time interactions,\n2. Your catalog of products and content, and\n3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation\nexperiences that are personalized down to the individual level (n=1 personalization).\n\nTo see how Miso works and explore the power of its Engines, we recommend following\n[this tutorial](https://docs.askmiso.com/) to get\nstarted with our Playground data. Integrating your site or application with Miso happens in three basic steps:\n\n1. Upload your data\n2. Train your Engines\n3. Build search and recommendation experiences with the output of your Engines.\n\n\nMiso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),\nwhich is used to set up your Engines with the conversions you want to optimize and your training schedule.\nDojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of\nMiso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search\nand recommendations running on your live data.\n\nThe second integration point is Miso’s API, which lets you automatically manage your data in Miso and build\nexperiences that leverage the output of Miso’s personalization Engines.\n\n\nMiso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.\n\n### Data APIs\nData APIs collect input to Miso's personalization Engines. These APIs all support high-throughput\ndata ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data\nfrom Miso. Subcategories of Data APIs are:\n\n* [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction\nrecords, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s\nEngines learn how to optimize your conversion funnels.\n* [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic\nunderstanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely\nsuggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.\n* [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,\nso Miso can build an understanding of user segmentation and behavior in relation to products and content.\nThe `user_id` is how Miso links User records to your Interaction records.\n\nAs a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User\nUpload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction\nUpload API, we recommend limiting your calls to around 10,000 records at a time.\n\n### Engine APIs\nEngine APIs provide the output of Miso's personalization Engines. We designed these APIs with a focus on low\nlatency and high availability. Most of these APIs' 95th percentile response time is under 75ms,\nand the services are replicated to at least three separate instances for high availability.\nThe types of Engine APIs are:\n\n* [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and\nautocompletion.\n* [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with\nthe products, categories, and product attributes that are likely to drive conversions.\n\n# Authentication\n[View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)\n\nThere are three environments in Miso:\n* **Playground**, a read-only tutorial environment with sample data.\n* **Development**, for staging, QA, and experimentation.\n* **Production**, where you run your live integration with Miso.\n\nAccess a Miso environment by passing in the corresponding API key in your API calls. There is one publishable\nkey and one secret key per environment.\n\nAPI Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.\n",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs Q&A APIs API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Q&A APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Q&A API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/qa/question_answering",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Question Answering API analyzes each Product's `html` field and extracts paragraphs that can answer users'\nquestions.\n\nFor example, Miso can take question likes `What is python?`, and extract an answer like\n`Python is an interpreted, object-oriented, high-level programming language.` from a product's `html` field.\n\nEach answer is assigned a `probability` score that determines how likely a paragraph can accurately answer the\nquestion. A probability at least 0.7 is recommended, but you usually wil"
+        },
+        {
+          "info": {
+            "name": "Upload Question Bank API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/qa/questions",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Question Bank API lets you upload your *question bank* to Miso. A *question bank* is a list of questions that\ncan be used for **Question Autocomplete** and **Similar Question Search**.\n\nThis API follows a *replace-all* model, i.e. a successful upload request will replace all the existing questions\nin the question bank.\n\nFor example, the following request will replace the existing question bank with the given three questions:\n```\nPOST /v1/qa/questions\n{\"data\": [\n    {\"question\": \"What is python?\""
+        },
+        {
+          "info": {
+            "name": "Question Autocomplete API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/qa/question_autocomplete",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Question Autocomplete is an important feature for Q&A applications. It not only saves your users from typing\nthe complete questions, but also showcases what questions your app is capable answering. This is important because\nQ&A is an advanced search feature that not every user is familar with.\n\nMiso generates autocomplete candidates from the question bank you uploaded (see [Question Bank Upload API](...)).\nGiven a partial question string, Question Autocomplete API will suggest question candidate"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

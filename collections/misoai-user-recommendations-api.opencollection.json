@@ -1,0 +1,102 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs User Recommendations API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "User Recommendations",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "User to Products API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/recommendation/user_to_products",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Returns the products that are most likely to drive conversion for the given user. Depending on the conversion\nmetrics you choose when training your Miso Engines in Dojo, this API returns products that are most likely to\noptimize those metrics (such as `add_to_cart`, `checkout`, or `read`).\n\nThis API considers both user's interests and the conversion probability. The user's interests are determined from\ntheir past interactions on the site and the context of their current browsing session, includi"
+        },
+        {
+          "info": {
+            "name": "User to Categories API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/recommendation/user_to_categories",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The User to Categories API returns the product categories that will drive the conversion for the current user,\nalong with the recommended products for each returned category.\n\n### Application scenarios\nThis API is usually used in homepage recommendations, or category recommendations\nwhere recommendations are organized by categories,\nsuch as Netflix's \"*Action / Sci-Fi / Drama movies for you*\"\nor Amazon's \"*Recommendations for you in Grocery & Gourmet Food*\". The goal of such recommendations is t"
+        },
+        {
+          "info": {
+            "name": "User to Attributes API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/recommendation/user_to_attributes",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The `User to Attributes` API is a generalized version of `User to Categories` API --- it returns the product\nattributes that Miso expects to drive a conversion for the current\nuser. You specify a field in your Product catalog you want recommendations for, e.g. the `brand` or a custom field like\n`custom_attributes.director`, and this API will return a list of values from that fields Miso expects users will be most\ninterested in, as well as a list of personalized product suggestions.\n\n### Applicab"
+        },
+        {
+          "info": {
+            "name": "User to Trending API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/recommendation/user_to_trending",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The User to Trending API returns the products that are currently trending\nand are most likely to be of interest to this user. It's different from the User to Products API because it will only\nrecommend trending products. However, each user should still see unique recommendations that are not only trending but\nalso suit their interests.\n\n### Applicable scenarios\nThis API is typically used to make homepage recommendations such as \"Trending products for users like you\" or\n\"Trending on Youtube\".\n\n##"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

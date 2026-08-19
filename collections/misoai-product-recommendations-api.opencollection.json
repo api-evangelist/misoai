@@ -1,0 +1,39 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs Product Recommendations API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Product Recommendations",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Product to Products API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/recommendation/product_to_products",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The Product to Products API returns the products that are related to an anchor product (often the product the user\nis currently engaging with) and are also likely to drive conversions by connecting with the user’s interests. It is\ndifferent from the User to Products API as it not only considers the user’s interests but also considers the\nrecommended products' relevancy to the anchor product.\n\n### Applicable scenarios\nThis API is frequently used in product detail page to show related products tha"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

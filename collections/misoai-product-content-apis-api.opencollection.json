@@ -1,0 +1,125 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs Product / Content APIs API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Product / Content APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Product / Content Upload API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/products",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Bulk API to insert Product records. This API endpoint accepts POST requests with JSON data\ncontaining a list of Product / Content records wrapped in a dictionary:\n```\nPOST /v1/products\n\n{\"data\": [product_1, product_2, product_3]}\n```\n\nEach product is uniquely identified by its `product_id`. If a record with the same `product_id`\nalready exists in the dataset, the existing one will be **replaced** by the insertion (no\npartial update is allowed at this time). We recommend limiting your calls to ar"
+        },
+        {
+          "info": {
+            "name": "Product / Content Read API",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.askmiso.com/v1/products/:product_id",
+            "params": [
+              {
+                "name": "product_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API endpoint retrieves the details of a specific product / content using its `product_id`.\nTo fetch the product / content information, make a GET request to the following URL:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nGET /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to fetch.\n\n## Response Format\n\nThe API will return the product / content details in a JSON object if the given `product_id`\nis valid "
+        },
+        {
+          "info": {
+            "name": "Product / Content Delete API",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.askmiso.com/v1/products/:product_id",
+            "params": [
+              {
+                "name": "product_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API endpoint allows you to delete a specific product / content from the system using its\n`product_id`. To remove a product, make a DELETE request to:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nDELETE /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to delete.\n\n## Response Format\n\nThe API will return a JSON object indicating the success or failure of the deletion request.\nIf the deletion is successful, "
+        },
+        {
+          "info": {
+            "name": "Product / Content ID List API",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.askmiso.com/v1/products/_ids",
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API endpoint allows you to fetch the unique identifiers (product_ids) of all products\nstored in the app. To get a list of product_ids, make a GET request to the following URL:\n\n```\nGET /v1/products/_ids\n```\n\n## Response Format\n\nThe API will return an array of product_ids in a JSON object. The `status_code` will be `200`\nif the request is successful. If any error occurs during the request, the `status_code` will\nnot be `200` and the `message` field will indicate the error.\n\n### Example Succe"
+        },
+        {
+          "info": {
+            "name": "Product / Content Bulk Delete API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/products/_delete",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API endpoint allows you to delete multiple products by providing their product_ids.\n\nTo delete multiple products, make a POST request to the following URL:\n\n```\nPOST /v1/products/_delete\n```\n\nThe request body should contain a JSON object with an array of product_ids:\n\n```json\n{\n  \"data\": {\n    \"product_ids\": [\n      \"product-1\",\n      \"product-2\",\n      // ... more product_ids to delete\n    ]\n  }\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `message` and an array of `"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

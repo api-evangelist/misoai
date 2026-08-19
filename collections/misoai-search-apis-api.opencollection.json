@@ -1,0 +1,81 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs Search APIs API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Search APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Search API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/search/search",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The Search API provides personalized, typo-correcting, semantic search for your site.\nYou send this API the search queries users entered, and the API returns the relevant search results tailored to your\nusers' interests.\n\n### Personalized search\nPersonalized search is a key factor in driving search conversion on many major sites.\nIt is particularly powerful for short search queries (≤ 3 keywords), which account for [up to 80% of search traffic in the U.S.](https://www.statista.com/statistics/269"
+        },
+        {
+          "info": {
+            "name": "Autocomplete API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/search/autocomplete",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The Autocompletion API provides real-time, personalized, typo resistant typeahead for your search bar.\nYou send this API what users are currently typing, and the API returns the complete search query suggestions.\n\n### Personalized typeahead\nPersonalized typeahead is an extreme example of personalized search. The personalization starts immediately when\nusers enter even just one character. The typeahead results are personalized so that the entries most likely to drive\nconversion for the current us"
+        },
+        {
+          "info": {
+            "name": "Multiple Get API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/search/mget",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The Multiple Get API provides a simple and fast interface to retrieve Products by their product ids.\nFor example, the following query will retrieve products whose product_ids are `123ABC-S-Black` and `123ABC-S-Blue`\n```\n{\n    \"product_ids\": [\"123ABC-S-Black\", \"123ABC-S-Blue\"]\n}\n```\nMiso will respond with the complete Products records in the same order as the given `product_ids`:\n```\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"products\": [\n      {\n        \"_found\": true,\n        \"product_id\": \"123"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

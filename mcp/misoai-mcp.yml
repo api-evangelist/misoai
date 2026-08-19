@@ -1,11 +1,9 @@
 generated: '2026-07-20'
 method: derived
 status: candidate
-source: >-
-  Derived from openapi/misoai-openapi-original.json operations. No official
-  hosted/remote Miso MCP server was found (searched docs.miso.ai, the MisoAI
-  GitHub org, and npm @modelcontextprotocol). This is a candidate tool surface
-  mapping each Miso API operation to an MCP tool — a starting point, not a
+source: Derived from openapi/misoai-openapi-original.json operations. No official hosted/remote Miso MCP
+  server was found (searched docs.miso.ai, the MisoAI GitHub org, and npm @modelcontextprotocol). This
+  is a candidate tool surface mapping each Miso API operation to an MCP tool — a starting point, not a
   published server.
 server:
   name: misoai
@@ -63,3 +61,9 @@ tools:
 - name: bulk_request
   description: Batch multiple Miso API requests in one call.
   source_operation: openapi/misoai-openapi-original.json#bulk_v1_bulk_post
+deployment:
+  mode: none
+  verified: derived
+  tools: 17
+  checked: '2026-08-12'
+  source: catalog MCP census

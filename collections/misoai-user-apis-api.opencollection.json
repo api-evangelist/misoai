@@ -1,0 +1,115 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs User APIs API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "User APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "User Upload API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/users",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Bulk API to insert User records. This API endpoint accepts POST requests with JSON data\ncontaining a list of User records wrapped in a dictionary.\n\n```\nPOST /v1/users\n```\n\n```json\n{\n  \"data\": [user_1, user_2, user_3]\n}\n```\n\nIf a record with the same `user_id` already exists in the dataset, the existing record will\nbe replaced (no partial update is allowed at this time). We recommend limiting your calls to\naround 100 records at a time to avoid memory issues or timeout risks.\n\n### Schema validatio"
+        },
+        {
+          "info": {
+            "name": "User Read API",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.askmiso.com/v1/users/:user_id",
+            "params": [
+              {
+                "name": "user_id",
+                "value": "",
+                "type": "path",
+                "description": "The ID of the user."
+              },
+              {
+                "name": "userId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API endpoint retrieves the details of a specific user using their `user_id`.\nTo fetch the user information, make a GET request to the following URL:\n\n**Notice**: Make sure the user_id is an urlencode string.\n\n```\nGET /v1/users/{user_id}\n```\n\nReplace `{user_id}` with the unique identifier of the user you wish to fetch.\n\n## Response Format\n\nThe API will return the user details in a JSON object if the given `user_id` is valid and\nexists in the system. The JSON object will include fields like `"
+        },
+        {
+          "info": {
+            "name": "User Delete API",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.askmiso.com/v1/users/:user_id",
+            "params": [
+              {
+                "name": "user_id",
+                "value": "",
+                "type": "path",
+                "description": "The ID of the user."
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API endpoint allows you to delete a specific user from the system using their `user_id`.\n\n**Notice**: Make sure the user_id is an urlencode string.\n\nTo remove a user, make a DELETE request to:\n\n```\nDELETE /v1/users/{user_id}\n```\n\nReplace `{user_id}` with the unique identifier of the user you wish to delete.\n\n## Response Format\n\nThe API will return a JSON object with a `task_id` that can be used to retrieve.\n\n#### Example Error Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"tas"
+        },
+        {
+          "info": {
+            "name": "User Bulk Delete API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/users/_delete",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "This API endpoint allows you to delete multiple users by providing their user_ids.\n\nTo delete multiple users, make a POST request to the following URL:\n\n```\nPOST /v1/users/_delete\n```\n\nThe request body should contain a JSON object with an array of user_ids:\n\n```json\n{\n  \"data\": {\n    \"user_ids\": [\n      \"product-1\",\n      \"product-2\",\n      // ... more product_ids to delete\n    ]\n  }\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `message` and an array of `data`\ncontaining a"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

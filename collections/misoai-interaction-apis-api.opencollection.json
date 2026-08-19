@@ -1,0 +1,60 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs Interaction APIs API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Interaction APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Interaction Upload API",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/interactions",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Miso’s Interaction APIs let you manage your Interaction records stored with Miso.\n\n### Interaction records\nYour Interaction records tell Miso about user interactions with products and content on your site or application.\nFrom these interactions, Miso understands how users move through your conversion funnels: which products or content\nassets attract the attention of each individual user, and which products or content ultimately will be purchased or\nconsumed by each of them. With these insights, "
+        },
+        {
+          "info": {
+            "name": "Interaction Delete API",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.askmiso.com/v1/interactions",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "The endpoint will delete users' interaction data entirely from the log of interactions you have uploaded to Miso.\nThis API enables you to comply with users' data removal requests (i.e. right to be forgotten). Once a user's\ninteractions are deleted, we will not be able to recover them, and they will no longer contribute to model\ntraining."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,47 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Miso Ask APIs Experiment APIs API",
+    "version": "1.1.4"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Experiment APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Send Experiment Event",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.askmiso.com/v1/experiments/:experiment_id_or_slug/events",
+            "params": [
+              {
+                "name": "experiment_id_or_slug",
+                "value": "",
+                "type": "path",
+                "description": "The ID or slug name of the experiment."
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "api_key",
+              "value": "{{api_key}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Send Experiment Event"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

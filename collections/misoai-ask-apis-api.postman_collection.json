@@ -1,0 +1,365 @@
+{
+  "item": [
+    {
+      "id": "3d01f981-592c-4d58-ab3a-9b8332f8f1d6",
+      "name": "Ask APIs",
+      "description": {
+        "content": "\nMiso's new Ask API is the next generation of question answering APIs.\nIt is designed to provide accurate and concise answers to your questions\nbased on your existing product documents.\n\nAsk API offers a seamless and effective way to address complex queries in\na near-realtime fasion.\n\nMiso preprocesses your product documents, breaking them into segments.\nWhen a question is received, Miso finds the most related product and segments, then\nsummarize to a concise and informative answer based on the identified segments,\nincluding products related to the question.\n\nPossible use case includes: knowledge base, documentation search, customer support, and more.\n\nTo use the Ask API, you first submit a \"question\" you want to ask.\nQuestion can be any human-readable text. Then a question ID will returned,\nand the question will be processed in the background.\n\nAfter receving question ID, you can then use the question ID to get latest answer\nto the question as it is being compiled.\n\n----\n\nFor example:\n\nIf you want to know about the inner workings of nginx:\n\n```json\n{\n    \"question\":\"How nginx works internally?\"\n}\n```\n\nThe API would response with a question id.\n```json\n{\n    \"data\": {\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\"\n    },\n    \"message\": \"success\"\n}\n```\n\nThen you can send a GET request to `/v1/ask/questions/{question_id}/answer`\nto get the latest answer as it is being compiled and summerized.\nYou can use `answer_stage` and `finished` to check current answer status.\n\nHere's the response of answer API when data is fetched and being verified, before answer is summerized:\n```json\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"question\": \"How nginx works internally?\",\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\",\n        \"parent_question_id\": null,\n        \"answer_stage\": \"Verifying possible answers\",\n        \"finished\": false,\n        \"answer\": \"Verifying possible answers ...\",\n        \"sources\": [],\n        \"related_resources\": [],\n        \"followup_questions\": []\n    }\n}\n```\n\nHere's the response when answer is fullly summerized:\n\n```json\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"question\": \"How nginx works internally?\",\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\",\n        \"parent_question_id\": null,\n        \"answer_stage\": \"Generating summary\",\n        \"finished\": true,\n        \"answer\": \"# How does Nginx work internally?\\n\\n## Internal requests [1]\\n\\nNginx differentiates between external and internal requests. External requests...[omitted for simplicity]\",\n        \"sources\": [\n            {\n                \"title\": \"Internal requests\",\n                \"product_id\": \"9781788623551\",\n                \"child_title\": \"Internal requests\",\n                \"child_id\": \"203\",\n                \"snippet\": \"&lt;mark&gt;Internal requests\\nNginx differentiates external and internal requests.&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"5. Nginx Core Architecture\",\n                \"product_id\": \"9781484216569\",\n                \"child_title\": \"5. Nginx Core Architecture\",\n                \"child_id\": \"5\",\n                \"snippet\": \"Checks if the client can access of the requested the resource.\\n&lt;mark&gt;It is at this step that Nginx...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"2. Managing Nginx\",\n                \"product_id\": \"9781785289538\",\n                \"child_title\": \"2. Managing Nginx\",\n                \"child_id\": \"14\",\n                \"snippet\": \"&lt;mark&gt;The Nginx connection processing architecture\\nBefore you study...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"3. Nginx Core Directives\",\n                \"product_id\": \"9781484216569\",\n                \"child_title\": \"3. Nginx Core Directives\",\n                \"child_id\": \"3\",\n                \"snippet\": \"&lt;mark&gt;Understanding the Default Configuration\\nThe default configuration...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"4. Nginx Modules\",\n                \"product_id\": \"9781484216569\",\n                \"child_title\": \"4. Nginx Modules\",\n                \"child_id\": \"4\",\n                \"snippet\": \"&lt;mark&gt;Based on the context like HTTP, MAIL, and STREAM, it creates a ...[omitted]&lt;/mark&gt;\"\n            }\n        ],\n        \"related_resources\": [],\n        \"followup_questions\": [\n            \"What are the steps involved in processing a request and generating a response in Nginx?\",\n            \"How do Nginx modules contribute to the internal workings of Nginx?\"\n        ]\n    }\n}\n```\n\nRelated product IDs will be returned along with human-readable answer. Related text section in the product will also be quoted.\n\nIf a product has any children, they will also be matched, `child_id` and `child_title` will be included for sources belonging to the product's children.\n\nYou can use `fq` to limit the search scope, for example, to a specific product type or other condition.\n\nIf you only want to search for books (no articles of videos), you can use `fq=type:book` like this:\n```json\n{\n    \"question\":\"How nginx works internally?\"\n    \"fq\": \"type:book\"\n}\n```\n\nIf you want the answer to contain any other fields, set `source_fl` when submitting the question.\n\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "e78ee42b-a737-4f45-b1be-60350f53202f",
+          "name": "Create a new question",
+          "request": {
+            "name": "Create a new question",
+            "description": {
+              "content": "This API is used to submit questions to Miso.\n\nAfter a question is submitted, a `question_id` is returned.\nThen you can use `question_id` to check the latest status of it's answer\nas it is being compiled.\n    ",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "ask",
+                "questions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_type\": \"<string>\",\n  \"fq\": \"<string>\",\n  \"parent_question_id\": \"<uuid>\",\n  \"yearly_decay\": \"<number>\",\n  \"source_fl\": [\n    \"title\"\n  ],\n  \"related_resource_fl\": [\n    \"title\"\n  ],\n  \"boost_fq\": \"<string>\",\n  \"cite_start\": \"<string>\",\n  \"cite_end\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "b6d87278-cf22-4bd6-b783-ab9554e23bba",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "ask",
+                    "questions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"question\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_type\": \"<string>\",\n  \"fq\": \"<string>\",\n  \"parent_question_id\": \"<uuid>\",\n  \"yearly_decay\": \"<number>\",\n  \"source_fl\": [\n    \"title\"\n  ],\n  \"related_resource_fl\": [\n    \"title\"\n  ],\n  \"boost_fq\": \"<string>\",\n  \"cite_start\": \"<string>\",\n  \"cite_end\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"question_id\": \"23b68949-1e62-778a-f584-010945adda96\"\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "699e90b1-ba4a-4cc1-bb3d-8be434242499",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "ask",
+                    "questions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"question\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"anonymous_id\": \"<string>\",\n  \"user_hash\": \"<string>\",\n  \"user_type\": \"<string>\",\n  \"fq\": \"<string>\",\n  \"parent_question_id\": \"<uuid>\",\n  \"yearly_decay\": \"<number>\",\n  \"source_fl\": [\n    \"title\"\n  ],\n  \"related_resource_fl\": [\n    \"title\"\n  ],\n  \"boost_fq\": \"<string>\",\n  \"cite_start\": \"<string>\",\n  \"cite_end\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "bc381beb-3790-409b-b8dc-b68f2b74ceee",
+          "name": "Get latest answer of asked question",
+          "request": {
+            "name": "Get latest answer of asked question",
+            "description": {
+              "content": "This API is used to fetch the latest answer of previous submitted question from Miso\n\nA submitted question is put into a job with following stage:\n\n- Initialization\n- Parsing and fecthing related content\n- Relevance checking\n- Summarization\n\nThis API will tell you at what stage current question is in.\nIf answer is fetched and being summerized, it will also return the latest summarization result.\n\nBesides human readable answer, the products used to generate answer are also returned.\n    ",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "ask",
+                "questions",
+                ":question_id",
+                "answer"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<uuid>",
+                  "key": "question_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "api_key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "query"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "37f26ed0-e464-4fcf-86ed-4a835ccd6adc",
+              "name": "Successful Response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "ask",
+                    "questions",
+                    ":question_id",
+                    "answer"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "question_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"question\": \"string\",\n    \"question_id\": \"fce08901-f490-7d11-a69e-0085b171497a\",\n    \"parent_question_id\": \"43119ea7-f432-ac07-bb41-7b799a9abd75\",\n    \"answer_stage\": \"\",\n    \"finished\": false,\n    \"finish_reason\": \"not_finished\",\n    \"answer\": \"\",\n    \"followup_questions\": [\n      \"string\",\n      \"string\"\n    ],\n    \"revision\": 0\n  },\n  \"message\": \"success\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0b52af95-5db9-423c-ae6d-79771b5f661b",
+              "name": "Validation Error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "ask",
+                    "questions",
+                    ":question_id",
+                    "answer"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "api_key",
+                      "value": "<API Key>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "question_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    },\n    {\n      \"loc\": [\n        \"string\",\n        \"string\"\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.askmiso.com",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "11e6dac3-3834-4812-80ff-457959e8e9a9",
+    "name": "Miso Ask APIs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Overview\nMiso’s approach to personalization is to train machine learning Engines on three core data sets:\n\n1. Your site’s log of historical and real-time interactions,\n2. Your catalog of products and content, and\n3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation\nexperiences that are personalized down to the individual level (n=1 personalization).\n\nTo see how Miso works and explore the power of its Engines, we recommend following\n[this tutorial](https://docs.askmiso.com/) to get\nstarted with our Playground data. Integrating your site or application with Miso happens in three basic steps:\n\n1. Upload your data\n2. Train your Engines\n3. Build search and recommendation experiences with the output of your Engines.\n\n\nMiso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),\nwhich is used to set up your Engines with the conversions you want to optimize and your training schedule.\nDojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of\nMiso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search\nand recommendations running on your live data.\n\nThe second integration point is Miso’s API, which lets you automatically manage your data in Miso and build\nexperiences that leverage the output of Miso’s personalization Engines.\n\n\nMiso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.\n\n### Data APIs\nData APIs collect input to Miso's personalization Engines. These APIs all support high-throughput\ndata ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data\nfrom Miso. Subcategories of Data APIs are:\n\n* [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction\nrecords, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s\nEngines learn how to optimize your conversion funnels.\n* [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic\nunderstanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely\nsuggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.\n* [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,\nso Miso can build an understanding of user segmentation and behavior in relation to products and content.\nThe `user_id` is how Miso links User records to your Interaction records.\n\nAs a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User\nUpload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction\nUpload API, we recommend limiting your calls to around 10,000 records at a time.\n\n### Engine APIs\nEngine APIs provide the output of Miso's personalization Engines. We designed these APIs with a focus on low\nlatency and high availability. Most of these APIs' 95th percentile response time is under 75ms,\nand the services are replicated to at least three separate instances for high availability.\nThe types of Engine APIs are:\n\n* [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and\nautocompletion.\n* [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with\nthe products, categories, and product attributes that are likely to drive conversions.\n\n# Authentication\n[View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)\n\nThere are three environments in Miso:\n* **Playground**, a read-only tutorial environment with sample data.\n* **Development**, for staging, QA, and experimentation.\n* **Production**, where you run your live integration with Miso.\n\nAccess a Miso environment by passing in the corresponding API key in your API calls. There is one publishable\nkey and one secret key per environment.\n\nAPI Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.\n",
+      "type": "text/plain"
+    }
+  }
+}
