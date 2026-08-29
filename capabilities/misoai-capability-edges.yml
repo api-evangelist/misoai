@@ -1,0 +1,34 @@
+slug: misoai
+provider: miso.ai
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Retail & Consumer Goods
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 2
+edges:
+- tag: Experiment APIs
+  spec_file: misoai-experiment-apis-api-openapi.yml
+  capability_id: BC-4280.50
+  capability_id_l1: BC-4280
+  capability_name: A/B Test Execution
+  confidence: 0.7
+  evidence: Send Experiment Event; schemas VariantObject, ExperimentRequest
+  reason: Sending experiment events with variant assignment is A/B test execution instrumentation; evidence
+    is thin (one operation) but the variant/experiment schemas are unambiguous.
+- tag: Product / Content APIs
+  spec_file: misoai-product-content-apis-api-openapi.yml
+  capability_id: BC-2370.10
+  capability_id_l1: BC-2370
+  capability_name: Item Master Data Management
+  confidence: 0.7
+  evidence: Product / Content Upload API; schemas ProductRecord, ProductIds, ChildrenObject
+  reason: CRUD over the product/content catalog records (upload, read, delete, bulk delete) that constitute
+    the item record set used by the engines — product master/item record management. Some ambiguity as
+    this is an ingestion index rather than a system of record.
