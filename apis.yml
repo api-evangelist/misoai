@@ -5,18 +5,14 @@ x-enrichment:
   pass: local-v1
 aid: misoai
 name: miso.ai
-description: >-
-  Miso (Miso Technologies, askmiso.com) is an AI personalization, search, and
-  answers platform for publishers, media companies, and retailers. Miso trains
-  machine-learning "Engines" on three data sets a site already has — its log of
-  historical and real-time user interactions, its catalog of products/content,
-  and its users — and exposes the output as REST APIs for personalized semantic
-  search, typo-tolerant autocomplete, product and user recommendations, and an
-  LLM-grounded Q&A / "Answers" experience that answers questions using only the
-  customer's own content (reducing hallucination). The platform ships JavaScript
-  (client + server), Python, and PHP SDKs, a WordPress plugin, embeddable Ask /
-  Explore / Hybrid Search web modules, and the Dojo console for training engines
-  and managing API keys and environments.
+description: Miso (Miso Technologies, askmiso.com) is an AI personalization, search, and answers platform
+  for publishers, media companies, and retailers. Miso trains machine-learning "Engines" on three data
+  sets a site already has — its log of historical and real-time user interactions, its catalog of products/content,
+  and its users — and exposes the output as REST APIs for personalized semantic search, typo-tolerant
+  autocomplete, product and user recommendations, and an LLM-grounded Q&A / "Answers" experience that
+  answers questions using only the customer's own content (reducing hallucination). The platform ships
+  JavaScript (client + server), Python, and PHP SDKs, a WordPress plugin, embeddable Ask / Explore / Hybrid
+  Search web modules, and the Dojo console for training engines and managing API keys and environments.
 url: https://raw.githubusercontent.com/api-evangelist/misoai/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -51,7 +47,7 @@ accessModel:
   method: derived
 specificationVersion: '0.23'
 created: '2026-07-17'
-modified: '2026-07-20'
+modified: '2026-09-16'
 tags:
 - Company
 - Artificial Intelligence
@@ -86,194 +82,62 @@ image: https://miso.ai/favicon.ico
 apis:
 - aid: misoai:misoai-ask-apis-api
   name: miso.ai Ask APIs API
-  description: >-
-    Miso's new Ask API is the next generation of question answering APIs.
-
-    It is designed to provide accurate and concise answers to your questions
-
-    based on your existing product documents.
-
-
-    Ask API offers a seamless and effective way to address complex queries in
-
-    a near-realtime fasion.
-
-
-    Miso preprocesses your product documents, breaking them into segments.
-
-    When a question is received, Miso finds the most related product and segments, then
-
-    summarize to a concise and informative answer based on the identified segments,
-
-    including products related to the question.
-
-
-    Possible use case includes: knowledge base, documentation search, customer support, and more.
-
-
-    To use the Ask API, you first submit a "question" you want to ask.
-
-    Question can be any human-readable text. Then a question ID will returned,
-
-    and the question will be processed in the background.
-
-
-    After receving question ID, you can then use the question ID to get latest answer
-
-    to the question as it is being compiled.
-
-
-    ----
-
-
-    For example:
-
-
-    If you want to know about the inner workings of nginx:
-
-
-    ```json
-
-    {
-        "question":"How nginx works internally?"
-    }
-
-    ```
-
-
-    The API would response with a question id.
-
-    ```json
-
-    {
-        "data": {
-            "question_id": "ff4775fa-345e-4d28-91b0-8fb8bf095e6a"
-        },
-        "message": "success"
-    }
-
-    ```
-
-
-    Then you can send a GET request to `/v1/ask/questions/{question_id}/answer`
-
-    to get the latest answer as it is being compiled and summerized.
-
-    You can use `answer_stage` and `finished` to check current answer status.
-
-
-    Here's the response of answer API when data is fetched and being verified, before answer is summerized:
-
-    ```json
-
-    {
-        "message": "success",
-        "data": {
-            "question": "How nginx works internally?",
-            "question_id": "ff4775fa-345e-4d28-91b0-8fb8bf095e6a",
-            "parent_question_id": null,
-            "answer_stage": "Verifying possible answers",
-            "finished": false,
-            "answer": "Verifying possible answers ...",
-            "sources": [],
-            "related_resources": [],
-            "followup_questions": []
-        }
-    }
-
-    ```
-
-
-    Here's the response when answer is fullly summerized:
-
-
-    ```json
-
-    {
-        "message": "success",
-        "data": {
-            "question": "How nginx works internally?",
-            "question_id": "ff4775fa-345e-4d28-91b0-8fb8bf095e6a",
-            "parent_question_id": null,
-            "answer_stage": "Generating summary",
-            "finished": true,
-            "answer": "# How does Nginx work internally?\n\n## Internal requests [1]\n\nNginx differentiates
-    between external and internal requests. External requests...[omitted for simplicity]",
-            "sources": [
-                {
-                    "title": "Internal requests",
-                    "product_id": "9781788623551",
-                    "child_title": "Internal requests",
-                    "child_id": "203",
-                    "snippet": "&lt;mark&gt;Internal requests\nNginx differentiates external and internal
-    requests.&lt;/mark&gt;"
-                },
-                {
-                    "title": "5. Nginx Core Architecture",
-                    "product_id": "9781484216569",
-                    "child_title": "5. Nginx Core Architecture",
-                    "child_id": "5",
-                    "snippet": "Checks if the client can access of the requested the resource.\n&lt;mark&gt;It
-    is at this step that Nginx...[omitted]&lt;/mark&gt;"
-                },
-                {
-                    "title": "2. Managing Nginx",
-                    "product_id": "9781785289538",
-                    "child_title": "2. Managing Nginx",
-                    "child_id": "14",
-                    "snippet": "&lt;mark&gt;The Nginx connection processing architecture\nBefore you study...[omitted]&lt;/mark&gt;"
-                },
-                {
-                    "title": "3. Nginx Core Directives",
-                    "product_id": "9781484216569",
-                    "child_title": "3. Nginx Core Directives",
-                    "child_id": "3",
-                    "snippet": "&lt;mark&gt;Understanding the Default Configuration\nThe default configuration...[omitted]&lt;/mark&gt;"
-                },
-                {
-                    "title": "4. Nginx Modules",
-                    "product_id": "9781484216569",
-                    "child_title": "4. Nginx Modules",
-                    "child_id": "4",
-                    "snippet": "&lt;mark&gt;Based on the context like HTTP, MAIL, and STREAM, it creates
-    a ...[omitted]&lt;/mark&gt;"
-                }
-            ],
-            "related_resources": [],
-            "followup_questions": [
-                "What are the steps involved in processing a request and generating a response in Nginx?",
-                "How do Nginx modules contribute to the internal workings of Nginx?"
-            ]
-        }
-    }
-
-    ```
-
-
-    Related product IDs will be returned along with human-readable answer. Related text section in the
-    product will also be quoted.
-
-
-    If a product has any children, they will also be matched, `child_id` and `child_title` will be included
-    for sources belonging to the product's children.
-
-
-    You can use `fq` to limit the search scope, for example, to a specific product type or other condition.
-
-
-    If you only want to search for books (no articles of videos), you can use `fq=type:book` like this:
-
-    ```json
-
-    {
-        "question":"How nginx works internally?"
-        "fq": "type:book"
-    }
-
-    ```
-
-
-    If you want the answer to contain any other fields, set `source_fl` when submitting the question.
+  description: "Miso's new Ask API is the next generation of question answering APIs.\nIt is designed\
+    \ to provide accurate and concise answers to your questions\nbased on your existing product documents.\n\
+    \nAsk API offers a seamless and effective way to address complex queries in\na near-realtime fasion.\n\
+    \nMiso preprocesses your product documents, breaking them into segments.\nWhen a question is received,\
+    \ Miso finds the most related product and segments, then\nsummarize to a concise and informative answer\
+    \ based on the identified segments,\nincluding products related to the question.\n\nPossible use case\
+    \ includes: knowledge base, documentation search, customer support, and more.\n\nTo use the Ask API,\
+    \ you first submit a \"question\" you want to ask.\nQuestion can be any human-readable text. Then\
+    \ a question ID will returned,\nand the question will be processed in the background.\n\nAfter receving\
+    \ question ID, you can then use the question ID to get latest answer\nto the question as it is being\
+    \ compiled.\n\n----\n\nFor example:\n\nIf you want to know about the inner workings of nginx:\n\n\
+    ```json\n{\n    \"question\":\"How nginx works internally?\"\n}\n```\n\nThe API would response with\
+    \ a question id.\n```json\n{\n    \"data\": {\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\"\
+    \n    },\n    \"message\": \"success\"\n}\n```\n\nThen you can send a GET request to `/v1/ask/questions/{question_id}/answer`\n\
+    to get the latest answer as it is being compiled and summerized.\nYou can use `answer_stage` and `finished`\
+    \ to check current answer status.\n\nHere's the response of answer API when data is fetched and being\
+    \ verified, before answer is summerized:\n```json\n{\n    \"message\": \"success\",\n    \"data\"\
+    : {\n        \"question\": \"How nginx works internally?\",\n        \"question_id\": \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\"\
+    ,\n        \"parent_question_id\": null,\n        \"answer_stage\": \"Verifying possible answers\"\
+    ,\n        \"finished\": false,\n        \"answer\": \"Verifying possible answers ...\",\n       \
+    \ \"sources\": [],\n        \"related_resources\": [],\n        \"followup_questions\": []\n    }\n\
+    }\n```\n\nHere's the response when answer is fullly summerized:\n\n```json\n{\n    \"message\": \"\
+    success\",\n    \"data\": {\n        \"question\": \"How nginx works internally?\",\n        \"question_id\"\
+    : \"ff4775fa-345e-4d28-91b0-8fb8bf095e6a\",\n        \"parent_question_id\": null,\n        \"answer_stage\"\
+    : \"Generating summary\",\n        \"finished\": true,\n        \"answer\": \"# How does Nginx work\
+    \ internally?\\n\\n## Internal requests [1]\\n\\nNginx differentiates\nbetween external and internal\
+    \ requests. External requests...[omitted for simplicity]\",\n        \"sources\": [\n            {\n\
+    \                \"title\": \"Internal requests\",\n                \"product_id\": \"9781788623551\"\
+    ,\n                \"child_title\": \"Internal requests\",\n                \"child_id\": \"203\"\
+    ,\n                \"snippet\": \"&lt;mark&gt;Internal requests\\nNginx differentiates external and\
+    \ internal\nrequests.&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"\
+    5. Nginx Core Architecture\",\n                \"product_id\": \"9781484216569\",\n              \
+    \  \"child_title\": \"5. Nginx Core Architecture\",\n                \"child_id\": \"5\",\n      \
+    \          \"snippet\": \"Checks if the client can access of the requested the resource.\\n&lt;mark&gt;It\n\
+    is at this step that Nginx...[omitted]&lt;/mark&gt;\"\n            },\n            {\n           \
+    \     \"title\": \"2. Managing Nginx\",\n                \"product_id\": \"9781785289538\",\n    \
+    \            \"child_title\": \"2. Managing Nginx\",\n                \"child_id\": \"14\",\n    \
+    \            \"snippet\": \"&lt;mark&gt;The Nginx connection processing architecture\\nBefore you\
+    \ study...[omitted]&lt;/mark&gt;\"\n            },\n            {\n                \"title\": \"3.\
+    \ Nginx Core Directives\",\n                \"product_id\": \"9781484216569\",\n                \"\
+    child_title\": \"3. Nginx Core Directives\",\n                \"child_id\": \"3\",\n             \
+    \   \"snippet\": \"&lt;mark&gt;Understanding the Default Configuration\\nThe default configuration...[omitted]&lt;/mark&gt;\"\
+    \n            },\n            {\n                \"title\": \"4. Nginx Modules\",\n              \
+    \  \"product_id\": \"9781484216569\",\n                \"child_title\": \"4. Nginx Modules\",\n  \
+    \              \"child_id\": \"4\",\n                \"snippet\": \"&lt;mark&gt;Based on the context\
+    \ like HTTP, MAIL, and STREAM, it creates\na ...[omitted]&lt;/mark&gt;\"\n            }\n        ],\n\
+    \        \"related_resources\": [],\n        \"followup_questions\": [\n            \"What are the\
+    \ steps involved in processing a request and generating a response in Nginx?\",\n            \"How\
+    \ do Nginx modules contribute to the internal workings of Nginx?\"\n        ]\n    }\n}\n```\n\nRelated\
+    \ product IDs will be returned along with human-readable answer. Related text section in the product\
+    \ will also be quoted.\n\nIf a product has any children, they will also be matched, `child_id` and\
+    \ `child_title` will be included for sources belonging to the product's children.\n\nYou can use `fq`\
+    \ to limit the search scope, for example, to a specific product type or other condition.\n\nIf you\
+    \ only want to search for books (no articles of videos), you can use `fq=type:book` like this:\n```json\n\
+    {\n    \"question\":\"How nginx works internally?\"\n    \"fq\": \"type:book\"\n}\n```\n\nIf you want\
+    \ the answer to contain any other fields, set `source_fl` when submitting the question."
   humanURL: https://docs.miso.ai/api-reference/introduction
   baseURL: https://api.askmiso.com
   tags:
@@ -286,7 +150,7 @@ apis:
   - type: Authentication
     url: authentication/misoai-authentication.yml
 - aid: misoai:misoai-bulk-api-api
-  name: miso.ai Bulk API API
+  name: miso.ai Bulk API
   description: "The Bulk API provides an efficient interface for making multiple Search / Recommendations\
     \ / Q&A requests in one API\ncall. These requests will be executed concurrently at the Miso side,\
     \ and returned at once when all of them are finished.\nThis API is particularly useful when you need\
@@ -339,109 +203,34 @@ apis:
     url: authentication/misoai-authentication.yml
 - aid: misoai:misoai-experiment-apis-api
   name: miso.ai Experiment APIs API
-  description: >-
-    Miso's experiment APIs let you do the A/B testing of your current result with Miso.
-
-
-    ### Start an experiment in Dojo.
-
-
-    Login to the [dojo](https://dojo.askmiso.com) platform.
-
-    Create an experiment event for you.
-
-
-    ### Start running A/B testing in your environment.
-
-
-    #### Implement A/B testing code.
-
-
-    Here's an example in NodeJS. You can also use any programming language of you choice.
-
-    ```nodejs
-
-    const axios = require('axios');
-
-
-    async function get_user_experiment_info(api_key, experiment_id, user_id) {
-        data = {"user_id": user_id}
-        endpoint = `https://api.askmiso.com/v1/experiments/${experiment_id}/events?api_key=${api_key}`
-        return await axios.post(endpoint, data)
-    }
-
-
-    const api_key = '<YOUR_SECRET_API_KEY>'
-
-    const experiment_id = "<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>"
-
-    let user_id = 'user_1234'  // use to evaluate a treatment for
-
-
-    const user_experiment_info = get_user_experiment_info(api_key, experiment_id, user_id)
-
-    user_experiment_info.then((response) => {
-        let variant = response.data['variant']
-        if (variant['name'] == "treatment") {
-            // insert code here to show "treatment" variant
-        } else if (variant['name'] == "control") {
-            // insert code here to show "control" variant
-        } else {
-            // unexpected variant name. raise error
-            throw new Error(`Unexpected variant name ${variant["name"]}`)
-        }
-    })
-
-    ```
-
-
-    If you implement A/B testing code in FrontEnd, like JavaScript, and are also worried about exploding
-    the secret api_key. You can choose to use anonymous_id with the public_api_key for this API. Here's
-    an example.
-
-
-    ```javascript
-
-    const apiKey = '<YOUR_PUBLIC_API_KEY>';
-
-    const experimentId = '<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>';
-
-    const anonymous_id = 'user_1234';  // use to evaluate a treatment for
-
-
-    function getUserExperimentInfo(apiKey, experimentId, anonymous_id) {
-      const data = {
-        user_id: anonymous_id
-      };
-      const url = `https://api.askmiso.com/v1/experiments/${experimentId}/events?api_key=${apiKey}`;
-      const options = {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      };
-
-      return window.fetch(url, options)
-        .then((response) => response.json())
-        .then((data) => {
-          const variantName = data.variant.name;
-          if (variantName === `${this.treatmentName}`) {
-            // insert code here to show 'treatment' variant
-          } else if (variantName === `${this.controlName}`) {
-            // insert code here to show 'control' variant
-          } else {
-            // unexpected variant name, throw error
-            throw new Error(`Unexpected variant name: ${variantName}`);
-          }
-        })
-        .catch((error) => console.error(error));
-    }
-
-
-    getUserExperimentInfo(apiKey, experimentId, anonymous_id);
-
-    ```
+  description: "Miso's experiment APIs let you do the A/B testing of your current result with Miso.\n\n\
+    ### Start an experiment in Dojo.\n\nLogin to the [dojo](https://dojo.askmiso.com) platform.\nCreate\
+    \ an experiment event for you.\n\n### Start running A/B testing in your environment.\n\n#### Implement\
+    \ A/B testing code.\n\nHere's an example in NodeJS. You can also use any programming language of you\
+    \ choice.\n```nodejs\nconst axios = require('axios');\n\nasync function get_user_experiment_info(api_key,\
+    \ experiment_id, user_id) {\n    data = {\"user_id\": user_id}\n    endpoint = `https://api.askmiso.com/v1/experiments/${experiment_id}/events?api_key=${api_key}`\n\
+    \    return await axios.post(endpoint, data)\n}\n\nconst api_key = '<YOUR_SECRET_API_KEY>'\nconst\
+    \ experiment_id = \"<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>\"\nlet user_id = 'user_1234'  // use to\
+    \ evaluate a treatment for\n\nconst user_experiment_info = get_user_experiment_info(api_key, experiment_id,\
+    \ user_id)\nuser_experiment_info.then((response) => {\n    let variant = response.data['variant']\n\
+    \    if (variant['name'] == \"treatment\") {\n        // insert code here to show \"treatment\" variant\n\
+    \    } else if (variant['name'] == \"control\") {\n        // insert code here to show \"control\"\
+    \ variant\n    } else {\n        // unexpected variant name. raise error\n        throw new Error(`Unexpected\
+    \ variant name ${variant[\"name\"]}`)\n    }\n})\n```\n\nIf you implement A/B testing code in FrontEnd,\
+    \ like JavaScript, and are also worried about exploding the secret api_key. You can choose to use\
+    \ anonymous_id with the public_api_key for this API. Here's an example.\n\n```javascript\nconst apiKey\
+    \ = '<YOUR_PUBLIC_API_KEY>';\nconst experimentId = '<EXPERIMENT_ID | EXPERIMENT_SLUG_NAME>';\nconst\
+    \ anonymous_id = 'user_1234';  // use to evaluate a treatment for\n\nfunction getUserExperimentInfo(apiKey,\
+    \ experimentId, anonymous_id) {\n  const data = {\n    user_id: anonymous_id\n  };\n  const url =\
+    \ `https://api.askmiso.com/v1/experiments/${experimentId}/events?api_key=${apiKey}`;\n  const options\
+    \ = {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n  \
+    \  body: JSON.stringify(data),\n  };\n\n  return window.fetch(url, options)\n    .then((response)\
+    \ => response.json())\n    .then((data) => {\n      const variantName = data.variant.name;\n     \
+    \ if (variantName === `${this.treatmentName}`) {\n        // insert code here to show 'treatment'\
+    \ variant\n      } else if (variantName === `${this.controlName}`) {\n        // insert code here\
+    \ to show 'control' variant\n      } else {\n        // unexpected variant name, throw error\n   \
+    \     throw new Error(`Unexpected variant name: ${variantName}`);\n      }\n    })\n    .catch((error)\
+    \ => console.error(error));\n}\n\ngetUserExperimentInfo(apiKey, experimentId, anonymous_id);\n```"
   humanURL: https://docs.miso.ai/api-reference/introduction
   baseURL: https://api.askmiso.com
   tags:
@@ -455,136 +244,48 @@ apis:
     url: authentication/misoai-authentication.yml
 - aid: misoai:misoai-interaction-apis-api
   name: miso.ai Interaction APIs API
-  description: >-
-    Miso’s Interaction APIs let you manage your Interaction records stored with Miso.
-
-
-    ### Interaction records
-
-    Your Interaction records tell Miso about user interactions with products and content on your site
-    or application.
-
-    From these interactions, Miso understands how users move through your conversion funnels: which products
-    or content
-
-    assets attract the attention of each individual user, and which products or content ultimately will
-    be purchased or
-
-    consumed by each of them. With these insights, Miso makes real-time tailored recommendations for each
-    user, and
-
-    responds to each of their clicks and views on the site (even for anonymous users).
-
-
-    Interaction records share some common attributes, but are distinguished by their type.
-
-    Miso captures 23 different interaction types, divided into the following 6 groups:
-
-
-    #### Core click-streams
-
-    * `product_detail_page_view`: a user viewed the detail page for a product
-
-    * `search`: a user made a search request with keywords and (optionally) filters
-
-
-    The above interactions are the core fuel for Miso's personalization Engines, because they happen in
-    a much higher
-
-    frequency than other interactions and provide an unbiased and high-fidelity view of users' interests
-    on the site.
-
-    The collection of these interactions is highly important for Miso's personalization performance. At
-    the minimum,
-
-    you should implement the `product_detail_page_view` interaction to start with.
-
-
-    #### Conversion (eCommerce)
-
-    * `add_to_cart`: a user added a product to the shopping cart
-
-    * `remove_from_cart`: a user removed a product from the shopping cart
-
-    * `checkout`: a user checked out and started the payment process
-
-    * `refund`: a user refunded the product
-
-    * `subscribe`: a user subscribed to a product
-
-
-    The above interactions are the main revenue drivers for eCommerce sites. It’s important to collect
-    them so that
-
-    Miso can not only drive click-through rates, but actually improve the revenue in a targeted way. To
-    start with,
-
-    you should at least implement the `add_to_cart` interaction.
-
-
-    #### Consumption (content media)
-
-    * `read`, `watch`, and `listen` interactions capture how and for how long a user consumed a piece
-    of content.
-
-    * `add_to_collection`: a user added an product to their personal collection
-
-    * `remove_from_collection`: a user removed an product from their personal collection
-
-
-    If you are a content site, the above interactions are the main drivers to users' satisfaction on the
-    site.
-
-    Collecting these interactions allows Miso to drive consumption rates and consumption durations for
-    the content on
-
-    your site. If you run a content site, you should implement at least one of these interactions.
-
-
-    #### Feedback signals
-
-    * `like`, `dislike`, `share`, `rate`,  and `bookmark` are common ways  users express their interests.
-
-
-    These are strong signals for Miso to understand each user's preferences regarding your products or
-    content. You
-
-    should send these signals to Miso if you have any of these UI patterns on your site.
-
-
-    #### Performance Checking
-
-    * `impression`: a user saw or was presented with a product or content asset (but didn't yet interact
-    with it)
-
-    * `viewable_impression`: the product or content presented is actually viewed by the user
-      (for example, minimum of 50% of the pixels were in viewable space for at least one continuous second.)
-    * `click`: a user clicked on something (for example, a product item)
-
-
-    #### Additional click-streams
-
-    * `home_page_view`: user viewed your home page
-
-    * `category_page_view`: a user viewed the page for a specific “group” or “family” or products or content
-    in your catalog
-
-    * `promo_page_view`: user viewed the promotion pages about certain products
-
-    * `product_image_view`: user clicked on or otherwise interacted with  the product image (e.g. enlarged
-    the image)
-
-
-    The above interactions are additional signals for Miso to understand users' behavior on the site.
-
-
-    #### Custom
-
-    * `custom` interaction types are reserved for you to define your own business-specific interaction
-    types.
-
-
-    Miso will analyze any custom interactions you define to infer users' interests and preferences.
+  description: "Miso’s Interaction APIs let you manage your Interaction records stored with Miso.\n\n\
+    ### Interaction records\nYour Interaction records tell Miso about user interactions with products\
+    \ and content on your site or application.\nFrom these interactions, Miso understands how users move\
+    \ through your conversion funnels: which products or content\nassets attract the attention of each\
+    \ individual user, and which products or content ultimately will be purchased or\nconsumed by each\
+    \ of them. With these insights, Miso makes real-time tailored recommendations for each user, and\n\
+    responds to each of their clicks and views on the site (even for anonymous users).\n\nInteraction\
+    \ records share some common attributes, but are distinguished by their type.\nMiso captures 23 different\
+    \ interaction types, divided into the following 6 groups:\n\n#### Core click-streams\n* `product_detail_page_view`:\
+    \ a user viewed the detail page for a product\n* `search`: a user made a search request with keywords\
+    \ and (optionally) filters\n\nThe above interactions are the core fuel for Miso's personalization\
+    \ Engines, because they happen in a much higher\nfrequency than other interactions and provide an\
+    \ unbiased and high-fidelity view of users' interests on the site.\nThe collection of these interactions\
+    \ is highly important for Miso's personalization performance. At the minimum,\nyou should implement\
+    \ the `product_detail_page_view` interaction to start with.\n\n#### Conversion (eCommerce)\n* `add_to_cart`:\
+    \ a user added a product to the shopping cart\n* `remove_from_cart`: a user removed a product from\
+    \ the shopping cart\n* `checkout`: a user checked out and started the payment process\n* `refund`:\
+    \ a user refunded the product\n* `subscribe`: a user subscribed to a product\n\nThe above interactions\
+    \ are the main revenue drivers for eCommerce sites. It’s important to collect them so that\nMiso can\
+    \ not only drive click-through rates, but actually improve the revenue in a targeted way. To start\
+    \ with,\nyou should at least implement the `add_to_cart` interaction.\n\n#### Consumption (content\
+    \ media)\n* `read`, `watch`, and `listen` interactions capture how and for how long a user consumed\
+    \ a piece of content.\n* `add_to_collection`: a user added an product to their personal collection\n\
+    * `remove_from_collection`: a user removed an product from their personal collection\n\nIf you are\
+    \ a content site, the above interactions are the main drivers to users' satisfaction on the site.\n\
+    Collecting these interactions allows Miso to drive consumption rates and consumption durations for\
+    \ the content on\nyour site. If you run a content site, you should implement at least one of these\
+    \ interactions.\n\n#### Feedback signals\n* `like`, `dislike`, `share`, `rate`,  and `bookmark` are\
+    \ common ways  users express their interests.\n\nThese are strong signals for Miso to understand each\
+    \ user's preferences regarding your products or content. You\nshould send these signals to Miso if\
+    \ you have any of these UI patterns on your site.\n\n#### Performance Checking\n* `impression`: a\
+    \ user saw or was presented with a product or content asset (but didn't yet interact with it)\n* `viewable_impression`:\
+    \ the product or content presented is actually viewed by the user\n  (for example, minimum of 50%\
+    \ of the pixels were in viewable space for at least one continuous second.)\n* `click`: a user clicked\
+    \ on something (for example, a product item)\n\n#### Additional click-streams\n* `home_page_view`:\
+    \ user viewed your home page\n* `category_page_view`: a user viewed the page for a specific “group”\
+    \ or “family” or products or content in your catalog\n* `promo_page_view`: user viewed the promotion\
+    \ pages about certain products\n* `product_image_view`: user clicked on or otherwise interacted with\
+    \  the product image (e.g. enlarged the image)\n\nThe above interactions are additional signals for\
+    \ Miso to understand users' behavior on the site.\n\n#### Custom\n* `custom` interaction types are\
+    \ reserved for you to define your own business-specific interaction types.\n\nMiso will analyze any\
+    \ custom interactions you define to infer users' interests and preferences."
   humanURL: https://docs.miso.ai/api-reference/introduction
   baseURL: https://api.askmiso.com
   tags:
@@ -598,9 +299,8 @@ apis:
     url: authentication/misoai-authentication.yml
 - aid: misoai:misoai-product-content-apis-api
   name: miso.ai Product / Content APIs API
-  description: >-
-    Miso's Product / Content APIs let you upload, read, and delete Product / Content records that represent
-    your site's
+  description: 'Miso''s Product / Content APIs let you upload, read, and delete Product / Content records
+    that represent your site''s
 
     catalog.
 
@@ -613,10 +313,10 @@ apis:
     with products or content on your site or application.
 
 
-    Much of Miso's search and personalization capability relies on understanding your catalog in-depth
+    Much of Miso''s search and personalization capability relies on understanding your catalog in-depth
     and drawing
 
-    correlations between your catalog and your users' consumption or purchasing behaviors. In other words,
+    correlations between your catalog and your users'' consumption or purchasing behaviors. In other words,
     Miso
 
     discovers that, with high correlation, users who are interested in certain product attributes would
@@ -641,13 +341,13 @@ apis:
     etc.
 
 
-    If your products' characteristics cannot be fully captured by these fields, we recommend that you
+    If your products'' characteristics cannot be fully captured by these fields, we recommend that you
     specify
 
     `custom_attributes`. For Miso, the more complete the product information is, the better its personalized
     search
 
-    and recommendations become.
+    and recommendations become.'
   humanURL: https://docs.miso.ai/api-reference/introduction
   baseURL: https://api.askmiso.com
   tags:
@@ -703,9 +403,8 @@ apis:
     url: authentication/misoai-authentication.yml
 - aid: misoai:misoai-user-apis-api
   name: miso.ai User APIs API
-  description: >-
-    Miso’s User APIs let you upload, read, and delete User records that tell Miso about your site’s unique
-    users and
+  description: 'Miso’s User APIs let you upload, read, and delete User records that tell Miso about your
+    site’s unique users and
 
     visitors.
 
@@ -723,14 +422,14 @@ apis:
     Miso already can tell that from the [Interaction records](#tag/Interaction-APIs).
 
 
-    Miso will discover the correlations between a user's attributes and their behaviors on your site.
+    Miso will discover the correlations between a user''s attributes and their behaviors on your site.
     For example, Miso
 
     might determine that users of a certain age group tend to be interested in certain products or a certain
     price
 
-    range. These insights will be taken into account when predicting users' interests, in particular for
-    new users who
+    range. These insights will be taken into account when predicting users'' interests, in particular
+    for new users who
 
     have not yet generated many interaction records.
 
@@ -739,13 +438,13 @@ apis:
     as `name` are
 
     for display in the Dojo dashboard only. The rest are for model quality. Most attributes are optional
-    and you don't
+    and you don''t
 
-    need to specify them if you don't collect such data. On the other hand, you can specify your custom
+    need to specify them if you don''t collect such data. On the other hand, you can specify your custom
     user attributes
 
     in the `custom_attributes` field. Miso will analyze custom user attributes to improve the model quality
-    as well.
+    as well.'
   humanURL: https://docs.miso.ai/api-reference/introduction
   baseURL: https://api.askmiso.com
   tags:
@@ -822,7 +521,10 @@ common:
   url: llms/misoai-llms.txt
 - type: X-MCPServerCandidate
   url: mcp/misoai-mcp.yml
-  note: 'Renamed from MCPServer 2026-09-03 (roadmap#247): the manifest self-describes as status: candidate — a tool list derived from the published API contracts, not an existing server. The scorer already read the manifest and reported mcp_server correctly; the MCPServer type was crediting the artifact-type surfaces with a server that does not exist.'
+  note: 'Renamed from MCPServer 2026-09-03 (roadmap#247): the manifest self-describes as status: candidate
+    — a tool list derived from the published API contracts, not an existing server. The scorer already
+    read the manifest and reported mcp_server correctly; the MCPServer type was crediting the artifact-type
+    surfaces with a server that does not exist.'
 - type: Conventions
   url: conventions/misoai-conventions.yml
 - type: ErrorCatalog
