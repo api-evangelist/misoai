@@ -1,16 +1,7 @@
 {
   "provider": "misoai",
   "sources": [
-    "misoai-ask-apis-api-openapi.yml",
-    "misoai-bulk-api-api-openapi.yml",
-    "misoai-experiment-apis-api-openapi.yml",
-    "misoai-interaction-apis-api-openapi.yml",
-    "misoai-product-content-apis-api-openapi.yml",
-    "misoai-product-recommendations-api-openapi.yml",
-    "misoai-q-a-apis-api-openapi.yml",
-    "misoai-search-apis-api-openapi.yml",
-    "misoai-user-apis-api-openapi.yml",
-    "misoai-user-recommendations-api-openapi.yml"
+    "_original/misoai-openapi-original.json"
   ],
   "outputs": [
     "misoai-ask-apis-api-openapi.yml",
@@ -27,6 +18,23 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "misoai-openapi-original.json: upgraded openapi 3.0.2 -> OpenAPI 3.2.0; renamed 2 component key(s) illegal in 3.x (e.g. Publishable API Key)",
+    "misoai-openapi-original.json: declared missing tag: Q&A APIs",
+    "misoai-openapi-original.json: declared missing tag: Search APIs",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "misoai-ask-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-bulk-api-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-experiment-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-interaction-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-product-content-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-product-recommendations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-q-a-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-search-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-user-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "misoai-user-recommendations-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

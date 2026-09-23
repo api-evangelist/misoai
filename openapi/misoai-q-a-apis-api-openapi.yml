@@ -1,134 +1,12 @@
-openapi: 3.0.2
+openapi: 3.2.0
 info:
-  title: Miso Ask APIs Q&A APIs API
-  description: '
-
-    # Overview
+  title: Miso Q&A APIs API
+  description: '# Overview
 
     Miso’s approach to personalization is to train machine learning Engines on three core data sets:
 
 
-    1. Your site’s log of historical and real-time interactions,
-
-    2. Your catalog of products and content, and
-
-    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
-
-    experiences that are personalized down to the individual level (n=1 personalization).
-
-
-    To see how Miso works and explore the power of its Engines, we recommend following
-
-    [this tutorial](https://docs.askmiso.com/) to get
-
-    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
-
-
-    1. Upload your data
-
-    2. Train your Engines
-
-    3. Build search and recommendation experiences with the output of your Engines.
-
-
-
-    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
-
-    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
-
-    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
-
-    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
-
-    and recommendations running on your live data.
-
-
-    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
-
-    experiences that leverage the output of Miso’s personalization Engines.
-
-
-
-    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
-
-
-    ### Data APIs
-
-    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
-
-    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
-
-    from Miso. Subcategories of Data APIs are:
-
-
-    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
-
-    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
-
-    Engines learn how to optimize your conversion funnels.
-
-    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
-
-    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
-
-    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
-
-    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
-
-    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
-
-    The `user_id` is how Miso links User records to your Interaction records.
-
-
-    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
-
-    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
-
-    Upload API, we recommend limiting your calls to around 10,000 records at a time.
-
-
-    ### Engine APIs
-
-    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
-
-    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
-
-    and the services are replicated to at least three separate instances for high availability.
-
-    The types of Engine APIs are:
-
-
-    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
-
-    autocompletion.
-
-    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
-
-    the products, categories, and product attributes that are likely to drive conversions.
-
-
-    # Authentication
-
-    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
-
-
-    There are three environments in Miso:
-
-    * **Playground**, a read-only tutorial environment with sample data.
-
-    * **Development**, for staging, QA, and experimentation.
-
-    * **Production**, where you run your live integration with Miso.
-
-
-    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
-
-    key and one secret key per environment.
-
-
-    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
-
-    '
+    1.'
   version: 1.1.4
 servers:
 - url: https://api.askmiso.com
@@ -191,7 +69,33 @@ paths:
       tags:
       - Q&A APIs
       summary: Upload Question Bank API
-      description: "Question Bank API lets you upload your *question bank* to Miso. A *question bank* is a list of questions that\ncan be used for **Question Autocomplete** and **Similar Question Search**.\n\nThis API follows a *replace-all* model, i.e. a successful upload request will replace all the existing questions\nin the question bank.\n\nFor example, the following request will replace the existing question bank with the given three questions:\n```\nPOST /v1/qa/questions\n{\"data\": [\n    {\"question\": \"What is python?\"},\n    {\"question\": \"What is list comprehension?\"},\n    {\"question\": \"How to sort a list in Python?\"}\n]}\n```\n\n\n\n    "
+      description: 'Question Bank API lets you upload your *question bank* to Miso. A *question bank* is a list of questions that
+
+        can be used for **Question Autocomplete** and **Similar Question Search**.
+
+
+        This API follows a *replace-all* model, i.e. a successful upload request will replace all the existing questions
+
+        in the question bank.
+
+
+        For example, the following request will replace the existing question bank with the given three questions:
+
+        ```
+
+        POST /v1/qa/questions
+
+        {"data": [
+
+        {"question": "What is python?"},
+
+        {"question": "What is list comprehension?"},
+
+        {"question": "How to sort a list in Python?"}
+
+        ]}
+
+        ```'
       operationId: post_questions_v1_qa_questions_post
       requestBody:
         content:
@@ -219,7 +123,92 @@ paths:
       tags:
       - Q&A APIs
       summary: Question Autocomplete API
-      description: "Question Autocomplete is an important feature for Q&A applications. It not only saves your users from typing\nthe complete questions, but also showcases what questions your app is capable answering. This is important because\nQ&A is an advanced search feature that not every user is familar with.\n\nMiso generates autocomplete candidates from the question bank you uploaded (see [Question Bank Upload API](...)).\nGiven a partial question string, Question Autocomplete API will suggest question candidates that match the query\nthe user is typing.\n\n\nFor example, let's first upload three questions to the question bank:\n```\nPOST /v1/qa/questions\n{\"data\": [\n    {\"question\": \"What is python?\"},\n    {\"question\": \"What is pypy?\"},\n    {\"question\": \"How to sort a list in Python?\"}\n]}\n```\n\nThen, immediately after the above request finished, you can send the request below to get autocompletion\ncandidates for any partial query string. For example, if the query string the user types so far is *\"what is p\"*:\n\n```\nPOST /v1/qa/question_autocomplete\n{\n    \"q\": \"what is p\",\n    \"rows\": 5\n}\n```\n\nThe API will respond the completion candidates like the following:\n```\n{\n    \"data\":\n        \"completions\": [\n            {\"question\": \"What is python?\"},\n            {\"question\": \"What is pypy?\"}\n        ]\n    }\n}\n```\n\nThe API supports adaptive fuzzy matching such that even if there are typos in the query string, the API\nis still able to return the question candidates with the correct spellings. For example, if the query string is\n\"*How to sorta*\". The API is still able to match the completion candidate:\n\"*How to sort a list in Python?*\"\n\nThe API is optimized for instant experience and has an average response time lower than 50ms."
+      description: 'Question Autocomplete is an important feature for Q&A applications. It not only saves your users from typing
+
+        the complete questions, but also showcases what questions your app is capable answering. This is important because
+
+        Q&A is an advanced search feature that not every user is familar with.
+
+
+        Miso generates autocomplete candidates from the question bank you uploaded (see Question Bank Upload API).
+
+        Given a partial question string, Question Autocomplete API will suggest question candidates that match the query
+
+        the user is typing.
+
+
+        For example, let''s first upload three questions to the question bank:
+
+        ```
+
+        POST /v1/qa/questions
+
+        {"data": [
+
+        {"question": "What is python?"},
+
+        {"question": "What is pypy?"},
+
+        {"question": "How to sort a list in Python?"}
+
+        ]}
+
+        ```
+
+
+        Then, immediately after the above request finished, you can send the request below to get autocompletion
+
+        candidates for any partial query string. For example, if the query string the user types so far is *"what is p"*:
+
+
+        ```
+
+        POST /v1/qa/question_autocomplete
+
+        {
+
+        "q": "what is p",
+
+        "rows": 5
+
+        }
+
+        ```
+
+
+        The API will respond the completion candidates like the following:
+
+        ```
+
+        {
+
+        "data":
+
+        "completions": [
+
+        {"question": "What is python?"},
+
+        {"question": "What is pypy?"}
+
+        ]
+
+        }
+
+        }
+
+        ```
+
+
+        The API supports adaptive fuzzy matching such that even if there are typos in the query string, the API
+
+        is still able to return the question candidates with the correct spellings. For example, if the query string is
+
+        "*How to sorta*". The API is still able to match the completion candidate:
+
+        "*How to sort a list in Python?*"
+
+
+        The API is optimized for instant experience and has an average response time lower than 50ms.'
       operationId: post_autocomplete_v1_qa_question_autocomplete_post
       requestBody:
         content:
@@ -244,79 +233,24 @@ paths:
       - Secret API Key: []
 components:
   schemas:
-    ValidationError:
-      title: ValidationError
-      required:
-      - loc
-      - msg
-      - type
-      type: object
-      properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
-          title: Message
-          type: string
-        type:
-          title: Error Type
-          type: string
-    BaseResponse:
-      title: BaseResponse
+    PostQuestionRequest:
+      title: PostQuestionRequest
       required:
       - data
       type: object
       properties:
-        message:
-          title: Message
-          type: string
-          default: success
         data:
-          $ref: '#/components/schemas/BaseBody'
-    GeoQuery:
-      title: GeoQuery
-      type: object
-      properties:
-        filter:
-          title: Filter
+          title: Data
           type: array
           items:
-            $ref: '#/components/schemas/GeoDistanceQuery'
-          description: When set, filter result to include only products within certain geographic range from given point.
-          default: []
-        boost:
-          title: Boost
-          type: array
-          items:
-            $ref: '#/components/schemas/GeoDistanceQueryBoost'
-          description: When set, boost products within certain geographic range from given point.
-          default: []
-    RecordWithAnswer:
-      title: RecordWithAnswer
+            $ref: '#/components/schemas/app__schemas__engine_api__request__Question'
+      description: Post questions request
+    QAResponseBody:
+      title: QAResponseBody
       required:
-      - product_id
-      - answer
-      type: object
-      properties:
-        product_id:
-          title: Product Id
-          maxLength: 512
-          type: string
-          description: The unique identifier of the product whose content contains the answer.
-        answer:
-          title: Answer
-          allOf:
-          - $ref: '#/components/schemas/Answer'
-          description: The answer paragraph (i.e. a `<p>` node) whose text content can answer users' question.
-        answer_block:
-          title: Answer Block
-          allOf:
-          - $ref: '#/components/schemas/AnswerBlock'
-          description: "\n        In addition to the answer paragraph, we also return the **answer block**.\n        Answer block is the ancestor node of the answer paragraph that cover not only the answer, but also the relevant\n        context. This is particularly useful for applications that want to show\n        the answer itself but also the relevant context surrounding the answer.\n\n        Answer block is the smallest HTML element that contains the relevant context. However, not all the content\n        inside this node is relevant. You can use the `relevant_children_slice` to identify a portion inside this\n        block that is relevant to the answer.\n        "
-    BaseBody:
-      title: BaseBody
+      - total
+      - spellcheck
+      - answers
       type: object
       properties:
         took:
@@ -354,6 +288,44 @@ components:
           format: uuid
           default: 00000000-0000-0000-0000-000000000000
           example: 123e4567-e89b-12d3-a456-426614174000
+        total:
+          title: Total
+          type: integer
+          description: Total number of Question-Answer hits.
+          example: 1000
+        spellcheck:
+          title: Spellcheck
+          allOf:
+          - $ref: '#/components/schemas/SpellCheckResponse'
+          description: Spellcheck results. You can use the information in this object to prompt users with the correct spelling.
+        answers:
+          title: Answers
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordWithAnswer'
+          description: The Question-Answer results.
+    RecordWithAnswer:
+      title: RecordWithAnswer
+      required:
+      - product_id
+      - answer
+      type: object
+      properties:
+        product_id:
+          title: Product Id
+          maxLength: 512
+          type: string
+          description: The unique identifier of the product whose content contains the answer.
+        answer:
+          title: Answer
+          allOf:
+          - $ref: '#/components/schemas/Answer'
+          description: The answer paragraph (i.e. a `<p>` node) whose text content can answer users' question.
+        answer_block:
+          title: Answer Block
+          allOf:
+          - $ref: '#/components/schemas/AnswerBlock'
+          description: "\n        In addition to the answer paragraph, we also return the **answer block**.\n        Answer block is the ancestor node of the answer paragraph that cover not only the answer, but also the relevant\n        context. This is particularly useful for applications that want to show\n        the answer itself but also the relevant context surrounding the answer.\n\n        Answer block is the smallest HTML element that contains the relevant context. However, not all the content\n        inside this node is relevant. You can use the `relevant_children_slice` to identify a portion inside this\n        block that is relevant to the answer.\n        "
     app__schemas__engine_api__request__Question:
       title: Question
       required:
@@ -371,6 +343,251 @@ components:
           description: The weight of question.
           default: 1
       description: Question object
+    QAAutocompleteResponseBody:
+      title: QAAutocompleteResponseBody
+      required:
+      - completions
+      type: object
+      properties:
+        took:
+          title: Took
+          type: integer
+          description: Number of milliseconds Miso took to retrieve the results.
+          default: 0
+        miso_id:
+          title: Miso Id
+          type: string
+          description: '
+
+            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
+
+            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
+
+            performance of personalization and search results. When a user clicks on a recommendation or search result,
+
+            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
+
+            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
+
+            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
+
+
+            Example:
+
+            ```
+
+            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
+
+            ```
+
+            '
+          format: uuid
+          default: 00000000-0000-0000-0000-000000000000
+          example: 123e4567-e89b-12d3-a456-426614174000
+        completions:
+          title: Completions
+          type: array
+          items:
+            $ref: '#/components/schemas/app__schemas__engine_api__response__Question'
+      description: Autocomplete Response
+    SpellCheckRequest:
+      title: SpellCheckRequest
+      type: object
+      properties:
+        enable_auto_spelling_correction:
+          title: Enable Auto Spelling Correction
+          type: boolean
+          description: "\nThis parameter controls whether to automatically correct a misspell search query.\nIf set to `true`, when Miso detects spelling errors, the search results will be based on the\n **corrected** spelling suggested by Miso.\n\nYou call tell if Miso made any correction to the search query by checking the\n`spellcheck.auto_spelling_correction` field in the\nAPI response. When this field is `true`, the search results are based on the suggested spelling\nas opposed to the users' original query.\n\nYou can opt-out the spelling correction by setting this parameter to `false`. In such cases,\nMiso will still detect spelling errors,\nbut the search results will be always based on users' original spelling.\n"
+          default: true
+    Answer:
+      title: Answer
+      required:
+      - probability
+      - text
+      - css_selector
+      type: object
+      properties:
+        probability:
+          title: Probability
+          maximum: 1
+          minimum: 0
+          type: number
+          description: The probability this paragraph can sufficiently answer the user's question (from 0.0 to 1.0).
+        html:
+          title: Html
+          type: string
+          description: "The answer paragraph in its original html tag, i.e. or the `outerHTML` of the\n                      answer paragraph node.\n                      "
+        text:
+          title: Text
+          type: string
+          description: The plain text version of answer paragraph.
+        css_selector:
+          title: Css Selector
+          type: string
+          description: '
+
+            The CSS selector that uniquely identifies the answer paragraph node in the original HTML content. This css selector
+
+            matches exactly one HTML node that contains the answer paragraph. In order to be as unambiguous as possible,
+
+            the returned CSS selector is in the form of a series of nth-child selectors starting from `:root` node
+
+            (which is usually the `<html>`). For example,
+
+            ```
+
+            :root > div:nth-child(1) > p:nth-child(2)
+
+            ```
+
+            . This selector means the answer paragraph is a `<p>` tag that is the second child of a `<div>` node, which is in turn, the
+
+            first child of the `:root` node.
+
+
+            This CSS selector is useful when you want to make the answer paragraph stand out from the
+
+            rest of the document. For example,
+
+            the following JQuery code turns the background color of the answer paragraph to yellow:
+
+
+            ```
+
+            $(answer.css_selector).css("background-color", "yellow");
+
+            ```
+
+            '
+    GeoQuery:
+      title: GeoQuery
+      type: object
+      properties:
+        filter:
+          title: Filter
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoDistanceQuery'
+          description: When set, filter result to include only products within certain geographic range from given point.
+          default: []
+        boost:
+          title: Boost
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoDistanceQueryBoost'
+          description: When set, boost products within certain geographic range from given point.
+          default: []
+    QAAutocompleteResponse:
+      title: QAAutocompleteResponse
+      required:
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          default: success
+        data:
+          $ref: '#/components/schemas/QAAutocompleteResponseBody'
+      description: Autocomplete Response
+    AnswerBlock:
+      title: AnswerBlock
+      required:
+      - html
+      - css_selector
+      - relevant_children_slice
+      - answer_css_selector
+      - title
+      type: object
+      properties:
+        html:
+          title: Html
+          type: string
+          description: The HTML content of the answer block
+        css_selector:
+          title: Css Selector
+          type: string
+          description: The CSS selector that uniquely identifies the answer block from the HTML root
+        relevant_children_slice:
+          title: Relevant Children Slice
+          type: array
+          items:
+            type: integer
+          description: The range of children nodes inside the *answer block* that is relevant to the selected answer.
+        answer_css_selector:
+          title: Answer Css Selector
+          type: string
+          description: "\n        The CSS selector to the selected answer paragraph inside the answer block. You can use this selector to select\n        the answer from the answer block (as supposed to selecting from the HTML root)\n        "
+        title:
+          title: Title
+          type: string
+          description: "The relevant title to the answer paragraph. This title is extracted from a header node close\n        to the answer paragraph. If there is no such node, the title will be an empty string"
+    GeoDistanceQuery:
+      title: GeoDistanceQuery
+      required:
+      - lat
+      - lon
+      - distance
+      type: object
+      properties:
+        lat:
+          title: Lat
+          maximum: 90
+          minimum: -90
+          type: number
+          description: Latitude of the center point, should between 90 and -90
+        lon:
+          title: Lon
+          maximum: 180
+          minimum: -180
+          type: number
+          description: Longitude of the center point, should between 180 and -180
+        field:
+          title: Field
+          type: string
+          description: Name of the field in product data that holds geographic coordinate. Defaults to `location`
+          default: location
+        distance:
+          title: Distance
+          type: number
+          description: Distance to center point, in kilometer or mile (according to `distance_unit`)
+        distance_unit:
+          title: Distance Unit
+          enum:
+          - km
+          - mile
+          description: Unit of distance(`km` or `mile`). Defaults to `mile`
+          default: mile
+    QuestionAutocompleteRequest:
+      title: QuestionAutocompleteRequest
+      required:
+      - q
+      type: object
+      properties:
+        q:
+          title: Q
+          minLength: 1
+          type: string
+          description: The query user has entered so far
+          example: what is g
+        rows:
+          title: Rows
+          type: integer
+          description: Number of autocomplete results to return.
+          default: 5
+      description: Post question autocomplete request
+    BaseResponse:
+      title: BaseResponse
+      required:
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          default: success
+        data:
+          $ref: '#/components/schemas/BaseBody'
     app__schemas__engine_api__response__Question:
       title: Question
       required:
@@ -386,18 +603,6 @@ components:
           type: number
           default: 1
       description: Question object
-    QAResponse:
-      title: QAResponse
-      required:
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          default: success
-        data:
-          $ref: '#/components/schemas/QAResponseBody'
     QuestionAnsweringRequest:
       title: QuestionAnsweringRequest
       required:
@@ -571,55 +776,8 @@ components:
             Minimum probability required for an answer to be boosted. If not specified, the `min_probability` will be used.
 
             '
-    QAAutocompleteResponseBody:
-      title: QAAutocompleteResponseBody
-      required:
-      - completions
-      type: object
-      properties:
-        took:
-          title: Took
-          type: integer
-          description: Number of milliseconds Miso took to retrieve the results.
-          default: 0
-        miso_id:
-          title: Miso Id
-          type: string
-          description: '
-
-            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
-
-            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
-
-            performance of personalization and search results. When a user clicks on a recommendation or search result,
-
-            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
-
-            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
-
-            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
-
-
-            Example:
-
-            ```
-
-            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
-
-            ```
-
-            '
-          format: uuid
-          default: 00000000-0000-0000-0000-000000000000
-          example: 123e4567-e89b-12d3-a456-426614174000
-        completions:
-          title: Completions
-          type: array
-          items:
-            $ref: '#/components/schemas/app__schemas__engine_api__response__Question'
-      description: Autocomplete Response
-    QAAutocompleteResponse:
-      title: QAAutocompleteResponse
+    QAResponse:
+      title: QAResponse
       required:
       - data
       type: object
@@ -629,32 +787,9 @@ components:
           type: string
           default: success
         data:
-          $ref: '#/components/schemas/QAAutocompleteResponseBody'
-      description: Autocomplete Response
-    QuestionAutocompleteRequest:
-      title: QuestionAutocompleteRequest
-      required:
-      - q
-      type: object
-      properties:
-        q:
-          title: Q
-          minLength: 1
-          type: string
-          description: The query user has entered so far
-          example: what is g
-        rows:
-          title: Rows
-          type: integer
-          description: Number of autocomplete results to return.
-          default: 5
-      description: Post question autocomplete request
-    QAResponseBody:
-      title: QAResponseBody
-      required:
-      - total
-      - spellcheck
-      - answers
+          $ref: '#/components/schemas/QAResponseBody'
+    BaseBody:
+      title: BaseBody
       type: object
       properties:
         took:
@@ -692,97 +827,25 @@ components:
           format: uuid
           default: 00000000-0000-0000-0000-000000000000
           example: 123e4567-e89b-12d3-a456-426614174000
-        total:
-          title: Total
-          type: integer
-          description: Total number of Question-Answer hits.
-          example: 1000
-        spellcheck:
-          title: Spellcheck
-          allOf:
-          - $ref: '#/components/schemas/SpellCheckResponse'
-          description: Spellcheck results. You can use the information in this object to prompt users with the correct spelling.
-        answers:
-          title: Answers
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
           type: array
           items:
-            $ref: '#/components/schemas/RecordWithAnswer'
-          description: The Question-Answer results.
-    SpellCheckResponse:
-      title: SpellCheckResponse
-      required:
-      - spelling_errors
-      - auto_spelling_correction
-      - original_query
-      - original_query_with_markups
-      - corrected_query
-      - corrected_query_with_markups
-      type: object
-      properties:
-        spelling_errors:
-          title: Spelling Errors
-          type: boolean
-          description: Whether Miso detects any spelling errors.
-        auto_spelling_correction:
-          title: Auto Spelling Correction
-          type: boolean
-          description: Whether Miso has automatically corrected the misspelled search query. When this field is `true`, the search result is based on the corrected spelling in the `corrected_query` field instead of users' original search query.
-        original_query:
-          title: Original Query
+            type: string
+        msg:
+          title: Message
           type: string
-          description: Original query string
-          example: what is pythn
-        original_query_with_markups:
-          title: Original Query With Markups
+        type:
+          title: Error Type
           type: string
-          description: Original query with the spelling errors (if any) surrounded by the &lt;mark&gt; tags
-          example: what is &lt;mark&gt;pythn&lt;/mark&gt;
-        corrected_query:
-          title: Corrected Query
-          type: string
-          description: The corrected spelling suggested by Miso. If no spelling error is detected, this will be the same as `original_query`
-          example: what is python
-        corrected_query_with_markups:
-          title: Corrected Query With Markups
-          type: string
-          description: The corrected spelling suggested by Miso where the revised tokens are surrounded by the &lt;mark&gt; tags.
-          example: what is &lt;mark&gt;python&lt;/mark&gt;
-    GeoDistanceQuery:
-      title: GeoDistanceQuery
-      required:
-      - lat
-      - lon
-      - distance
-      type: object
-      properties:
-        lat:
-          title: Lat
-          maximum: 90
-          minimum: -90
-          type: number
-          description: Latitude of the center point, should between 90 and -90
-        lon:
-          title: Lon
-          maximum: 180
-          minimum: -180
-          type: number
-          description: Longitude of the center point, should between 180 and -180
-        field:
-          title: Field
-          type: string
-          description: Name of the field in product data that holds geographic coordinate. Defaults to `location`
-          default: location
-        distance:
-          title: Distance
-          type: number
-          description: Distance to center point, in kilometer or mile (according to `distance_unit`)
-        distance_unit:
-          title: Distance Unit
-          enum:
-          - km
-          - mile
-          description: Unit of distance(`km` or `mile`). Defaults to `mile`
-          default: mile
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -834,6 +897,45 @@ components:
           items:
             type: integer
           description: "\n        Defines a list of 0-based positions you want to place the boosted products at.\n\n        If `boost_positions` is not specified (which is the default behavior), all the boosted products will be ranked\n        higher than the rest of the products.\n        "
+    SpellCheckResponse:
+      title: SpellCheckResponse
+      required:
+      - spelling_errors
+      - auto_spelling_correction
+      - original_query
+      - original_query_with_markups
+      - corrected_query
+      - corrected_query_with_markups
+      type: object
+      properties:
+        spelling_errors:
+          title: Spelling Errors
+          type: boolean
+          description: Whether Miso detects any spelling errors.
+        auto_spelling_correction:
+          title: Auto Spelling Correction
+          type: boolean
+          description: Whether Miso has automatically corrected the misspelled search query. When this field is `true`, the search result is based on the corrected spelling in the `corrected_query` field instead of users' original search query.
+        original_query:
+          title: Original Query
+          type: string
+          description: Original query string
+          example: what is pythn
+        original_query_with_markups:
+          title: Original Query With Markups
+          type: string
+          description: Original query with the spelling errors (if any) surrounded by the &lt;mark&gt; tags
+          example: what is &lt;mark&gt;pythn&lt;/mark&gt;
+        corrected_query:
+          title: Corrected Query
+          type: string
+          description: The corrected spelling suggested by Miso. If no spelling error is detected, this will be the same as `original_query`
+          example: what is python
+        corrected_query_with_markups:
+          title: Corrected Query With Markups
+          type: string
+          description: The corrected spelling suggested by Miso where the revised tokens are surrounded by the &lt;mark&gt; tags.
+          example: what is &lt;mark&gt;python&lt;/mark&gt;
     BoostingFilterBase:
       title: BoostingFilterBase
       type: object
@@ -852,126 +954,13 @@ components:
           title: Boost Rule Name
           type: string
           description: Name of the boosting rule. Use this to identify a boosting rule in _boosted_rules in the response
-    SpellCheckRequest:
-      title: SpellCheckRequest
-      type: object
-      properties:
-        enable_auto_spelling_correction:
-          title: Enable Auto Spelling Correction
-          type: boolean
-          description: "\nThis parameter controls whether to automatically correct a misspell search query.\nIf set to `true`, when Miso detects spelling errors, the search results will be based on the\n **corrected** spelling suggested by Miso.\n\nYou call tell if Miso made any correction to the search query by checking the\n`spellcheck.auto_spelling_correction` field in the\nAPI response. When this field is `true`, the search results are based on the suggested spelling\nas opposed to the users' original query.\n\nYou can opt-out the spelling correction by setting this parameter to `false`. In such cases,\nMiso will still detect spelling errors,\nbut the search results will be always based on users' original spelling.\n"
-          default: true
-    PostQuestionRequest:
-      title: PostQuestionRequest
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/app__schemas__engine_api__request__Question'
-      description: Post questions request
-    Answer:
-      title: Answer
-      required:
-      - probability
-      - text
-      - css_selector
-      type: object
-      properties:
-        probability:
-          title: Probability
-          maximum: 1
-          minimum: 0
-          type: number
-          description: The probability this paragraph can sufficiently answer the user's question (from 0.0 to 1.0).
-        html:
-          title: Html
-          type: string
-          description: "The answer paragraph in its original html tag, i.e. or the `outerHTML` of the\n                      answer paragraph node.\n                      "
-        text:
-          title: Text
-          type: string
-          description: The plain text version of answer paragraph.
-        css_selector:
-          title: Css Selector
-          type: string
-          description: '
-
-            The CSS selector that uniquely identifies the answer paragraph node in the original HTML content. This css selector
-
-            matches exactly one HTML node that contains the answer paragraph. In order to be as unambiguous as possible,
-
-            the returned CSS selector is in the form of a series of nth-child selectors starting from `:root` node
-
-            (which is usually the `<html>`). For example,
-
-            ```
-
-            :root > div:nth-child(1) > p:nth-child(2)
-
-            ```
-
-            . This selector means the answer paragraph is a `<p>` tag that is the second child of a `<div>` node, which is in turn, the
-
-            first child of the `:root` node.
-
-
-            This CSS selector is useful when you want to make the answer paragraph stand out from the
-
-            rest of the document. For example,
-
-            the following JQuery code turns the background color of the answer paragraph to yellow:
-
-
-            ```
-
-            $(answer.css_selector).css("background-color", "yellow");
-
-            ```
-
-            '
-    AnswerBlock:
-      title: AnswerBlock
-      required:
-      - html
-      - css_selector
-      - relevant_children_slice
-      - answer_css_selector
-      - title
-      type: object
-      properties:
-        html:
-          title: Html
-          type: string
-          description: The HTML content of the answer block
-        css_selector:
-          title: Css Selector
-          type: string
-          description: The CSS selector that uniquely identifies the answer block from the HTML root
-        relevant_children_slice:
-          title: Relevant Children Slice
-          type: array
-          items:
-            type: integer
-          description: The range of children nodes inside the *answer block* that is relevant to the selected answer.
-        answer_css_selector:
-          title: Answer Css Selector
-          type: string
-          description: "\n        The CSS selector to the selected answer paragraph inside the answer block. You can use this selector to select\n        the answer from the answer block (as supposed to selecting from the HTML root)\n        "
-        title:
-          title: Title
-          type: string
-          description: "The relevant title to the answer paragraph. This title is extracted from a header node close\n        to the answer paragraph. If there is no such node, the title will be an empty string"
   securitySchemes:
-    Secret API Key:
+    Secret_API_Key:
       type: apiKey
       description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
       in: query
       name: api_key
-    Publishable API Key:
+    Publishable_API_Key:
       type: apiKey
       description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
       in: query

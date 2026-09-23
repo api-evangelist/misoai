@@ -1,188 +1,196 @@
-openapi: 3.0.2
+openapi: 3.2.0
 info:
-  title: Miso Ask APIs Product / Content APIs API
-  description: '
-
-    # Overview
+  title: Miso Product / Content APIs API
+  description: '# Overview
 
     Miso’s approach to personalization is to train machine learning Engines on three core data sets:
 
 
-    1. Your site’s log of historical and real-time interactions,
-
-    2. Your catalog of products and content, and
-
-    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
-
-    experiences that are personalized down to the individual level (n=1 personalization).
-
-
-    To see how Miso works and explore the power of its Engines, we recommend following
-
-    [this tutorial](https://docs.askmiso.com/) to get
-
-    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
-
-
-    1. Upload your data
-
-    2. Train your Engines
-
-    3. Build search and recommendation experiences with the output of your Engines.
-
-
-
-    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
-
-    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
-
-    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
-
-    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
-
-    and recommendations running on your live data.
-
-
-    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
-
-    experiences that leverage the output of Miso’s personalization Engines.
-
-
-
-    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
-
-
-    ### Data APIs
-
-    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
-
-    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
-
-    from Miso. Subcategories of Data APIs are:
-
-
-    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
-
-    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
-
-    Engines learn how to optimize your conversion funnels.
-
-    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
-
-    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
-
-    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
-
-    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
-
-    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
-
-    The `user_id` is how Miso links User records to your Interaction records.
-
-
-    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
-
-    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
-
-    Upload API, we recommend limiting your calls to around 10,000 records at a time.
-
-
-    ### Engine APIs
-
-    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
-
-    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
-
-    and the services are replicated to at least three separate instances for high availability.
-
-    The types of Engine APIs are:
-
-
-    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
-
-    autocompletion.
-
-    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
-
-    the products, categories, and product attributes that are likely to drive conversions.
-
-
-    # Authentication
-
-    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
-
-
-    There are three environments in Miso:
-
-    * **Playground**, a read-only tutorial environment with sample data.
-
-    * **Development**, for staging, QA, and experimentation.
-
-    * **Production**, where you run your live integration with Miso.
-
-
-    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
-
-    key and one secret key per environment.
-
-
-    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
-
-    '
+    1.'
   version: 1.1.4
 servers:
 - url: https://api.askmiso.com
 tags:
 - name: Product / Content APIs
-  description: '
+  description: 'Miso''s Product / Content APIs let you upload, read, and delete Product / Content records that represent your site''s
 
-    Miso''s Product / Content APIs let you upload, read, and delete Product / Content records that represent your site''s
-
-    catalog.
-
-
-    ### Product / Content records
-
-    Miso analyzes your Product / Content records to provide personalized search and recommendations that connect users
-
-    with products or content on your site or application.
-
-
-    Much of Miso''s search and personalization capability relies on understanding your catalog in-depth and drawing
-
-    correlations between your catalog and your users'' consumption or purchasing behaviors. In other words, Miso
-
-    discovers that, with high correlation, users who are interested in certain product attributes would also be
-
-    interested in other products with similar or related attributes. (For simplicity, we will often overload the word
-
-    "products" to mean items for purchase if you are an eCommerce business, and content to consume if you are a content
-
-    marketplace.)
-
-
-    To fully optimize your search and recommendations, it is important to provide Miso with Product / Content records
-
-    that are complete and accurate. We define a set of common attributes that capture the basics of most eCommerce and
-
-    content media products, such as `title`, `description`, `categories`, `tags`, `material`, `authors`, etc.
-
-
-    If your products'' characteristics cannot be fully captured by these fields, we recommend that you specify
-
-    `custom_attributes`. For Miso, the more complete the product information is, the better its personalized search
-
-    and recommendations become.
-
-
-    '
+    catalog.'
 paths:
   /v1/products:
     post:
       tags:
       - Product / Content APIs
       summary: Product / Content Upload API
-      description: "Bulk API to insert Product records. This API endpoint accepts POST requests with JSON data\ncontaining a list of Product / Content records wrapped in a dictionary:\n```\nPOST /v1/products\n\n{\"data\": [product_1, product_2, product_3]}\n```\n\nEach product is uniquely identified by its `product_id`. If a record with the same `product_id`\nalready exists in the dataset, the existing one will be **replaced** by the insertion (no\npartial update is allowed at this time). We recommend limiting your calls to around 100\nrecords at a time to avoid memory issues or timeout risks.\n\n### Schema validation\nThis API validates the inserted records against the API schema; any schema error will cause\nthe whole request to fail (`status_code=422`), and none of the records will be inserted. You\nshould check the `response.errors` field to see if there are any errors. For example,\nthe response below means there are no errors (`status_code=200`):\n\n```json\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nA common source of errors when uploading Product records is that the custom attributes' data\ntypes are not consistent with the data types of the existing records. In such cases,\nyou can check the individual error message in the `data` array. For example, if there is an\nerror regarding the second record you tried to insert, the response might look like:\n\n```json\n{\n  \"errors\": true, // there are errors. please check!\n  \"data\": [\n    \"data.0.custom_attributes.designer is invalid. Its data type is not consistent with other records\",\n    \"data.0.product_id is invalid. The attribute expected to be of type 'string', but 'array' is given.\",\n    \"data.0.created_at is invalid. The attribute should match 'date-time' format.\"\n  ]\n}\n```\n\n### Internationalization (I18N)\nMiso has the built-in support for majority of Western European languages, including `English`, `French`, `German`,\n`Spanish`, `Italian`, `Dutch`, `Russian`, and `Ukrainian`, as well as, major Asian languages, including `Mandarin`\n (both Simplified and Traditional), `Japanese`, and `Korean`.\n\nIn Dojo, you can choose the *Primary Language* for your product catalog (default is English).\nHowever, you can also have more than one language in your product catalog that is\nbeyond your primary languages using the `i18n_$LN` fields (replace `$LN` with the [two-letter language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of your choice),\nand let Miso apply the language-specific preprocessing for you, such as tokenization, stemming, elision\nremoval, folding, decompounding, and traditional to simplified Chinese conversion.\n\nFor example, you may have a product called \"Arizona, Green Tea with Ginseng & Honey\" in your catalog, and you also\nsell it in your Spanish, French, and Chinese sites, and want your customers to be able to search for this product\nin their native languages.\n\nIn this case, your product records will like the following sample record, where English is the primary language of\nthe record, and `i18n_es`, `i18n_fr`, `i18n_zh` fields contain product details in their corresponding languages.\n```javascript\n{\n    \"product_id\": \"arizona-ginseng-honey\",\n    // the primary language is English\n    \"title\": \"Arizona, Green Tea with Ginseng & Honey\",\n    // ... other product details in English\n    \"i18n_es\": {\n       \"title\": \"AriZona, Té verde con ginseng y miel\"\n        // ... other product details in Spanish\n    },\n    \"i18n_fr\": {\n       \"title\": \"AriZona - Thé Vert Aromatisé au Miel\"\n        // ... other product details in French\n    },\n    \"i18n_zh\": {\n       \"title\": \"美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶\"\n        // ... other product details in Chinese\n    }\n }\n```\nIn this way, your customer can find this product with any of the following search queries\nwithout additional configuration:\n* `arizona green tea`\n* `arizona te verde`\n* `arizona the vert`\n* `arizona 綠茶`\n\nThe similar concept applies to Autocomplete as well. You can specify a `language` parameter\nin the requests to Autocomplete API, and the autocomplete results for the specific language\nwill be returned."
+      description: 'Bulk API to insert Product records. This API endpoint accepts POST requests with JSON data
+
+        containing a list of Product / Content records wrapped in a dictionary:
+
+        ```
+
+        POST /v1/products
+
+
+        {"data": [product_1, product_2, product_3]}
+
+        ```
+
+
+        Each product is uniquely identified by its `product_id`. If a record with the same `product_id`
+
+        already exists in the dataset, the existing one will be **replaced** by the insertion (no
+
+        partial update is allowed at this time). We recommend limiting your calls to around 100
+
+        records at a time to avoid memory issues or timeout risks.
+
+
+        ### Schema validation
+
+        This API validates the inserted records against the API schema; any schema error will cause
+
+        the whole request to fail (`status_code=422`), and none of the records will be inserted. You
+
+        should check the `response.errors` field to see if there are any errors. For example,
+
+        the response below means there are no errors (`status_code=200`):
+
+
+        ```json
+
+        {
+
+        "message": "success",
+
+        "data": {
+
+        "task_id": "{task_id}"
+
+        }
+
+        }
+
+        ```
+
+
+        A common source of errors when uploading Product records is that the custom attributes'' data
+
+        types are not consistent with the data types of the existing records. In such cases,
+
+        you can check the individual error message in the `data` array. For example, if there is an
+
+        error regarding the second record you tried to insert, the response might look like:
+
+
+        ```json
+
+        {
+
+        "errors": true, // there are errors. please check!
+
+        "data": [
+
+        "data.0.custom_attributes.designer is invalid. Its data type is not consistent with other records",
+
+        "data.0.product_id is invalid. The attribute expected to be of type ''string'', but ''array'' is given.",
+
+        "data.0.created_at is invalid. The attribute should match ''date-time'' format."
+
+        ]
+
+        }
+
+        ```
+
+
+        ### Internationalization (I18N)
+
+        Miso has the built-in support for majority of Western European languages, including `English`, `French`, `German`,
+
+        `Spanish`, `Italian`, `Dutch`, `Russian`, and `Ukrainian`, as well as, major Asian languages, including `Mandarin`
+
+        (both Simplified and Traditional), `Japanese`, and `Korean`.
+
+
+        In Dojo, you can choose the *Primary Language* for your product catalog (default is English).
+
+        However, you can also have more than one language in your product catalog that is
+
+        beyond your primary languages using the `i18n_$LN` fields (replace `$LN` with the two-letter language code of your choice),
+
+        and let Miso apply the language-specific preprocessing for you, such as tokenization, stemming, elision
+
+        removal, folding, decompounding, and traditional to simplified Chinese conversion.
+
+
+        For example, you may have a product called "Arizona, Green Tea with Ginseng & Honey" in your catalog, and you also
+
+        sell it in your Spanish, French, and Chinese sites, and want your customers to be able to search for this product
+
+        in their native languages.
+
+
+        In this case, your product records will like the following sample record, where English is the primary language of
+
+        the record, and `i18n_es`, `i18n_fr`, `i18n_zh` fields contain product details in their corresponding languages.
+
+        ```javascript
+
+        {
+
+        "product_id": "arizona-ginseng-honey",
+
+        // the primary language is English
+
+        "title": "Arizona, Green Tea with Ginseng & Honey",
+
+        // ... other product details in English
+
+        "i18n_es": {
+
+        "title": "AriZona, Té verde con ginseng y miel"
+
+        // ... other product details in Spanish
+
+        },
+
+        "i18n_fr": {
+
+        "title": "AriZona - Thé Vert Aromatisé au Miel"
+
+        // ... other product details in French
+
+        },
+
+        "i18n_zh": {
+
+        "title": "美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶"
+
+        // ... other product details in Chinese
+
+        }
+
+        }
+
+        ```
+
+        In this way, your customer can find this product with any of the following search queries
+
+        without additional configuration:
+
+        * `arizona green tea`
+
+        * `arizona te verde`
+
+        * `arizona the vert`
+
+        * `arizona 綠茶`
+
+
+        The similar concept applies to Autocomplete as well. You can specify a `language` parameter
+
+        in the requests to Autocomplete API, and the autocomplete results for the specific language
+
+        will be returned.'
       operationId: content_write_api_v1_products_post
       requestBody:
         content:
@@ -238,7 +246,99 @@ paths:
       tags:
       - Product / Content APIs
       summary: Product / Content Read API
-      description: "This API endpoint retrieves the details of a specific product / content using its `product_id`.\nTo fetch the product / content information, make a GET request to the following URL:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nGET /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to fetch.\n\n## Response Format\n\nThe API will return the product / content details in a JSON object if the given `product_id`\nis valid and exists in the system. The JSON object will include fields like `title`,\n`description`, `price`, `images`, and any internationalization fields (`i18n_$LN`).\n\n### Example Response\n\nHere's an example of a successful API response for a product / content with the `product_id`\n\"arizona-ginseng-honey\":\n\n```json\n{\n  \"product_id\": \"arizona-ginseng-honey\",\n  \"title\": \"Arizona, Green Tea with Ginseng & Honey\",\n  \"description\": \"A refreshing and delicious blend of green tea with ginseng and honey.\",\n  \"price\": 1.99,\n  \"i18n_es\": {\n    \"title\": \"AriZona, Té verde con ginseng y miel\"\n    // ... other product details in Spanish\n  },\n  \"i18n_fr\": {\n    \"title\": \"AriZona - Thé Vert Aromatisé au Miel\"\n    // ... other product details in French\n  },\n  \"i18n_zh\": {\n    \"title\": \"美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶\"\n    // ... other product details in Chinese\n  }\n}\n```\n\nIf the provided `product_id` is invalid or does not exist in the system, the API will return\nan error response with a `status_code=404`.\n\n### Example Error Response\n```json\n{\n  \"message\": \"not found\"\n}\n```"
+      description: 'This API endpoint retrieves the details of a specific product / content using its `product_id`.
+
+        To fetch the product / content information, make a GET request to the following URL:
+
+
+        **Notice**: Make sure the product_id is an urlencode string.
+
+
+        ```
+
+        GET /v1/products/{product_id}
+
+        ```
+
+
+        Replace `{product_id}` with the unique identifier of the product / content you wish to fetch.
+
+
+        ## Response Format
+
+
+        The API will return the product / content details in a JSON object if the given `product_id`
+
+        is valid and exists in the system. The JSON object will include fields like `title`,
+
+        `description`, `price`, `images`, and any internationalization fields (`i18n_$LN`).
+
+
+        ### Example Response
+
+
+        Here''s an example of a successful API response for a product / content with the `product_id`
+
+        "arizona-ginseng-honey":
+
+
+        ```json
+
+        {
+
+        "product_id": "arizona-ginseng-honey",
+
+        "title": "Arizona, Green Tea with Ginseng & Honey",
+
+        "description": "A refreshing and delicious blend of green tea with ginseng and honey.",
+
+        "price": 1.99,
+
+        "i18n_es": {
+
+        "title": "AriZona, Té verde con ginseng y miel"
+
+        // ... other product details in Spanish
+
+        },
+
+        "i18n_fr": {
+
+        "title": "AriZona - Thé Vert Aromatisé au Miel"
+
+        // ... other product details in French
+
+        },
+
+        "i18n_zh": {
+
+        "title": "美國ARIZONA亞歷桑納 - 蜂蜜人蔘綠茶"
+
+        // ... other product details in Chinese
+
+        }
+
+        }
+
+        ```
+
+
+        If the provided `product_id` is invalid or does not exist in the system, the API will return
+
+        an error response with a `status_code=404`.
+
+
+        ### Example Error Response
+
+        ```json
+
+        {
+
+        "message": "not found"
+
+        }
+
+        ```'
       operationId: content_read_api_v1_products__product_id__get
       parameters:
       - required: true
@@ -285,7 +385,69 @@ paths:
       tags:
       - Product / Content APIs
       summary: Product / Content Delete API
-      description: "This API endpoint allows you to delete a specific product / content from the system using its\n`product_id`. To remove a product, make a DELETE request to:\n\n**Notice**: Make sure the product_id is an urlencode string.\n\n```\nDELETE /v1/products/{product_id}\n```\n\nReplace `{product_id}` with the unique identifier of the product / content you wish to delete.\n\n## Response Format\n\nThe API will return a JSON object indicating the success or failure of the deletion request.\nIf the deletion is successful, the `status_code` will be `200`, and the `message` field will\nconfirm the successful deletion.\n\n### Example Successful Deletion Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\":  [\n    {\n      \"task_id\": \"{task_id}\"\n    }\n  ]\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/products/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      description: 'This API endpoint allows you to delete a specific product / content from the system using its
+
+        `product_id`. To remove a product, make a DELETE request to:
+
+
+        **Notice**: Make sure the product_id is an urlencode string.
+
+
+        ```
+
+        DELETE /v1/products/{product_id}
+
+        ```
+
+
+        Replace `{product_id}` with the unique identifier of the product / content you wish to delete.
+
+
+        ## Response Format
+
+
+        The API will return a JSON object indicating the success or failure of the deletion request.
+
+        If the deletion is successful, the `status_code` will be `200`, and the `message` field will
+
+        confirm the successful deletion.
+
+
+        ### Example Successful Deletion Response
+
+
+        ```json
+
+        {
+
+        "message": "deleted",
+
+        "data": [
+
+        {
+
+        "task_id": "{task_id}"
+
+        }
+
+        ]
+
+        }
+
+        ```
+
+
+        To check the exact response body of this task_id, make a GET request to the following endpoint:
+
+
+        ```
+
+        GET /v1/products/_status/{task_id}
+
+        ```
+
+
+        Replace `{task_id}` with the task_id returned from the response.'
       operationId: content_delete_api_v1_products__product_id__delete
       parameters:
       - required: true
@@ -339,7 +501,89 @@ paths:
       tags:
       - Product / Content APIs
       summary: Product / Content ID List API
-      description: "This API endpoint allows you to fetch the unique identifiers (product_ids) of all products\nstored in the app. To get a list of product_ids, make a GET request to the following URL:\n\n```\nGET /v1/products/_ids\n```\n\n## Response Format\n\nThe API will return an array of product_ids in a JSON object. The `status_code` will be `200`\nif the request is successful. If any error occurs during the request, the `status_code` will\nnot be `200` and the `message` field will indicate the error.\n\n### Example Successful Response\n\n```json\n{\n  \"message\": \"success\",\n  \"data\": {\n    \"ids\": [\n      \"product_1\",\n      \"product_2\",\n      \"product_3\",\n      // ... more product_ids\n    ]\n  }\n}\n```\n\n### Example Error Response\n\nIf the dataset cannot be found, the API will return a `404` error:\n\n```json\n{\n  \"status_code\": 404,\n  \"message\": \"not found\"\n}\n```\n\nIf another error occurs during the request, the API will return a `500` error\n\n```json\n{\n  \"message\": \"Something went wrong. Please contact miso product team.\"\n}\n```"
+      description: 'This API endpoint allows you to fetch the unique identifiers (product_ids) of all products
+
+        stored in the app. To get a list of product_ids, make a GET request to the following URL:
+
+
+        ```
+
+        GET /v1/products/_ids
+
+        ```
+
+
+        ## Response Format
+
+
+        The API will return an array of product_ids in a JSON object. The `status_code` will be `200`
+
+        if the request is successful. If any error occurs during the request, the `status_code` will
+
+        not be `200` and the `message` field will indicate the error.
+
+
+        ### Example Successful Response
+
+
+        ```json
+
+        {
+
+        "message": "success",
+
+        "data": {
+
+        "ids": [
+
+        "product_1",
+
+        "product_2",
+
+        "product_3",
+
+        // ... more product_ids
+
+        ]
+
+        }
+
+        }
+
+        ```
+
+
+        ### Example Error Response
+
+
+        If the dataset cannot be found, the API will return a `404` error:
+
+
+        ```json
+
+        {
+
+        "status_code": 404,
+
+        "message": "not found"
+
+        }
+
+        ```
+
+
+        If another error occurs during the request, the API will return a `500` error
+
+
+        ```json
+
+        {
+
+        "message": "Something went wrong. Please contact miso product team."
+
+        }
+
+        ```'
       operationId: content_read_ids_api_v1_products__ids_get
       responses:
         '200':
@@ -367,7 +611,84 @@ paths:
       tags:
       - Product / Content APIs
       summary: Product / Content Bulk Delete API
-      description: "This API endpoint allows you to delete multiple products by providing their product_ids.\n\nTo delete multiple products, make a POST request to the following URL:\n\n```\nPOST /v1/products/_delete\n```\n\nThe request body should contain a JSON object with an array of product_ids:\n\n```json\n{\n  \"data\": {\n    \"product_ids\": [\n      \"product-1\",\n      \"product-2\",\n      // ... more product_ids to delete\n    ]\n  }\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `message` and an array of `data`\ncontaining a `task_id` that can be used to get the status of the bulk deletion process.\n\n#### Example Successful Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/products/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      description: 'This API endpoint allows you to delete multiple products by providing their product_ids.
+
+
+        To delete multiple products, make a POST request to the following URL:
+
+
+        ```
+
+        POST /v1/products/_delete
+
+        ```
+
+
+        The request body should contain a JSON object with an array of product_ids:
+
+
+        ```json
+
+        {
+
+        "data": {
+
+        "product_ids": [
+
+        "product-1",
+
+        "product-2",
+
+        // ... more product_ids to delete
+
+        ]
+
+        }
+
+        }
+
+        ```
+
+
+        ## Response Format
+
+
+        The API will return a JSON object with a `message` and an array of `data`
+
+        containing a `task_id` that can be used to get the status of the bulk deletion process.
+
+
+        #### Example Successful Response
+
+
+        ```json
+
+        {
+
+        "message": "deleted",
+
+        "data": {
+
+        "task_id": "{task_id}"
+
+        }
+
+        }
+
+        ```
+
+
+        To check the exact response body of this task_id, make a GET request to the following endpoint:
+
+
+        ```
+
+        GET /v1/products/_status/{task_id}
+
+        ```
+
+
+        Replace `{task_id}` with the task_id returned from the response.'
       operationId: content_bulk_delete_api_v1_products__delete_post
       requestBody:
         content:
@@ -429,6 +750,14 @@ components:
         data:
           $ref: '#/components/schemas/ProductIds'
       additionalProperties: false
+    ProductBulkDeleteIn:
+      title: ProductBulkDeleteIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ProductIdList'
     ProductRecord:
       title: ProductRecord
       required:
@@ -790,70 +1119,6 @@ components:
           title: Lon
           type: number
           example: -73.985664
-    HTTPValidationError:
-      title: HTTPValidationError
-      type: object
-      properties:
-        detail:
-          title: Detail
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationError'
-    ValidationError:
-      title: ValidationError
-      required:
-      - loc
-      - msg
-      - type
-      type: object
-      properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
-          title: Message
-          type: string
-        type:
-          title: Error Type
-          type: string
-    DeleteResponse:
-      title: DeleteResponse
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/TaskId'
-    ProductIds:
-      title: ProductIds
-      required:
-      - ids
-      type: object
-      properties:
-        ids:
-          title: Ids
-          type: array
-          items:
-            type: string
-    ProductBulkIn:
-      title: ProductBulkIn
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/ProductRecord'
     ProductReadOut:
       title: ProductReadOut
       required:
@@ -867,23 +1132,31 @@ components:
         data:
           $ref: '#/components/schemas/ProductRecord'
       additionalProperties: false
-    TaskId:
-      title: TaskId
+    ProductIds:
+      title: ProductIds
       required:
-      - task_id
+      - ids
       type: object
       properties:
-        task_id:
-          title: Task Id
-          type: string
-    ProductBulkDeleteIn:
-      title: ProductBulkDeleteIn
+        ids:
+          title: Ids
+          type: array
+          items:
+            type: string
+    CreateResponse:
+      title: CreateResponse
       required:
+      - message
       - data
       type: object
       properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
         data:
-          $ref: '#/components/schemas/ProductIdList'
+          $ref: '#/components/schemas/TaskId'
     ChildrenObject:
       title: ChildrenObject
       required:
@@ -941,19 +1214,17 @@ components:
                   - type: number
                   - type: integer
                   - type: boolean
-    ProductIdList:
-      title: ProductIdList
+    TaskId:
+      title: TaskId
       required:
-      - product_ids
+      - task_id
       type: object
       properties:
-        product_ids:
-          title: Product Ids
-          type: array
-          items:
-            type: string
-    CreateResponse:
-      title: CreateResponse
+        task_id:
+          title: Task Id
+          type: string
+    DeleteResponse:
+      title: DeleteResponse
       required:
       - message
       - data
@@ -966,13 +1237,63 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/TaskId'
+    ProductBulkIn:
+      title: ProductBulkIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRecord'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ProductIdList:
+      title: ProductIdList
+      required:
+      - product_ids
+      type: object
+      properties:
+        product_ids:
+          title: Product Ids
+          type: array
+          items:
+            type: string
   securitySchemes:
-    Secret API Key:
+    Secret_API_Key:
       type: apiKey
       description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
       in: query
       name: api_key
-    Publishable API Key:
+    Publishable_API_Key:
       type: apiKey
       description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
       in: query

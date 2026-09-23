@@ -1,183 +1,120 @@
-openapi: 3.0.2
+openapi: 3.2.0
 info:
-  title: Miso Ask APIs User APIs API
-  description: '
-
-    # Overview
+  title: Miso User APIs API
+  description: '# Overview
 
     Miso’s approach to personalization is to train machine learning Engines on three core data sets:
 
 
-    1. Your site’s log of historical and real-time interactions,
-
-    2. Your catalog of products and content, and
-
-    3. Your users. Miso provides the output of its Engines to you, so you can build search and recommendation
-
-    experiences that are personalized down to the individual level (n=1 personalization).
-
-
-    To see how Miso works and explore the power of its Engines, we recommend following
-
-    [this tutorial](https://docs.askmiso.com/) to get
-
-    started with our Playground data. Integrating your site or application with Miso happens in three basic steps:
-
-
-    1. Upload your data
-
-    2. Train your Engines
-
-    3. Build search and recommendation experiences with the output of your Engines.
-
-
-
-    Miso provides two main integration points. The first is your [Dojo Dashboard](https://dojo.askmiso.com/),
-
-    which is used to set up your Engines with the conversions you want to optimize and your training schedule.
-
-    Dojo is also a great way to get familiar with Miso by manually uploading data and exploring the output of
-
-    Miso’s Engines. In Dojo’s Sandboxes, you can tweak your Engine settings and see visual examples of Miso’s search
-
-    and recommendations running on your live data.
-
-
-    The second integration point is Miso’s API, which lets you automatically manage your data in Miso and build
-
-    experiences that leverage the output of Miso’s personalization Engines.
-
-
-
-    Miso’s API is composed of two major groups of REST API endpoints: Data APIs and Engine APIs.
-
-
-    ### Data APIs
-
-    Data APIs collect input to Miso''s personalization Engines. These APIs all support high-throughput
-
-    data ingestion through bulk insert, and satisfy GDPR and CCPA compliance by letting users delete their data
-
-    from Miso. Subcategories of Data APIs are:
-
-
-    * [Interaction APIs](#tag/Interaction-APIs), for managing your Interaction records. By uploading historical and real-time Interaction
-
-    records, you tell Miso how users are engaging with the products and content on your site, and in turn, Miso’s
-
-    Engines learn how to optimize your conversion funnels.
-
-    * [Product / Content APIs](#tag/Product-Content-APIs), for managing your Product / Content records. These records provide a deep semantic
-
-    understanding of your catalog and keep Miso up to date about your offerings so it can make smart and timely
-
-    suggestions. The `product_id` is how Miso links Product / Content records to your Interaction records.
-
-    * [User APIs](#tag/User-APIs), for managing your User records. These records tell Miso about your site’s users and visitors,
-
-    so Miso can build an understanding of user segmentation and behavior in relation to products and content.
-
-    The `user_id` is how Miso links User records to your Interaction records.
-
-
-    As a rule of thumb, we recommend batching up data to avoid timeout risks. For the Product / Content and User
-
-    Upload APIs, we recommend limiting each API upload call to about 100 records at a time. For the Interaction
-
-    Upload API, we recommend limiting your calls to around 10,000 records at a time.
-
-
-    ### Engine APIs
-
-    Engine APIs provide the output of Miso''s personalization Engines. We designed these APIs with a focus on low
-
-    latency and high availability. Most of these APIs'' 95th percentile response time is under 75ms,
-
-    and the services are replicated to at least three separate instances for high availability.
-
-    The types of Engine APIs are:
-
-
-    * [Search APIs](#tag/Search-APIs), for getting Miso’s personalized search results for a user, with search-as-you-type and
-
-    autocompletion.
-
-    * [Recommendation APIs](#tag/Recommendation-APIs), for retrieving Miso’s recommendations that match users with
-
-    the products, categories, and product attributes that are likely to drive conversions.
-
-
-    # Authentication
-
-    [View your API Keys in your Dojo Dashboard.](https://dojo.askmiso.com/docs/api-browser)
-
-
-    There are three environments in Miso:
-
-    * **Playground**, a read-only tutorial environment with sample data.
-
-    * **Development**, for staging, QA, and experimentation.
-
-    * **Production**, where you run your live integration with Miso.
-
-
-    Access a Miso environment by passing in the corresponding API key in your API calls. There is one publishable
-
-    key and one secret key per environment.
-
-
-    API Key can passed with query parameter `api_key`, or using the `X-API-KEY` header.
-
-    '
+    1.'
   version: 1.1.4
 servers:
 - url: https://api.askmiso.com
 tags:
 - name: User APIs
-  description: '
+  description: 'Miso’s User APIs let you upload, read, and delete User records that tell Miso about your site’s unique users and
 
-    Miso’s User APIs let you upload, read, and delete User records that tell Miso about your site’s unique users and
-
-    visitors.
-
-
-    ### User records
-
-    User records specify relatively static attributes for a given user, such as their `age`, `gender`, `city`, etc. As a
-
-    rule of thumb, you should put information here that is not already captured in your
-
-    [Interaction records](#tag/Interaction-APIs). For example, *last_bought_product* is probably not needed here because
-
-    Miso already can tell that from the [Interaction records](#tag/Interaction-APIs).
-
-
-    Miso will discover the correlations between a user''s attributes and their behaviors on your site. For example, Miso
-
-    might determine that users of a certain age group tend to be interested in certain products or a certain price
-
-    range. These insights will be taken into account when predicting users'' interests, in particular for new users who
-
-    have not yet generated many interaction records.
-
-
-    We define a set of common user attributes for e-Commerce and content media sites. Some of them, such as `name` are
-
-    for display in the Dojo dashboard only. The rest are for model quality. Most attributes are optional and you don''t
-
-    need to specify them if you don''t collect such data. On the other hand, you can specify your custom user attributes
-
-    in the `custom_attributes` field. Miso will analyze custom user attributes to improve the model quality as well.
-
-
-    '
+    visitors.'
 paths:
   /v1/users:
     post:
       tags:
       - User APIs
       summary: User Upload API
-      description: "Bulk API to insert User records. This API endpoint accepts POST requests with JSON data\ncontaining a list of User records wrapped in a dictionary.\n\n```\nPOST /v1/users\n```\n\n```json\n{\n  \"data\": [user_1, user_2, user_3]\n}\n```\n\nIf a record with the same `user_id` already exists in the dataset, the existing record will\nbe replaced (no partial update is allowed at this time). We recommend limiting your calls to\naround 100 records at a time to avoid memory issues or timeout risks.\n\n### Schema validation\n\nThis API validates the inserted records against the API schema. Any schema error will cause\nthe whole request to fail (`status_code=422`), and none of the records will be inserted. As\nlong as the request passes the schema validation, the API will return `status_code=200`, but\nyou should still check if there is any error occurring with individual records.\n\n```json\n{\n    \"errors\": true,\n    \"data\": [\n        \"data.0.user_id is invalid. The attribute was expected to be a `string`\"\n    ]\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `task_id` that can be used to retrieve.\n\n#### Example Successful Response\n\n```json\n{\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/users/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      description: 'Bulk API to insert User records. This API endpoint accepts POST requests with JSON data
+
+        containing a list of User records wrapped in a dictionary.
+
+
+        ```
+
+        POST /v1/users
+
+        ```
+
+
+        ```json
+
+        {
+
+        "data": [user_1, user_2, user_3]
+
+        }
+
+        ```
+
+
+        If a record with the same `user_id` already exists in the dataset, the existing record will
+
+        be replaced (no partial update is allowed at this time). We recommend limiting your calls to
+
+        around 100 records at a time to avoid memory issues or timeout risks.
+
+
+        ### Schema validation
+
+
+        This API validates the inserted records against the API schema. Any schema error will cause
+
+        the whole request to fail (`status_code=422`), and none of the records will be inserted. As
+
+        long as the request passes the schema validation, the API will return `status_code=200`, but
+
+        you should still check if there is any error occurring with individual records.
+
+
+        ```json
+
+        {
+
+        "errors": true,
+
+        "data": [
+
+        "data.0.user_id is invalid. The attribute was expected to be a `string`"
+
+        ]
+
+        }
+
+        ```
+
+
+        ## Response Format
+
+
+        The API will return a JSON object with a `task_id` that can be used to retrieve.
+
+
+        #### Example Successful Response
+
+
+        ```json
+
+        {
+
+        "data": {
+
+        "task_id": "{task_id}"
+
+        }
+
+        }
+
+        ```
+
+
+        To check the exact response body of this task_id, make a GET request to the following endpoint:
+
+
+        ```
+
+        GET /v1/users/_status/{task_id}
+
+        ```
+
+
+        Replace `{task_id}` with the task_id returned from the response.'
       operationId: user_write_api_v1_users_post
       requestBody:
         content:
@@ -240,7 +177,78 @@ paths:
       tags:
       - User APIs
       summary: User Read API
-      description: "This API endpoint retrieves the details of a specific user using their `user_id`.\nTo fetch the user information, make a GET request to the following URL:\n\n**Notice**: Make sure the user_id is an urlencode string.\n\n```\nGET /v1/users/{user_id}\n```\n\nReplace `{user_id}` with the unique identifier of the user you wish to fetch.\n\n## Response Format\n\nThe API will return the user details in a JSON object if the given `user_id` is valid and\nexists in the system. The JSON object will include fields like `name`, `age`, `city`, `gender`\n, and other user information.\n\n### Example Response\n\nHere's an example of a successful API response for a user with the `user_id` \"user123\":\n\n```json\n{\n    \"message\": \"success\",\n    \"data\": {\n        \"user_id\": \"user123\",\n        \"name\": \"johndoe\",\n        // ... other user details\n    }\n}\n```\n\nIf the provided `user_id` is invalid or does not exist in the system, the API will return an\nerror response with a `status_code=404`.\n\n### Example Error Response\n\n```json\n{\n    \"message\": \"not found\"\n}\n```"
+      description: 'This API endpoint retrieves the details of a specific user using their `user_id`.
+
+        To fetch the user information, make a GET request to the following URL:
+
+
+        **Notice**: Make sure the user_id is an urlencode string.
+
+
+        ```
+
+        GET /v1/users/{user_id}
+
+        ```
+
+
+        Replace `{user_id}` with the unique identifier of the user you wish to fetch.
+
+
+        ## Response Format
+
+
+        The API will return the user details in a JSON object if the given `user_id` is valid and
+
+        exists in the system. The JSON object will include fields like `name`, `age`, `city`, `gender`
+
+        , and other user information.
+
+
+        ### Example Response
+
+
+        Here''s an example of a successful API response for a user with the `user_id` "user123":
+
+
+        ```json
+
+        {
+
+        "message": "success",
+
+        "data": {
+
+        "user_id": "user123",
+
+        "name": "johndoe",
+
+        // ... other user details
+
+        }
+
+        }
+
+        ```
+
+
+        If the provided `user_id` is invalid or does not exist in the system, the API will return an
+
+        error response with a `status_code=404`.
+
+
+        ### Example Error Response
+
+
+        ```json
+
+        {
+
+        "message": "not found"
+
+        }
+
+        ```'
       operationId: user_read_api_v1_users__user_id__get
       parameters:
       - required: true
@@ -293,7 +301,62 @@ paths:
       tags:
       - User APIs
       summary: User Delete API
-      description: "This API endpoint allows you to delete a specific user from the system using their `user_id`.\n\n**Notice**: Make sure the user_id is an urlencode string.\n\nTo remove a user, make a DELETE request to:\n\n```\nDELETE /v1/users/{user_id}\n```\n\nReplace `{user_id}` with the unique identifier of the user you wish to delete.\n\n## Response Format\n\nThe API will return a JSON object with a `task_id` that can be used to retrieve.\n\n#### Example Error Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/users/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      description: 'This API endpoint allows you to delete a specific user from the system using their `user_id`.
+
+
+        **Notice**: Make sure the user_id is an urlencode string.
+
+
+        To remove a user, make a DELETE request to:
+
+
+        ```
+
+        DELETE /v1/users/{user_id}
+
+        ```
+
+
+        Replace `{user_id}` with the unique identifier of the user you wish to delete.
+
+
+        ## Response Format
+
+
+        The API will return a JSON object with a `task_id` that can be used to retrieve.
+
+
+        #### Example Error Response
+
+
+        ```json
+
+        {
+
+        "message": "deleted",
+
+        "data": {
+
+        "task_id": "{task_id}"
+
+        }
+
+        }
+
+        ```
+
+
+        To check the exact response body of this task_id, make a GET request to the following endpoint:
+
+
+        ```
+
+        GET /v1/users/_status/{task_id}
+
+        ```
+
+
+        Replace `{task_id}` with the task_id returned from the response.'
       operationId: user_delete_api_v1_users__user_id__delete
       parameters:
       - required: true
@@ -347,7 +410,84 @@ paths:
       tags:
       - User APIs
       summary: User Bulk Delete API
-      description: "This API endpoint allows you to delete multiple users by providing their user_ids.\n\nTo delete multiple users, make a POST request to the following URL:\n\n```\nPOST /v1/users/_delete\n```\n\nThe request body should contain a JSON object with an array of user_ids:\n\n```json\n{\n  \"data\": {\n    \"user_ids\": [\n      \"product-1\",\n      \"product-2\",\n      // ... more product_ids to delete\n    ]\n  }\n}\n```\n\n## Response Format\n\nThe API will return a JSON object with a `message` and an array of `data`\ncontaining a `task_id` that can be used to get the status of the bulk deletion process.\n\n#### Example Successful Response\n\n```json\n{\n  \"message\": \"deleted\",\n  \"data\": {\n    \"task_id\": \"{task_id}\"\n  }\n}\n```\n\nTo check the exact response body of this task_id, make a GET request to the following endpoint:\n\n```\nGET /v1/users/_status/{task_id}\n```\n\nReplace `{task_id}` with the task_id returned from the response."
+      description: 'This API endpoint allows you to delete multiple users by providing their user_ids.
+
+
+        To delete multiple users, make a POST request to the following URL:
+
+
+        ```
+
+        POST /v1/users/_delete
+
+        ```
+
+
+        The request body should contain a JSON object with an array of user_ids:
+
+
+        ```json
+
+        {
+
+        "data": {
+
+        "user_ids": [
+
+        "product-1",
+
+        "product-2",
+
+        // ... more product_ids to delete
+
+        ]
+
+        }
+
+        }
+
+        ```
+
+
+        ## Response Format
+
+
+        The API will return a JSON object with a `message` and an array of `data`
+
+        containing a `task_id` that can be used to get the status of the bulk deletion process.
+
+
+        #### Example Successful Response
+
+
+        ```json
+
+        {
+
+        "message": "deleted",
+
+        "data": {
+
+        "task_id": "{task_id}"
+
+        }
+
+        }
+
+        ```
+
+
+        To check the exact response body of this task_id, make a GET request to the following endpoint:
+
+
+        ```
+
+        GET /v1/users/_status/{task_id}
+
+        ```
+
+
+        Replace `{task_id}` with the task_id returned from the response.'
       operationId: user_bulk_delete_api_v1_users__delete_post
       requestBody:
         content:
@@ -396,6 +536,28 @@ paths:
       - Secret API Key: []
 components:
   schemas:
+    UserBulkDeleteIn:
+      title: UserBulkDeleteIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserIdList'
+    CreateResponse:
+      title: CreateResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
     UserReadOut:
       title: UserReadOut
       required:
@@ -410,33 +572,14 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/UserRecord'
-    HTTPValidationError:
-      title: HTTPValidationError
-      type: object
-      properties:
-        detail:
-          title: Detail
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationError'
-    ValidationError:
-      title: ValidationError
+    TaskId:
+      title: TaskId
       required:
-      - loc
-      - msg
-      - type
+      - task_id
       type: object
       properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
-          title: Message
-          type: string
-        type:
-          title: Error Type
+        task_id:
+          title: Task Id
           type: string
     DeleteResponse:
       title: DeleteResponse
@@ -452,34 +595,6 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/TaskId'
-    UserBulkIn:
-      title: UserBulkIn
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/UserRecord'
-    UserBulkDeleteIn:
-      title: UserBulkDeleteIn
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UserIdList'
-    TaskId:
-      title: TaskId
-      required:
-      - task_id
-      type: object
-      properties:
-        task_id:
-          title: Task Id
-          type: string
     UserRecord:
       title: UserRecord
       required:
@@ -598,27 +713,52 @@ components:
           type: array
           items:
             type: string
-    CreateResponse:
-      title: CreateResponse
+    UserBulkIn:
+      title: UserBulkIn
       required:
-      - message
       - data
       type: object
       properties:
-        message:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRecord'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
           title: Message
           type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/TaskId'
+        type:
+          title: Error Type
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
   securitySchemes:
-    Secret API Key:
+    Secret_API_Key:
       type: apiKey
       description: "\nYour secret API key is used to access every Miso API endpoint. You should secure this key and only use it on a backend \nserver. Never leave this key in your client-side JavaScript code. If the private key is compromised, you can revoke it \nin [Dojo](https://dojo.askmiso.com/docs/api-browser) and get a new one.\n\nSpecify your secret key in the `api_key` query parameter. For example:\n```\nPOST /v1/users?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n\n"
       in: query
       name: api_key
-    Publishable API Key:
+    Publishable_API_Key:
       type: apiKey
       description: "\nYour publishable API key is used to call Miso's APIs from your front-end code. It can be used to stream interactions from the browser using Miso's Interactions Upload API or to access read-only search and recommendation results for a given user. When using the publishable API key, the requested user_id will need to be hashed to maintain the necessary security compliance. \n\nSpecify your publishable key in the `api_key` query parameter. For example:\n```\nPOST /v1/interactions?api_key=039c501ac8dfcac91c6f05601cee876e1cc07e17\n```\n"
       in: query
