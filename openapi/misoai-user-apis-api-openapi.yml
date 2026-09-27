@@ -544,43 +544,6 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/UserIdList'
-    CreateResponse:
-      title: CreateResponse
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/TaskId'
-    UserReadOut:
-      title: UserReadOut
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/UserRecord'
-    TaskId:
-      title: TaskId
-      required:
-      - task_id
-      type: object
-      properties:
-        task_id:
-          title: Task Id
-          type: string
     DeleteResponse:
       title: DeleteResponse
       required:
@@ -595,6 +558,70 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/TaskId'
+    CreateResponse:
+      title: CreateResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+    UserBulkIn:
+      title: UserBulkIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRecord'
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    UserIdList:
+      title: UserIdList
+      required:
+      - user_ids
+      type: object
+      properties:
+        user_ids:
+          title: User Ids
+          type: array
+          items:
+            type: string
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
     UserRecord:
       title: UserRecord
       required:
@@ -702,56 +729,29 @@ components:
             - Drama
             - Romance
       additionalProperties: false
-    UserIdList:
-      title: UserIdList
+    UserReadOut:
+      title: UserReadOut
       required:
-      - user_ids
-      type: object
-      properties:
-        user_ids:
-          title: User Ids
-          type: array
-          items:
-            type: string
-    UserBulkIn:
-      title: UserBulkIn
-      required:
+      - message
       - data
       type: object
       properties:
-        data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/UserRecord'
-    ValidationError:
-      title: ValidationError
-      required:
-      - loc
-      - msg
-      - type
-      type: object
-      properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
+        message:
           title: Message
           type: string
-        type:
-          title: Error Type
-          type: string
-    HTTPValidationError:
-      title: HTTPValidationError
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/UserRecord'
+    TaskId:
+      title: TaskId
+      required:
+      - task_id
       type: object
       properties:
-        detail:
-          title: Detail
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationError'
+        task_id:
+          title: Task Id
+          type: string
   securitySchemes:
     Secret_API_Key:
       type: apiKey

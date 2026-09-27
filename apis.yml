@@ -51,7 +51,7 @@ modified: '2026-09-16'
 tags:
 - Company
 - Artificial Intelligence
-- Machine-Learning
+- Machine Learning
 - Search
 - Recommendations
 - Personalization
@@ -78,6 +78,7 @@ tags_raw:
 - Retail
 - Ecommerce
 - Developers
+- Machine-Learning
 image: https://miso.ai/favicon.ico
 apis:
 - aid: misoai:misoai-ask-apis-api
