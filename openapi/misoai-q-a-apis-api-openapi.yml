@@ -275,6 +275,94 @@ components:
           items:
             type: integer
           description: "\n        Defines a list of 0-based positions you want to place the boosted products at.\n\n        If `boost_positions` is not specified (which is the default behavior), all the boosted products will be ranked\n        higher than the rest of the products.\n        "
+    AnswerBlock:
+      title: AnswerBlock
+      required:
+      - html
+      - css_selector
+      - relevant_children_slice
+      - answer_css_selector
+      - title
+      type: object
+      properties:
+        html:
+          title: Html
+          type: string
+          description: The HTML content of the answer block
+        css_selector:
+          title: Css Selector
+          type: string
+          description: The CSS selector that uniquely identifies the answer block from the HTML root
+        relevant_children_slice:
+          title: Relevant Children Slice
+          type: array
+          items:
+            type: integer
+          description: The range of children nodes inside the *answer block* that is relevant to the selected answer.
+        answer_css_selector:
+          title: Answer Css Selector
+          type: string
+          description: "\n        The CSS selector to the selected answer paragraph inside the answer block. You can use this selector to select\n        the answer from the answer block (as supposed to selecting from the HTML root)\n        "
+        title:
+          title: Title
+          type: string
+          description: "The relevant title to the answer paragraph. This title is extracted from a header node close\n        to the answer paragraph. If there is no such node, the title will be an empty string"
+    QAAutocompleteResponse:
+      title: QAAutocompleteResponse
+      required:
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          default: success
+        data:
+          $ref: '#/components/schemas/QAAutocompleteResponseBody'
+      description: Autocomplete Response
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    app__schemas__engine_api__response__Question:
+      title: Question
+      required:
+      - question
+      type: object
+      properties:
+        question:
+          title: Question
+          minLength: 1
+          type: string
+        weight:
+          title: Weight
+          type: number
+          default: 1
+      description: Question object
+    SpellCheckRequest:
+      title: SpellCheckRequest
+      type: object
+      properties:
+        enable_auto_spelling_correction:
+          title: Enable Auto Spelling Correction
+          type: boolean
+          description: "\nThis parameter controls whether to automatically correct a misspell search query.\nIf set to `true`, when Miso detects spelling errors, the search results will be based on the\n **corrected** spelling suggested by Miso.\n\nYou call tell if Miso made any correction to the search query by checking the\n`spellcheck.auto_spelling_correction` field in the\nAPI response. When this field is `true`, the search results are based on the suggested spelling\nas opposed to the users' original query.\n\nYou can opt-out the spelling correction by setting this parameter to `false`. In such cases,\nMiso will still detect spelling errors,\nbut the search results will be always based on users' original spelling.\n"
+          default: true
     BoostingFilterBase:
       title: BoostingFilterBase
       type: object
@@ -293,6 +381,131 @@ components:
           title: Boost Rule Name
           type: string
           description: Name of the boosting rule. Use this to identify a boosting rule in _boosted_rules in the response
+    QAResponseBody:
+      title: QAResponseBody
+      required:
+      - total
+      - spellcheck
+      - answers
+      type: object
+      properties:
+        took:
+          title: Took
+          type: integer
+          description: Number of milliseconds Miso took to retrieve the results.
+          default: 0
+        miso_id:
+          title: Miso Id
+          type: string
+          description: '
+
+            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
+
+            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
+
+            performance of personalization and search results. When a user clicks on a recommendation or search result,
+
+            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
+
+            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
+
+            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
+
+
+            Example:
+
+            ```
+
+            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
+
+            ```
+
+            '
+          format: uuid
+          default: 00000000-0000-0000-0000-000000000000
+          example: 123e4567-e89b-12d3-a456-426614174000
+        total:
+          title: Total
+          type: integer
+          description: Total number of Question-Answer hits.
+          example: 1000
+        spellcheck:
+          title: Spellcheck
+          allOf:
+          - $ref: '#/components/schemas/SpellCheckResponse'
+          description: Spellcheck results. You can use the information in this object to prompt users with the correct spelling.
+        answers:
+          title: Answers
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordWithAnswer'
+          description: The Question-Answer results.
+    GeoDistanceQuery:
+      title: GeoDistanceQuery
+      required:
+      - lat
+      - lon
+      - distance
+      type: object
+      properties:
+        lat:
+          title: Lat
+          maximum: 90
+          minimum: -90
+          type: number
+          description: Latitude of the center point, should between 90 and -90
+        lon:
+          title: Lon
+          maximum: 180
+          minimum: -180
+          type: number
+          description: Longitude of the center point, should between 180 and -180
+        field:
+          title: Field
+          type: string
+          description: Name of the field in product data that holds geographic coordinate. Defaults to `location`
+          default: location
+        distance:
+          title: Distance
+          type: number
+          description: Distance to center point, in kilometer or mile (according to `distance_unit`)
+        distance_unit:
+          title: Distance Unit
+          enum:
+          - km
+          - mile
+          description: Unit of distance(`km` or `mile`). Defaults to `mile`
+          default: mile
+    GeoQuery:
+      title: GeoQuery
+      type: object
+      properties:
+        filter:
+          title: Filter
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoDistanceQuery'
+          description: When set, filter result to include only products within certain geographic range from given point.
+          default: []
+        boost:
+          title: Boost
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoDistanceQueryBoost'
+          description: When set, boost products within certain geographic range from given point.
+          default: []
+    PostQuestionRequest:
+      title: PostQuestionRequest
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/app__schemas__engine_api__request__Question'
+      description: Post questions request
     BaseResponse:
       title: BaseResponse
       required:
@@ -305,15 +518,182 @@ components:
           default: success
         data:
           $ref: '#/components/schemas/BaseBody'
-    SpellCheckRequest:
-      title: SpellCheckRequest
+    QAAutocompleteResponseBody:
+      title: QAAutocompleteResponseBody
+      required:
+      - completions
       type: object
       properties:
-        enable_auto_spelling_correction:
-          title: Enable Auto Spelling Correction
-          type: boolean
-          description: "\nThis parameter controls whether to automatically correct a misspell search query.\nIf set to `true`, when Miso detects spelling errors, the search results will be based on the\n **corrected** spelling suggested by Miso.\n\nYou call tell if Miso made any correction to the search query by checking the\n`spellcheck.auto_spelling_correction` field in the\nAPI response. When this field is `true`, the search results are based on the suggested spelling\nas opposed to the users' original query.\n\nYou can opt-out the spelling correction by setting this parameter to `false`. In such cases,\nMiso will still detect spelling errors,\nbut the search results will be always based on users' original spelling.\n"
-          default: true
+        took:
+          title: Took
+          type: integer
+          description: Number of milliseconds Miso took to retrieve the results.
+          default: 0
+        miso_id:
+          title: Miso Id
+          type: string
+          description: '
+
+            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
+
+            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
+
+            performance of personalization and search results. When a user clicks on a recommendation or search result,
+
+            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
+
+            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
+
+            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
+
+
+            Example:
+
+            ```
+
+            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
+
+            ```
+
+            '
+          format: uuid
+          default: 00000000-0000-0000-0000-000000000000
+          example: 123e4567-e89b-12d3-a456-426614174000
+        completions:
+          title: Completions
+          type: array
+          items:
+            $ref: '#/components/schemas/app__schemas__engine_api__response__Question'
+      description: Autocomplete Response
+    QuestionAutocompleteRequest:
+      title: QuestionAutocompleteRequest
+      required:
+      - q
+      type: object
+      properties:
+        q:
+          title: Q
+          minLength: 1
+          type: string
+          description: The query user has entered so far
+          example: what is g
+        rows:
+          title: Rows
+          type: integer
+          description: Number of autocomplete results to return.
+          default: 5
+      description: Post question autocomplete request
+    BaseBody:
+      title: BaseBody
+      type: object
+      properties:
+        took:
+          title: Took
+          type: integer
+          description: Number of milliseconds Miso took to retrieve the results.
+          default: 0
+        miso_id:
+          title: Miso Id
+          type: string
+          description: '
+
+            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
+
+            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
+
+            performance of personalization and search results. When a user clicks on a recommendation or search result,
+
+            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
+
+            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
+
+            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
+
+
+            Example:
+
+            ```
+
+            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
+
+            ```
+
+            '
+          format: uuid
+          default: 00000000-0000-0000-0000-000000000000
+          example: 123e4567-e89b-12d3-a456-426614174000
+    QAResponse:
+      title: QAResponse
+      required:
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          default: success
+        data:
+          $ref: '#/components/schemas/QAResponseBody'
+    Answer:
+      title: Answer
+      required:
+      - probability
+      - text
+      - css_selector
+      type: object
+      properties:
+        probability:
+          title: Probability
+          maximum: 1
+          minimum: 0
+          type: number
+          description: The probability this paragraph can sufficiently answer the user's question (from 0.0 to 1.0).
+        html:
+          title: Html
+          type: string
+          description: "The answer paragraph in its original html tag, i.e. or the `outerHTML` of the\n                      answer paragraph node.\n                      "
+        text:
+          title: Text
+          type: string
+          description: The plain text version of answer paragraph.
+        css_selector:
+          title: Css Selector
+          type: string
+          description: '
+
+            The CSS selector that uniquely identifies the answer paragraph node in the original HTML content. This css selector
+
+            matches exactly one HTML node that contains the answer paragraph. In order to be as unambiguous as possible,
+
+            the returned CSS selector is in the form of a series of nth-child selectors starting from `:root` node
+
+            (which is usually the `<html>`). For example,
+
+            ```
+
+            :root > div:nth-child(1) > p:nth-child(2)
+
+            ```
+
+            . This selector means the answer paragraph is a `<p>` tag that is the second child of a `<div>` node, which is in turn, the
+
+            first child of the `:root` node.
+
+
+            This CSS selector is useful when you want to make the answer paragraph stand out from the
+
+            rest of the document. For example,
+
+            the following JQuery code turns the background color of the answer paragraph to yellow:
+
+
+            ```
+
+            $(answer.css_selector).css("background-color", "yellow");
+
+            ```
+
+            '
     QuestionAnsweringRequest:
       title: QuestionAnsweringRequest
       required:
@@ -487,101 +867,23 @@ components:
             Minimum probability required for an answer to be boosted. If not specified, the `min_probability` will be used.
 
             '
-    QAAutocompleteResponse:
-      title: QAAutocompleteResponse
+    app__schemas__engine_api__request__Question:
+      title: Question
       required:
-      - data
+      - question
       type: object
       properties:
-        message:
-          title: Message
+        question:
+          title: Question
+          minLength: 1
           type: string
-          default: success
-        data:
-          $ref: '#/components/schemas/QAAutocompleteResponseBody'
-      description: Autocomplete Response
-    Answer:
-      title: Answer
-      required:
-      - probability
-      - text
-      - css_selector
-      type: object
-      properties:
-        probability:
-          title: Probability
-          maximum: 1
-          minimum: 0
+          description: The text of question.
+        weight:
+          title: Weight
           type: number
-          description: The probability this paragraph can sufficiently answer the user's question (from 0.0 to 1.0).
-        html:
-          title: Html
-          type: string
-          description: "The answer paragraph in its original html tag, i.e. or the `outerHTML` of the\n                      answer paragraph node.\n                      "
-        text:
-          title: Text
-          type: string
-          description: The plain text version of answer paragraph.
-        css_selector:
-          title: Css Selector
-          type: string
-          description: '
-
-            The CSS selector that uniquely identifies the answer paragraph node in the original HTML content. This css selector
-
-            matches exactly one HTML node that contains the answer paragraph. In order to be as unambiguous as possible,
-
-            the returned CSS selector is in the form of a series of nth-child selectors starting from `:root` node
-
-            (which is usually the `<html>`). For example,
-
-            ```
-
-            :root > div:nth-child(1) > p:nth-child(2)
-
-            ```
-
-            . This selector means the answer paragraph is a `<p>` tag that is the second child of a `<div>` node, which is in turn, the
-
-            first child of the `:root` node.
-
-
-            This CSS selector is useful when you want to make the answer paragraph stand out from the
-
-            rest of the document. For example,
-
-            the following JQuery code turns the background color of the answer paragraph to yellow:
-
-
-            ```
-
-            $(answer.css_selector).css("background-color", "yellow");
-
-            ```
-
-            '
-    RecordWithAnswer:
-      title: RecordWithAnswer
-      required:
-      - product_id
-      - answer
-      type: object
-      properties:
-        product_id:
-          title: Product Id
-          maxLength: 512
-          type: string
-          description: The unique identifier of the product whose content contains the answer.
-        answer:
-          title: Answer
-          allOf:
-          - $ref: '#/components/schemas/Answer'
-          description: The answer paragraph (i.e. a `<p>` node) whose text content can answer users' question.
-        answer_block:
-          title: Answer Block
-          allOf:
-          - $ref: '#/components/schemas/AnswerBlock'
-          description: "\n        In addition to the answer paragraph, we also return the **answer block**.\n        Answer block is the ancestor node of the answer paragraph that cover not only the answer, but also the relevant\n        context. This is particularly useful for applications that want to show\n        the answer itself but also the relevant context surrounding the answer.\n\n        Answer block is the smallest HTML element that contains the relevant context. However, not all the content\n        inside this node is relevant. You can use the `relevant_children_slice` to identify a portion inside this\n        block that is relevant to the answer.\n        "
+          description: The weight of question.
+          default: 1
+      description: Question object
     SpellCheckResponse:
       title: SpellCheckResponse
       required:
@@ -621,296 +923,6 @@ components:
           type: string
           description: The corrected spelling suggested by Miso where the revised tokens are surrounded by the &lt;mark&gt; tags.
           example: what is &lt;mark&gt;python&lt;/mark&gt;
-    BaseBody:
-      title: BaseBody
-      type: object
-      properties:
-        took:
-          title: Took
-          type: integer
-          description: Number of milliseconds Miso took to retrieve the results.
-          default: 0
-        miso_id:
-          title: Miso Id
-          type: string
-          description: '
-
-            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
-
-            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
-
-            performance of personalization and search results. When a user clicks on a recommendation or search result,
-
-            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
-
-            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
-
-            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
-
-
-            Example:
-
-            ```
-
-            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
-
-            ```
-
-            '
-          format: uuid
-          default: 00000000-0000-0000-0000-000000000000
-          example: 123e4567-e89b-12d3-a456-426614174000
-    GeoQuery:
-      title: GeoQuery
-      type: object
-      properties:
-        filter:
-          title: Filter
-          type: array
-          items:
-            $ref: '#/components/schemas/GeoDistanceQuery'
-          description: When set, filter result to include only products within certain geographic range from given point.
-          default: []
-        boost:
-          title: Boost
-          type: array
-          items:
-            $ref: '#/components/schemas/GeoDistanceQueryBoost'
-          description: When set, boost products within certain geographic range from given point.
-          default: []
-    app__schemas__engine_api__request__Question:
-      title: Question
-      required:
-      - question
-      type: object
-      properties:
-        question:
-          title: Question
-          minLength: 1
-          type: string
-          description: The text of question.
-        weight:
-          title: Weight
-          type: number
-          description: The weight of question.
-          default: 1
-      description: Question object
-    QAAutocompleteResponseBody:
-      title: QAAutocompleteResponseBody
-      required:
-      - completions
-      type: object
-      properties:
-        took:
-          title: Took
-          type: integer
-          description: Number of milliseconds Miso took to retrieve the results.
-          default: 0
-        miso_id:
-          title: Miso Id
-          type: string
-          description: '
-
-            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
-
-            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
-
-            performance of personalization and search results. When a user clicks on a recommendation or search result,
-
-            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
-
-            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
-
-            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
-
-
-            Example:
-
-            ```
-
-            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
-
-            ```
-
-            '
-          format: uuid
-          default: 00000000-0000-0000-0000-000000000000
-          example: 123e4567-e89b-12d3-a456-426614174000
-        completions:
-          title: Completions
-          type: array
-          items:
-            $ref: '#/components/schemas/app__schemas__engine_api__response__Question'
-      description: Autocomplete Response
-    AnswerBlock:
-      title: AnswerBlock
-      required:
-      - html
-      - css_selector
-      - relevant_children_slice
-      - answer_css_selector
-      - title
-      type: object
-      properties:
-        html:
-          title: Html
-          type: string
-          description: The HTML content of the answer block
-        css_selector:
-          title: Css Selector
-          type: string
-          description: The CSS selector that uniquely identifies the answer block from the HTML root
-        relevant_children_slice:
-          title: Relevant Children Slice
-          type: array
-          items:
-            type: integer
-          description: The range of children nodes inside the *answer block* that is relevant to the selected answer.
-        answer_css_selector:
-          title: Answer Css Selector
-          type: string
-          description: "\n        The CSS selector to the selected answer paragraph inside the answer block. You can use this selector to select\n        the answer from the answer block (as supposed to selecting from the HTML root)\n        "
-        title:
-          title: Title
-          type: string
-          description: "The relevant title to the answer paragraph. This title is extracted from a header node close\n        to the answer paragraph. If there is no such node, the title will be an empty string"
-    GeoDistanceQuery:
-      title: GeoDistanceQuery
-      required:
-      - lat
-      - lon
-      - distance
-      type: object
-      properties:
-        lat:
-          title: Lat
-          maximum: 90
-          minimum: -90
-          type: number
-          description: Latitude of the center point, should between 90 and -90
-        lon:
-          title: Lon
-          maximum: 180
-          minimum: -180
-          type: number
-          description: Longitude of the center point, should between 180 and -180
-        field:
-          title: Field
-          type: string
-          description: Name of the field in product data that holds geographic coordinate. Defaults to `location`
-          default: location
-        distance:
-          title: Distance
-          type: number
-          description: Distance to center point, in kilometer or mile (according to `distance_unit`)
-        distance_unit:
-          title: Distance Unit
-          enum:
-          - km
-          - mile
-          description: Unit of distance(`km` or `mile`). Defaults to `mile`
-          default: mile
-    QuestionAutocompleteRequest:
-      title: QuestionAutocompleteRequest
-      required:
-      - q
-      type: object
-      properties:
-        q:
-          title: Q
-          minLength: 1
-          type: string
-          description: The query user has entered so far
-          example: what is g
-        rows:
-          title: Rows
-          type: integer
-          description: Number of autocomplete results to return.
-          default: 5
-      description: Post question autocomplete request
-    PostQuestionRequest:
-      title: PostQuestionRequest
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/app__schemas__engine_api__request__Question'
-      description: Post questions request
-    QAResponse:
-      title: QAResponse
-      required:
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          default: success
-        data:
-          $ref: '#/components/schemas/QAResponseBody'
-    QAResponseBody:
-      title: QAResponseBody
-      required:
-      - total
-      - spellcheck
-      - answers
-      type: object
-      properties:
-        took:
-          title: Took
-          type: integer
-          description: Number of milliseconds Miso took to retrieve the results.
-          default: 0
-        miso_id:
-          title: Miso Id
-          type: string
-          description: '
-
-            Miso-generated unique Id for each recommendation or search result. Maintaining this Id for
-
-            subsequent page views is important to Miso''s performance as we use `miso_id` to track and fine-tune the
-
-            performance of personalization and search results. When a user clicks on a recommendation or search result,
-
-            you should pass the associated `miso_id` to the next page view, and associate the `miso_id` with the
-
-            interactions that take place on the page (e.g. `product_detail_page_view`, `add_to_cart`,
-
-            `add_to_collection`, `like`, etc.). In this way, Miso will learn which recommendations work and which didn''t.
-
-
-            Example:
-
-            ```
-
-            {"misoId": "123e4567-e89b-12d3-a456-426614174000"}
-
-            ```
-
-            '
-          format: uuid
-          default: 00000000-0000-0000-0000-000000000000
-          example: 123e4567-e89b-12d3-a456-426614174000
-        total:
-          title: Total
-          type: integer
-          description: Total number of Question-Answer hits.
-          example: 1000
-        spellcheck:
-          title: Spellcheck
-          allOf:
-          - $ref: '#/components/schemas/SpellCheckResponse'
-          description: Spellcheck results. You can use the information in this object to prompt users with the correct spelling.
-        answers:
-          title: Answers
-          type: array
-          items:
-            $ref: '#/components/schemas/RecordWithAnswer'
-          description: The Question-Answer results.
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -920,40 +932,28 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-    ValidationError:
-      title: ValidationError
+    RecordWithAnswer:
+      title: RecordWithAnswer
       required:
-      - loc
-      - msg
-      - type
+      - product_id
+      - answer
       type: object
       properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
-          title: Message
+        product_id:
+          title: Product Id
+          maxLength: 512
           type: string
-        type:
-          title: Error Type
-          type: string
-    app__schemas__engine_api__response__Question:
-      title: Question
-      required:
-      - question
-      type: object
-      properties:
-        question:
-          title: Question
-          minLength: 1
-          type: string
-        weight:
-          title: Weight
-          type: number
-          default: 1
-      description: Question object
+          description: The unique identifier of the product whose content contains the answer.
+        answer:
+          title: Answer
+          allOf:
+          - $ref: '#/components/schemas/Answer'
+          description: The answer paragraph (i.e. a `<p>` node) whose text content can answer users' question.
+        answer_block:
+          title: Answer Block
+          allOf:
+          - $ref: '#/components/schemas/AnswerBlock'
+          description: "\n        In addition to the answer paragraph, we also return the **answer block**.\n        Answer block is the ancestor node of the answer paragraph that cover not only the answer, but also the relevant\n        context. This is particularly useful for applications that want to show\n        the answer itself but also the relevant context surrounding the answer.\n\n        Answer block is the smallest HTML element that contains the relevant context. However, not all the content\n        inside this node is relevant. You can use the `relevant_children_slice` to identify a portion inside this\n        block that is relevant to the answer.\n        "
   securitySchemes:
     Secret_API_Key:
       type: apiKey

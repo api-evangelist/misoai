@@ -222,33 +222,41 @@ components:
           title: Cite End
           type: string
           description: 'The citation end marker. Example: `]` or `}`'
-    QuestionResponseData:
-      title: QuestionResponseData
-      required:
-      - question_id
-      type: object
-      properties:
-        question_id:
-          title: Question Id
-          type: string
-          description: The UUID for the submitted question.
-          format: uuid
-    PollAnswerResponse:
-      title: PollAnswerResponse
+    QuestionResponse:
+      title: QuestionResponse
       required:
       - data
       type: object
       properties:
-        message:
-          title: Message
-          type: string
-          description: The status of the API response ('success' or other human readable api status).
-          default: success
         data:
           title: Data
           allOf:
-          - $ref: '#/components/schemas/AnswerData'
-          description: The answer data containing the latest answer, sources, and related resources.
+          - $ref: '#/components/schemas/QuestionResponseData'
+          description: Question response data.
+        message:
+          title: Message
+          type: string
+          description: Human-readable message.
+          default: success
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
     AnswerData:
       title: AnswerData
       required:
@@ -325,6 +333,22 @@ components:
           type: integer
           description: The revision number of the answer response data. Updated answer data has larger revision number, used by the SDK to check data order.
           default: 0
+    PollAnswerResponse:
+      title: PollAnswerResponse
+      required:
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: The status of the API response ('success' or other human readable api status).
+          default: success
+        data:
+          title: Data
+          allOf:
+          - $ref: '#/components/schemas/AnswerData'
+          description: The answer data containing the latest answer, sources, and related resources.
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -334,41 +358,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-    QuestionResponse:
-      title: QuestionResponse
+    QuestionResponseData:
+      title: QuestionResponseData
       required:
-      - data
+      - question_id
       type: object
       properties:
-        data:
-          title: Data
-          allOf:
-          - $ref: '#/components/schemas/QuestionResponseData'
-          description: Question response data.
-        message:
-          title: Message
+        question_id:
+          title: Question Id
           type: string
-          description: Human-readable message.
-          default: success
-    ValidationError:
-      title: ValidationError
-      required:
-      - loc
-      - msg
-      - type
-      type: object
-      properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
-          title: Message
-          type: string
-        type:
-          title: Error Type
-          type: string
+          description: The UUID for the submitted question.
+          format: uuid
   securitySchemes:
     Secret_API_Key:
       type: apiKey
