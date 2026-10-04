@@ -536,34 +536,6 @@ paths:
       - Secret API Key: []
 components:
   schemas:
-    UserReadOut:
-      title: UserReadOut
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/UserRecord'
-    CreateResponse:
-      title: CreateResponse
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/TaskId'
     ValidationError:
       title: ValidationError
       required:
@@ -583,23 +555,6 @@ components:
         type:
           title: Error Type
           type: string
-    UserBulkDeleteIn:
-      title: UserBulkDeleteIn
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UserIdList'
-    TaskId:
-      title: TaskId
-      required:
-      - task_id
-      type: object
-      properties:
-        task_id:
-          title: Task Id
-          type: string
     UserBulkIn:
       title: UserBulkIn
       required:
@@ -611,6 +566,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserRecord'
+    CreateResponse:
+      title: CreateResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+    UserReadOut:
+      title: UserReadOut
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/UserRecord'
     DeleteResponse:
       title: DeleteResponse
       required:
@@ -625,6 +608,43 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/TaskId'
+    TaskId:
+      title: TaskId
+      required:
+      - task_id
+      type: object
+      properties:
+        task_id:
+          title: Task Id
+          type: string
+    UserBulkDeleteIn:
+      title: UserBulkDeleteIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserIdList'
+    UserIdList:
+      title: UserIdList
+      required:
+      - user_ids
+      type: object
+      properties:
+        user_ids:
+          title: User Ids
+          type: array
+          items:
+            type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
     UserRecord:
       title: UserRecord
       required:
@@ -732,26 +752,6 @@ components:
             - Drama
             - Romance
       additionalProperties: false
-    UserIdList:
-      title: UserIdList
-      required:
-      - user_ids
-      type: object
-      properties:
-        user_ids:
-          title: User Ids
-          type: array
-          items:
-            type: string
-    HTTPValidationError:
-      title: HTTPValidationError
-      type: object
-      properties:
-        detail:
-          title: Detail
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationError'
   securitySchemes:
     Secret_API_Key:
       type: apiKey

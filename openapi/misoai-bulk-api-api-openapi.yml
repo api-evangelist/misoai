@@ -45,87 +45,6 @@ paths:
       - Secret API Key: []
 components:
   schemas:
-    EngineAPIRequest:
-      title: EngineAPIRequest
-      required:
-      - api_name
-      - body
-      type: object
-      properties:
-        api_name:
-          title: Api Name
-          type: string
-          description: '
-
-            The name of the API. An API name should contain one slash. For example: `search/search` or `recommendation/user_to_products`
-
-            '
-        body:
-          title: Body
-          type: object
-          description: '
-
-            The request body to the API.
-
-            '
-      description: Engine API request
-    BulkRequest:
-      title: BulkRequest
-      required:
-      - requests
-      type: object
-      properties:
-        requests:
-          title: Requests
-          maxItems: 100
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/EngineAPIRequest'
-          description: An array of request objects
-      description: Bulk API request
-    GeneralBody:
-      title: GeneralBody
-      type: object
-      properties: {}
-      description: Allow any json body
-    ValidationError:
-      title: ValidationError
-      required:
-      - loc
-      - msg
-      - type
-      type: object
-      properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
-          title: Message
-          type: string
-        type:
-          title: Error Type
-          type: string
-    BulkResponse:
-      title: BulkResponse
-      required:
-      - data
-      - errors
-      type: object
-      properties:
-        data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/BulkIndividualResponse'
-          description: The bulk request results
-        errors:
-          title: Errors
-          type: boolean
-          description: Whether there is any errors in the responses
-      description: Bulk API response
     BulkIndividualResponse:
       title: BulkIndividualResponse
       required:
@@ -157,6 +76,87 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
+    BulkRequest:
+      title: BulkRequest
+      required:
+      - requests
+      type: object
+      properties:
+        requests:
+          title: Requests
+          maxItems: 100
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/EngineAPIRequest'
+          description: An array of request objects
+      description: Bulk API request
+    BulkResponse:
+      title: BulkResponse
+      required:
+      - data
+      - errors
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkIndividualResponse'
+          description: The bulk request results
+        errors:
+          title: Errors
+          type: boolean
+          description: Whether there is any errors in the responses
+      description: Bulk API response
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    EngineAPIRequest:
+      title: EngineAPIRequest
+      required:
+      - api_name
+      - body
+      type: object
+      properties:
+        api_name:
+          title: Api Name
+          type: string
+          description: '
+
+            The name of the API. An API name should contain one slash. For example: `search/search` or `recommendation/user_to_products`
+
+            '
+        body:
+          title: Body
+          type: object
+          description: '
+
+            The request body to the API.
+
+            '
+      description: Engine API request
+    GeneralBody:
+      title: GeneralBody
+      type: object
+      properties: {}
+      description: Allow any json body
   securitySchemes:
     Secret_API_Key:
       type: apiKey

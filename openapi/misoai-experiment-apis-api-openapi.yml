@@ -69,6 +69,50 @@ paths:
       - Secret API Key: []
 components:
   schemas:
+    SendExperimentResponse:
+      title: SendExperimentResponse
+      required:
+      - took
+      - in_experiment
+      - variant
+      type: object
+      properties:
+        took:
+          title: Took
+          type: integer
+          description: The amount of time (in milliseconds) Miso took to answer this request.
+          example: 50
+        in_experiment:
+          title: In Experiment
+          type: boolean
+          description: To show whether the experiment is active or not.
+        variant:
+          $ref: '#/components/schemas/VariantObject'
+    ExperimentRequest:
+      title: ExperimentRequest
+      type: object
+      properties:
+        user_id:
+          title: User Id
+          type: string
+          description: Identifies the signed-in user who performed the interaction.
+          example: '2179873'
+        anonymous_id:
+          title: Anonymous Id
+          type: string
+          description: A pseudo-unique substitute for the User Id
+          example: 403fb18e-98ff-434d-8585-726fabf5ed37
+        variant_name:
+          title: Variant Name
+          type: string
+          description: Set the variant_name if you want to assign a user to a specific variant. Most of the time, you don't need to pass this field. Instead, the system will automatically assign a variant for this user.
+          example: Treatment_Group
+        timestamp:
+          title: Timestamp
+          type: string
+          description: The time the user is assigned to the variant group. If not set, current time will be used.
+          format: date-time
+          example: '2022-01-23T12:34:56-08:00'
     VariantObject:
       title: VariantObject
       required:
@@ -114,50 +158,6 @@ components:
           type: string
           description: The current status for this variant.
           example: Active
-    ExperimentRequest:
-      title: ExperimentRequest
-      type: object
-      properties:
-        user_id:
-          title: User Id
-          type: string
-          description: Identifies the signed-in user who performed the interaction.
-          example: '2179873'
-        anonymous_id:
-          title: Anonymous Id
-          type: string
-          description: A pseudo-unique substitute for the User Id
-          example: 403fb18e-98ff-434d-8585-726fabf5ed37
-        variant_name:
-          title: Variant Name
-          type: string
-          description: Set the variant_name if you want to assign a user to a specific variant. Most of the time, you don't need to pass this field. Instead, the system will automatically assign a variant for this user.
-          example: Treatment_Group
-        timestamp:
-          title: Timestamp
-          type: string
-          description: The time the user is assigned to the variant group. If not set, current time will be used.
-          format: date-time
-          example: '2022-01-23T12:34:56-08:00'
-    SendExperimentResponse:
-      title: SendExperimentResponse
-      required:
-      - took
-      - in_experiment
-      - variant
-      type: object
-      properties:
-        took:
-          title: Took
-          type: integer
-          description: The amount of time (in milliseconds) Miso took to answer this request.
-          example: 50
-        in_experiment:
-          title: In Experiment
-          type: boolean
-          description: To show whether the experiment is active or not.
-        variant:
-          $ref: '#/components/schemas/VariantObject'
   securitySchemes:
     Secret_API_Key:
       type: apiKey

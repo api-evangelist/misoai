@@ -737,14 +737,6 @@ paths:
       - Secret API Key: []
 components:
   schemas:
-    ProductBulkDeleteIn:
-      title: ProductBulkDeleteIn
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ProductIdList'
     ProductBulkIn:
       title: ProductBulkIn
       required:
@@ -756,20 +748,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProductRecord'
-    CreateResponse:
-      title: CreateResponse
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/TaskId'
     ProductIdList:
       title: ProductIdList
       required:
@@ -794,60 +772,8 @@ components:
         data:
           $ref: '#/components/schemas/ProductIds'
       additionalProperties: false
-    ValidationError:
-      title: ValidationError
-      required:
-      - loc
-      - msg
-      - type
-      type: object
-      properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
-          title: Message
-          type: string
-        type:
-          title: Error Type
-          type: string
-    ProductReadOut:
-      title: ProductReadOut
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-        data:
-          $ref: '#/components/schemas/ProductRecord'
-      additionalProperties: false
-    ProductIds:
-      title: ProductIds
-      required:
-      - ids
-      type: object
-      properties:
-        ids:
-          title: Ids
-          type: array
-          items:
-            type: string
-    TaskId:
-      title: TaskId
-      required:
-      - task_id
-      type: object
-      properties:
-        task_id:
-          title: Task Id
-          type: string
-    DeleteResponse:
-      title: DeleteResponse
+    CreateResponse:
+      title: CreateResponse
       required:
       - message
       - data
@@ -860,6 +786,21 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/TaskId'
+    LocationInformation:
+      title: LocationInformation
+      required:
+      - lat
+      - lon
+      type: object
+      properties:
+        lat:
+          title: Lat
+          type: number
+          example: 40.74844
+        lon:
+          title: Lon
+          type: number
+          example: -73.985664
     ProductRecord:
       title: ProductRecord
       required:
@@ -1206,21 +1147,72 @@ components:
             popularity: 7.439
             adult: false
       additionalProperties: false
-    LocationInformation:
-      title: LocationInformation
+    DeleteResponse:
+      title: DeleteResponse
       required:
-      - lat
-      - lon
+      - message
+      - data
       type: object
       properties:
-        lat:
-          title: Lat
-          type: number
-          example: 40.74844
-        lon:
-          title: Lon
-          type: number
-          example: -73.985664
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+    ProductReadOut:
+      title: ProductReadOut
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+        data:
+          $ref: '#/components/schemas/ProductRecord'
+      additionalProperties: false
+    ProductIds:
+      title: ProductIds
+      required:
+      - ids
+      type: object
+      properties:
+        ids:
+          title: Ids
+          type: array
+          items:
+            type: string
+    TaskId:
+      title: TaskId
+      required:
+      - task_id
+      type: object
+      properties:
+        task_id:
+          title: Task Id
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
     ChildrenObject:
       title: ChildrenObject
       required:
@@ -1287,6 +1279,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
+    ProductBulkDeleteIn:
+      title: ProductBulkDeleteIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ProductIdList'
   securitySchemes:
     Secret_API_Key:
       type: apiKey
