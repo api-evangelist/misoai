@@ -1,0 +1,12 @@
+{
+ "url": "https://api.askmiso.com/swagger.json",
+ "requested_url": "https://api.askmiso.com/swagger.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 646444,
+ "sha256": "f2fa5ba6025f2e29f30ddb99308999e931279c535915572fa9f1972cf19fc8e8",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "equivalent",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the provider's current document describes the same operations (Jaccard 1.0), but the bytes differ, so the archive is an earlier or reformatted copy."
+}
