@@ -24,3 +24,16 @@ plans:
   price_text: Get a quote
   period: none
   included_quota: Unlimited API requests and responses; free indexing
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models: []
+  units: []
+  plans:
+  - name: Monthly fee
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - none
