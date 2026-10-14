@@ -1,5 +1,5 @@
 generated: '2026-10-12'
-method: none
+method: searched
 source:
 - https://zapier.com/apps/misoai/integrations
 - https://zapier.com/apps/miso-ai/integrations
@@ -10,9 +10,41 @@ checked:
 - https://composio.dev/toolkits/misoai
 - https://monid.ai/tools/misoai
 - https://n8n.io/integrations/misoai/
+- https://registry.modelcontextprotocol.io/v0/servers
 - https://zapier.com/apps/miso-ai/integrations
 - https://zapier.com/apps/misoai/integrations
 summary: null
 marketplace_apps: []
-edges: []
+edges:
+- partner_name: MCP Registry
+  partner: mcp
+  partner_match: register
+  type: register
+  channel: standard-directory
+  relationship: standard-participant
+  direction: partner-built
+  evidence: https://registry.modelcontextprotocol.io/v0/servers?search=ai.miso.mcp.wikinews
+  contract_reference:
+    register: registry.modelcontextprotocol.io
+    spec_file: null
+    role: mcp-server-listing
+    registered_name: ai.miso.mcp.wikinews/wikinews
+    register_id: ai.miso.mcp.wikinews/wikinews
+    detected_by: sweep-agent-tools.py
+    detected: '2026-10-14'
+  mcp_registry:
+    servers:
+    - ai.miso.mcp.wikinews/wikinews
+    hosted_remote: 1
+    local_package: 0
+    transports:
+      streamable-http: 1
+    auth_declared: 0
+    catalog_declared: false
+    namespace_domains:
+    - miso.ai
+  matched_by:
+  - namespace-domain
+  detected_by: sweep-agent-tools.py
+  first_seen: '2026-10-14'
 templates: []
