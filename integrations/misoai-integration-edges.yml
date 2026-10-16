@@ -31,7 +31,7 @@ edges:
     registered_name: ai.miso.mcp.wikinews/wikinews
     register_id: ai.miso.mcp.wikinews/wikinews
     detected_by: sweep-agent-tools.py
-    detected: '2026-10-14'
+    detected: '2026-10-15'
   mcp_registry:
     servers:
     - ai.miso.mcp.wikinews/wikinews
