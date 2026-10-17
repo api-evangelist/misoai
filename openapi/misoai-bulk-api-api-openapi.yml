@@ -45,52 +45,11 @@ paths:
       - Secret API Key: []
 components:
   schemas:
-    BulkIndividualResponse:
-      title: BulkIndividualResponse
-      required:
-      - error
-      - status_code
-      - body
+    GeneralBody:
+      title: GeneralBody
       type: object
-      properties:
-        error:
-          title: Error
-          type: boolean
-          description: Whether there is an error
-        status_code:
-          title: Status Code
-          type: integer
-          description: Status code of the response
-        body:
-          title: Body
-          allOf:
-          - $ref: '#/components/schemas/GeneralBody'
-          description: The response body
-      description: Individual response in a bulk API request
-    HTTPValidationError:
-      title: HTTPValidationError
-      type: object
-      properties:
-        detail:
-          title: Detail
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationError'
-    BulkRequest:
-      title: BulkRequest
-      required:
-      - requests
-      type: object
-      properties:
-        requests:
-          title: Requests
-          maxItems: 100
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/EngineAPIRequest'
-          description: An array of request objects
-      description: Bulk API request
+      properties: {}
+      description: Allow any json body
     BulkResponse:
       title: BulkResponse
       required:
@@ -128,6 +87,15 @@ components:
         type:
           title: Error Type
           type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
     EngineAPIRequest:
       title: EngineAPIRequest
       required:
@@ -152,11 +120,43 @@ components:
 
             '
       description: Engine API request
-    GeneralBody:
-      title: GeneralBody
+    BulkIndividualResponse:
+      title: BulkIndividualResponse
+      required:
+      - error
+      - status_code
+      - body
       type: object
-      properties: {}
-      description: Allow any json body
+      properties:
+        error:
+          title: Error
+          type: boolean
+          description: Whether there is an error
+        status_code:
+          title: Status Code
+          type: integer
+          description: Status code of the response
+        body:
+          title: Body
+          allOf:
+          - $ref: '#/components/schemas/GeneralBody'
+          description: The response body
+      description: Individual response in a bulk API request
+    BulkRequest:
+      title: BulkRequest
+      required:
+      - requests
+      type: object
+      properties:
+        requests:
+          title: Requests
+          maxItems: 100
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/EngineAPIRequest'
+          description: An array of request objects
+      description: Bulk API request
   securitySchemes:
     Secret_API_Key:
       type: apiKey

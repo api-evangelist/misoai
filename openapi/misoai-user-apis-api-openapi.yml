@@ -536,6 +536,17 @@ paths:
       - Secret API Key: []
 components:
   schemas:
+    UserBulkIn:
+      title: UserBulkIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRecord'
     ValidationError:
       title: ValidationError
       required:
@@ -555,17 +566,46 @@ components:
         type:
           title: Error Type
           type: string
-    UserBulkIn:
-      title: UserBulkIn
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    TaskId:
+      title: TaskId
+      required:
+      - task_id
+      type: object
+      properties:
+        task_id:
+          title: Task Id
+          type: string
+    DeleteResponse:
+      title: DeleteResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+    UserBulkDeleteIn:
+      title: UserBulkDeleteIn
       required:
       - data
       type: object
       properties:
         data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/UserRecord'
+          $ref: '#/components/schemas/UserIdList'
     CreateResponse:
       title: CreateResponse
       required:
@@ -594,37 +634,6 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/UserRecord'
-    DeleteResponse:
-      title: DeleteResponse
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
-          type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/TaskId'
-    TaskId:
-      title: TaskId
-      required:
-      - task_id
-      type: object
-      properties:
-        task_id:
-          title: Task Id
-          type: string
-    UserBulkDeleteIn:
-      title: UserBulkDeleteIn
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UserIdList'
     UserIdList:
       title: UserIdList
       required:
@@ -636,15 +645,6 @@ components:
           type: array
           items:
             type: string
-    HTTPValidationError:
-      title: HTTPValidationError
-      type: object
-      properties:
-        detail:
-          title: Detail
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationError'
     UserRecord:
       title: UserRecord
       required:

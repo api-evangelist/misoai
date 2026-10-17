@@ -69,25 +69,6 @@ paths:
       - Secret API Key: []
 components:
   schemas:
-    SendExperimentResponse:
-      title: SendExperimentResponse
-      required:
-      - took
-      - in_experiment
-      - variant
-      type: object
-      properties:
-        took:
-          title: Took
-          type: integer
-          description: The amount of time (in milliseconds) Miso took to answer this request.
-          example: 50
-        in_experiment:
-          title: In Experiment
-          type: boolean
-          description: To show whether the experiment is active or not.
-        variant:
-          $ref: '#/components/schemas/VariantObject'
     ExperimentRequest:
       title: ExperimentRequest
       type: object
@@ -158,6 +139,25 @@ components:
           type: string
           description: The current status for this variant.
           example: Active
+    SendExperimentResponse:
+      title: SendExperimentResponse
+      required:
+      - took
+      - in_experiment
+      - variant
+      type: object
+      properties:
+        took:
+          title: Took
+          type: integer
+          description: The amount of time (in milliseconds) Miso took to answer this request.
+          example: 50
+        in_experiment:
+          title: In Experiment
+          type: boolean
+          description: To show whether the experiment is active or not.
+        variant:
+          $ref: '#/components/schemas/VariantObject'
   securitySchemes:
     Secret_API_Key:
       type: apiKey

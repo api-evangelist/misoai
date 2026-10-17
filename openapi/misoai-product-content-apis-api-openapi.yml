@@ -737,70 +737,36 @@ paths:
       - Secret API Key: []
 components:
   schemas:
-    ProductBulkIn:
-      title: ProductBulkIn
+    ProductIds:
+      title: ProductIds
       required:
-      - data
+      - ids
       type: object
       properties:
-        data:
-          title: Data
-          type: array
-          items:
-            $ref: '#/components/schemas/ProductRecord'
-    ProductIdList:
-      title: ProductIdList
-      required:
-      - product_ids
-      type: object
-      properties:
-        product_ids:
-          title: Product Ids
+        ids:
+          title: Ids
           type: array
           items:
             type: string
-    ProductListOut:
-      title: ProductListOut
+    ValidationError:
+      title: ValidationError
       required:
-      - message
-      - data
+      - loc
+      - msg
+      - type
       type: object
       properties:
-        message:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
           title: Message
           type: string
-        data:
-          $ref: '#/components/schemas/ProductIds'
-      additionalProperties: false
-    CreateResponse:
-      title: CreateResponse
-      required:
-      - message
-      - data
-      type: object
-      properties:
-        message:
-          title: Message
+        type:
+          title: Error Type
           type: string
-          description: Human-readable message
-          example: success
-        data:
-          $ref: '#/components/schemas/TaskId'
-    LocationInformation:
-      title: LocationInformation
-      required:
-      - lat
-      - lon
-      type: object
-      properties:
-        lat:
-          title: Lat
-          type: number
-          example: 40.74844
-        lon:
-          title: Lon
-          type: number
-          example: -73.985664
     ProductRecord:
       title: ProductRecord
       required:
@@ -1147,6 +1113,23 @@ components:
             popularity: 7.439
             adult: false
       additionalProperties: false
+    TaskId:
+      title: TaskId
+      required:
+      - task_id
+      type: object
+      properties:
+        task_id:
+          title: Task Id
+          type: string
+    ProductBulkDeleteIn:
+      title: ProductBulkDeleteIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ProductIdList'
     DeleteResponse:
       title: DeleteResponse
       required:
@@ -1161,6 +1144,30 @@ components:
           example: success
         data:
           $ref: '#/components/schemas/TaskId'
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    LocationInformation:
+      title: LocationInformation
+      required:
+      - lat
+      - lon
+      type: object
+      properties:
+        lat:
+          title: Lat
+          type: number
+          example: 40.74844
+        lon:
+          title: Lon
+          type: number
+          example: -73.985664
     ProductReadOut:
       title: ProductReadOut
       required:
@@ -1174,45 +1181,55 @@ components:
         data:
           $ref: '#/components/schemas/ProductRecord'
       additionalProperties: false
-    ProductIds:
-      title: ProductIds
+    ProductListOut:
+      title: ProductListOut
       required:
-      - ids
+      - message
+      - data
       type: object
       properties:
-        ids:
-          title: Ids
-          type: array
-          items:
-            type: string
-    TaskId:
-      title: TaskId
-      required:
-      - task_id
-      type: object
-      properties:
-        task_id:
-          title: Task Id
-          type: string
-    ValidationError:
-      title: ValidationError
-      required:
-      - loc
-      - msg
-      - type
-      type: object
-      properties:
-        loc:
-          title: Location
-          type: array
-          items:
-            type: string
-        msg:
+        message:
           title: Message
           type: string
-        type:
-          title: Error Type
+        data:
+          $ref: '#/components/schemas/ProductIds'
+      additionalProperties: false
+    ProductIdList:
+      title: ProductIdList
+      required:
+      - product_ids
+      type: object
+      properties:
+        product_ids:
+          title: Product Ids
+          type: array
+          items:
+            type: string
+    CreateResponse:
+      title: CreateResponse
+      required:
+      - message
+      - data
+      type: object
+      properties:
+        message:
+          title: Message
           type: string
+          description: Human-readable message
+          example: success
+        data:
+          $ref: '#/components/schemas/TaskId'
+    ProductBulkIn:
+      title: ProductBulkIn
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRecord'
     ChildrenObject:
       title: ChildrenObject
       required:
@@ -1270,23 +1287,6 @@ components:
                   - type: number
                   - type: integer
                   - type: boolean
-    HTTPValidationError:
-      title: HTTPValidationError
-      type: object
-      properties:
-        detail:
-          title: Detail
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationError'
-    ProductBulkDeleteIn:
-      title: ProductBulkDeleteIn
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ProductIdList'
   securitySchemes:
     Secret_API_Key:
       type: apiKey
